@@ -1,19 +1,27 @@
 import cv2 as cv
 import os
+import traceback
+
 import sys
-pyopenpose_path = os.path.join(os.getcwd(), 'opencv_processor', 'src', 'openpose', 'python', 'openpose')
-print("1: " + pyopenpose_path)
-sys.path.append(pyopenpose_path)
-import pyopenpose as openpose
+sys.path.append(r"C:\Users\Franklin\Desktop\Computer Vision Golf\opencv_processor\3rdparty\openpose\build_windows\python\openpose\Release")
+os.add_dll_directory(r"C:\Users\Franklin\Desktop\Computer Vision Golf\opencv_processor\3rdparty\openpose\build_windows\x64\Release")
+os.add_dll_directory(r"C:\Users\Franklin\Desktop\Computer Vision Golf\opencv_processor\3rdparty\openpose\build_windows\bin")
+try:
+    import pyopenpose as openpose
+except ImportError as e:
+    print("ERROR: {e}")
+    print(f"Type of error: {type(e)}")
+    if hasattr(e, 'name'):
+        print(f"Module name: {e.name}")
+    if hasattr(e, 'path'):
+        print(f"Path: {e.path}")
+    if hasattr(e, 'msg'):
+        print(f"Msg: {e.msg}")
+    if hasattr(e, 'args'):
+        print(f"Args: {e.args}")
+    traceback.print_exc()
 
 assets_path = os.path.join(os.getcwd(), 'opencv_processor', 'assets')
-
-#params = dict()
-#params["model_folder"] = "openpose/models/"
-
-#openposeWrapper = openpose.WrapperPython()
-#openposeWrapper.configure(params)
-#openposeWrapper.start()
 
 faceonimg = cv.imread(os.path.join(assets_path, 'faceon.jpg'))
 faceonimg = cv.resize(faceonimg, (0,0), fx=0.25, fy=0.25)
@@ -27,12 +35,18 @@ cv.imshow('DTL', dtlimg)
 cv.waitKey(0)
 cv.destroyAllWindows()
 
+params = dict()
+params["model_folder"] = r"C:\Users\Franklin\Desktop\Computer Vision Golf\opencv_processor\3rdparty\openpose\models"
 
-#datum = op.Datum()
-#datum.cvInputData = faceonimg
-#openposeWrapper.emplaceAndPop([datum])
+openposeWrapper = openpose.WrapperPython()
+openposeWrapper.configure(params)
+openposeWrapper.start()
 
-#print("Body keypoints: \n" + str(datum.poseKeypoints))
+datum = openpose.Datum()
+datum.cvInputData = faceonimg
+openposeWrapper.emplaceAndPop(openpose.VectorDatum([datum]))
 
-#cv.imshow("OpenPose Output", datum.cvOutputData)
-#cv.waitKey(0)
+print("Body keypoints: \n" + str(datum.poseKeypoints))
+
+cv.imshow("OpenPose Output", datum.cvOutputData)
+cv.waitKey(0)
