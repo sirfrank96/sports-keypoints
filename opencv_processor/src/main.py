@@ -1,11 +1,14 @@
 import cv2 as cv
 import os
 import traceback
-
 import sys
-sys.path.append(r"C:\Users\Franklin\Desktop\Computer Vision Golf\opencv_processor\3rdparty\openpose\build_windows\python\openpose\Release")
-os.add_dll_directory(r"C:\Users\Franklin\Desktop\Computer Vision Golf\opencv_processor\3rdparty\openpose\build_windows\x64\Release")
-os.add_dll_directory(r"C:\Users\Franklin\Desktop\Computer Vision Golf\opencv_processor\3rdparty\openpose\build_windows\bin")
+from pathlib import Path
+
+cwd = Path.cwd()
+
+sys.path.append(cwd / r"opencv_processor\3rdparty\openpose\build_windows\python\openpose\Release")
+os.add_dll_directory(cwd / r"opencv_processor\3rdparty\openpose\build_windows\x64\Release")
+os.add_dll_directory(cwd / r"opencv_processor\3rdparty\openpose\build_windows\bin")
 try:
     import pyopenpose as openpose
 except ImportError as e:
@@ -36,7 +39,7 @@ cv.waitKey(0)
 cv.destroyAllWindows()
 
 params = dict()
-params["model_folder"] = r"C:\Users\Franklin\Desktop\Computer Vision Golf\opencv_processor\3rdparty\openpose\models"
+params["model_folder"] = cwd / r"opencv_processor\3rdparty\openpose\models"
 
 openposeWrapper = openpose.WrapperPython()
 openposeWrapper.configure(params)
