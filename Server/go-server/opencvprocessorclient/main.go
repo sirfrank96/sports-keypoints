@@ -24,38 +24,36 @@ var (
 func main() {
 	log.Printf("Starting go client")
 	flag.Parse()
+
 	// Set up a connection to the server.
 	conn, err := grpc.NewClient(*addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
-	c := cv.NewComputerVisionClient(conn)
 
+	// Init ComputerVision grpc client
+	c := cv.NewComputerVisionClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
+	// Grab example image to process, decode image, then encode as jpg
 	img, err := os.Open(`C:\Users\Franklin\Desktop\Computer Vision Golf\Server\go-server\static\faceon.jpg`)
 	if err != nil {
 		log.Fatalf("failed to open jpg file: %w", err)
 	}
 	defer img.Close()
-
 	imgDecode, _, err := image.Decode(img)
 	if err != nil {
 		log.Fatalf("failed to decode original image: %w", err)
 	}
-
 	buffer := new(bytes.Buffer)
 	err = jpeg.Encode(buffer, imgDecode, nil)
 	if err != nil {
 		log.Fatalf("Error encoding original image to jpeg: %w", err)
 	}
 
-	//imgReturn, err := c.GetOpenPoseFaceOnImage(ctx, &cv.FaceOnImage{Name: "Faceon from go to python", Image: buffer.Bytes()})
-	//if err != nil {
-	//	log.Fatalf("grpc error: %v", err)
-	//}
+	// Create rpc stream for FaceOnImage
 	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	stream, err := c.GetOpenPoseFaceOnImage(ctx)
@@ -63,14 +61,13 @@ func main() {
 		log.Fatalf("c.GetOpenPoseFaceOnImage failed: %v", err)
 	}
 
-	// wait for processed image
+	// Start goroutine that waits for return data from stream, concatenates bytes for images that are chunked
 	waitc := make(chan struct{})
 	imgSliceBytes := []byte{}
 	go func() {
 		for {
 			imgReturn, err := stream.Recv()
-			if err == io.EOF {
-				// read done.
+			if err == io.EOF { // read done
 				close(waitc)
 				return
 			}
@@ -82,48 +79,37 @@ func main() {
 		}
 	}()
 
-	// Send image
+	// Send image via stream
 	if err := stream.Send(&cv.FaceOnImage{Name: "Faceon from go to python", Image: buffer.Bytes()}); err != nil {
 		log.Fatalf("client.GetOpenPoseFaceOnImage: stream.Send() failed: %v", err)
 	}
 	stream.CloseSend()
 	log.Printf("Sent data")
 
+	// Once receive stream is done, goroutine finishes
 	<-waitc
 	log.Printf("Received data")
 
-	log.Printf("starting to decode bytes and encode to jpg")
-	// converting bytes to a jpg
-	log.Printf("byte slice size is %d", len(imgSliceBytes))
+	// Convert bytes received to a jpg and write to a file in cwd
 	imgReturnDecode, err := jpeg.Decode(bytes.NewReader(imgSliceBytes))
 	if err != nil {
 		log.Fatalf("failed to decode return image: %w", err)
 	}
-
-	//var buf bytes.Buffer
-	//var opts jpeg.Options
-	//opts.Quality = 80 // Set quality to 80
-	//err = jpeg.Encode(&buf, imgReturnDecode, &opts)
-
-	buf := new(bytes.Buffer)
+	buf := new(bytes.Buffer) //var opts jpeg.Options // opts.Quality = 80
 	err = jpeg.Encode(buf, imgReturnDecode, nil)
 	if err != nil {
 		log.Fatalf("Failed to encode return image to JPEG: %v", err)
 	}
-
 	jpegBytes := buf.Bytes()
-
 	jpegFile, err := os.Create(`C:\Users\Franklin\Desktop\Computer Vision Golf\Server\go-server\opencvprocessorclient\test.jpg`)
 	if err != nil {
 		log.Fatalf("Failed to create test.jpg: %v", err)
 	}
 	defer jpegFile.Close()
-
 	_, err = jpegFile.Write(jpegBytes)
 	if err != nil {
 		log.Fatalf("Failed to write JPeG file: %v", err)
 	}
 
 	log.Printf("Ending go client")
-
 }
