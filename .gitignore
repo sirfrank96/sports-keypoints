@@ -1,4 +1,14 @@
+# Python virtual environment
 *venv/
 python38_venv/
 .env
 .venv
+
+# Visual Studio
+.vs
+
+# GRPC generated files
+*.pb.go
+*.pyc
+__pycache__/
+*_pb2*
