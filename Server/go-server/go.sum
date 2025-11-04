@@ -1,3 +1,7 @@
+github.com/go-ffstatic/ffstatic v0.0.0-20220419113821-d52dcb9379d2 h1:F9o30TeQQI4Zk9akbWrsiriJ+FeCY+Vmco/+7UCZ2rQ=
+github.com/go-ffstatic/ffstatic v0.0.0-20220419113821-d52dcb9379d2/go.mod h1:c2zjnx8tZfjsDBs0uZajpV+rPBdWLfZIrNTAap1xouM=
+github.com/go-ffstatic/windows-amd64 v0.0.0-20220419131337-d9ddf00f0f90 h1:9/x+wjaR6kY5KfZYrkAws5q95+7BIKoiuyb0nZq/8k0=
+github.com/go-ffstatic/windows-amd64 v0.0.0-20220419131337-d9ddf00f0f90/go.mod h1:865gjiicurh3URNxKrjfhO7WBQfL+mARu4kpUEVkkQk=
 github.com/go-logr/logr v1.4.3 h1:CjnDlHq8ikf6E492q6eKboGOC0T8CDaOvkHCIg8idEI=
 github.com/go-logr/logr v1.4.3/go.mod h1:9T104GzyrTigFIr8wt5mBrctHMim0Nb2HLGrmQ40KvY=
 github.com/go-logr/stdr v1.2.2 h1:hSWxHoqTgW2S2qGc0LTAI563KZ5YKYRhT3MFKZMbjag=

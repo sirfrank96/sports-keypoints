@@ -25,7 +25,6 @@ func createNewGolfComputerVisionServer(ctx context.Context, processor *processor
 }
 
 func (g *golfComputerVisionServer) ShowDTLPoseImage(stream cv.GolfComputerVisionService_ShowDTLPoseImageServer) error {
-	// convert stream img to []bytes
 	for {
 		in, err := stream.Recv()
 		if err == io.EOF {
@@ -39,8 +38,6 @@ func (g *golfComputerVisionServer) ShowDTLPoseImage(stream cv.GolfComputerVision
 			return err
 		}
 	}
-
-	//send bytes back
 	return nil
 }
 
