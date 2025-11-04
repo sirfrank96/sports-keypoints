@@ -1,0 +1,12 @@
+syntax = "proto3";
+package computer_vision_sports_proto;
+
+message Image {
+    string name = 1;
+    bytes bytes = 2;
+}
+
+message ImagePair {
+    Image originalImage = 1;
+    Image newImage = 2;
+}

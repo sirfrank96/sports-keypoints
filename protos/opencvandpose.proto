@@ -1,0 +1,128 @@
+syntax = "proto3";
+package computer_vision_sports_proto;
+
+import "common.proto";
+
+// TODO: Rename opencv/openpose service?
+service OpenCVAndPoseService {
+    //rpc GetOpenPoseDTLPoseImage(stream Image) returns (stream Image) {}
+    //rpc GetOpenPoseFaceOnPoseImage(stream Image) returns (stream Image) {}
+    //rpc GetOpenPoseDTLPoseData(stream Image) returns (PoseData) {}
+    //rpc GetOpenPoseFaceOnPoseData(stream Image) returns (PoseData) {}
+
+    //rpc GetOpenPoseDTLHandImage(stream Image) returns (stream Image) {}
+    //rpc GetOpenPoseFaceOnHandImage(stream Image) returns (stream Image) {}
+    //rpc GetOpenPoseDTLHandData(stream Image) returns (HandData) {}
+    //rpc GetOpenPoseFaceOnHandData(stream Image) returns (HandData) {}
+
+    //rpc GetOpenPoseDTLAllData(stream Image) returns (stream AllImageData) {}
+    //rpc GetOpenPoseFaceOnALLData(stream Image) returns (stream AllImageData) {}
+
+    rpc GetOpenPoseImage(stream Image) returns (stream Image) {}
+    rpc GetOpenPoseData(stream Image) returns (PoseData) {}
+
+    rpc GetOpenPoseHandImage(stream Image) returns (stream Image) {}
+    rpc GetOpenPoseHandData(stream Image) returns (HandData) {}
+
+    rpc GetOpenPoseAllData(stream Image) returns (stream AllImageData) {}
+
+    //TODO: Video rpcs
+}
+
+// TODO: Use Request and Response in message names
+message AllImageData {
+    string name = 1;
+    Image image = 2;
+    PoseData pose_data = 3;
+    HandData hand_data = 4;
+}
+
+message PoseData {
+    string name = 1;
+    Body25PoseKeypoints keypoints = 2;
+}
+
+message Body25PoseKeypoints {
+    Keypoint nose = 1;
+    Keypoint neck = 2;
+    Keypoint r_shoulder = 3;
+    Keypoint r_elbow = 4;
+    Keypoint r_wrist = 5;
+    Keypoint l_shoulder = 6;
+    Keypoint l_elbow = 7;
+    Keypoint l_wrist = 8;
+    Keypoint midhip = 9;
+    Keypoint r_hip = 10;
+    Keypoint r_knee = 11;
+    Keypoint r_ankle = 12;
+    Keypoint l_hip = 13;
+    Keypoint l_knee = 14;
+    Keypoint l_ankle = 15;
+    Keypoint r_eye = 16;
+    Keypoint l_eye = 17;
+    Keypoint r_ear = 18;
+    Keypoint l_ear = 19;
+    Keypoint l_big_toe = 20;
+    Keypoint l_small_toe = 21;
+    Keypoint l_heel = 22;
+    Keypoint r_big_toe = 23;
+    Keypoint r_small_toe = 24;
+    Keypoint r_heel = 25;
+}
+
+message HandData {
+    string name = 1;
+    Body25HandKeypoints keypoints = 2;
+}
+
+message Body25HandKeypoints {
+    Keypoint l_wrist = 1;
+    Keypoint l_thumb1 = 2;
+    Keypoint l_thumb2 = 3;
+    Keypoint l_thumb3 = 4;
+    Keypoint l_thumb = 5;
+    Keypoint l_index1 = 6;
+    Keypoint l_index2 = 7;
+    Keypoint l_index3 = 8;
+    Keypoint l_index = 9;
+    Keypoint l_middle1 = 10;
+    Keypoint l_middle2 = 11;
+    Keypoint l_middle3 = 12;
+    Keypoint l_middle = 13;
+    Keypoint l_ring1 = 14;
+    Keypoint l_ring2 = 15;
+    Keypoint l_ring3 = 16;
+    Keypoint l_ring = 17;
+    Keypoint l_pinky1 = 18;
+    Keypoint l_pinky2 = 19;
+    Keypoint l_pinky3 = 20;
+    Keypoint l_pinky = 21;
+    Keypoint r_wrist = 22;
+    Keypoint r_thumb1 = 23;
+    Keypoint r_thumb2 = 24;
+    Keypoint r_thumb3 = 25;
+    Keypoint r_thumb = 26;
+    Keypoint r_index1 = 27;
+    Keypoint r_index2 = 28;
+    Keypoint r_index3 = 29;
+    Keypoint r_index = 30;
+    Keypoint r_middle1 = 31;
+    Keypoint r_middle2 = 32;
+    Keypoint r_middle3 = 33;
+    Keypoint r_middle = 34;
+    Keypoint r_ring1 = 35;
+    Keypoint r_ring2 = 36;
+    Keypoint r_ring3 = 37;
+    Keypoint r_ring = 38;
+    Keypoint r_pinky1 = 39;
+    Keypoint r_pinky2 = 40;
+    Keypoint r_pinky3 = 41;
+    Keypoint r_pinky = 42;
+}
+
+message Keypoint {
+    float x = 1;
+    float y = 2;
+    float confidence = 3;
+}
+

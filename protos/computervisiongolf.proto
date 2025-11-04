@@ -1,0 +1,55 @@
+syntax = "proto3";
+package computer_vision_sports_proto;
+
+import "common.proto";
+
+service GolfComputerVisionService {
+    rpc showDTLPoseImage(stream Image) returns (stream Image) {}
+    //rpc showDTLAllData(stream Image) returns {}
+    rpc identifyDTLPoseDifferences(stream ImagePair) returns (DTLGolfSetupPoints) {}
+    //rpc identifyDTLTempoDifferences(stream ImagePair) returns {}
+    //rpc identifyDTLGripDifferences (stream ImagePair) returns {}
+    //rpc identifyDTLWeightDistributionDifferences (stream ImagePair) returns {}
+
+    rpc showFaceOnPoseImage(stream Image) returns (stream Image) {}
+    //rpc showFaceOnAllData(stream Image) returns {}
+    rpc identifyFaceOnPoseDifferences(stream ImagePair) returns (FaceOnGolfSetupPoints) {}
+    //rpc identifyFaceOnTempoDifferences(stream ImagePair) returns {}
+    //rpc identifyFaceOnGripDifferences (stream ImagePair) returns {}
+    //rpc identifyFaceOnWeightDistributionDifferences (stream ImagePair) returns {}
+}
+
+message DTLPoseDifferencesRequest {
+    ImagePair pair = 1;
+    //float angle_tolerance = 2; // how much difference there has to be in angle to report as a difference (might have to be tolerance for each field with some default values)
+}
+
+message DTLGolfSetupPoints {
+    float spine_angle = 1;
+    //feet_alignment
+    //shoulder_alignment
+    //waist_alignment
+    //distance_from_ball
+    //ulnar_deviation
+    //knee_bend
+    //waist_bend
+    //neck_angle
+    //spine_bend
+}
+
+message FaceOnGolfSetupPoints {
+    float side_bend = 1;
+    //l_foot_flare
+    //r_foot_flare
+    //stance_width
+    //shoulder_angle
+    //waist_angle
+    //shaft_lean
+    //ball_position
+    //head_position
+    //chest_position
+}
+
+/*message GripSetup {
+
+}*/

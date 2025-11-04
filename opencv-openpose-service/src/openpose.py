@@ -10,6 +10,7 @@ curr_dir = Path(__file__).parent.resolve()
 sys.path.append(curr_dir / r"..\3rdparty\openpose\build_windows\python\openpose\Release")
 os.add_dll_directory(curr_dir / r"..\3rdparty\openpose\build_windows\x64\Release")
 os.add_dll_directory(curr_dir / r"..\3rdparty\openpose\build_windows\bin")
+print(curr_dir)
 try:
     import pyopenpose as op
 except ImportError as e:
@@ -26,7 +27,6 @@ except ImportError as e:
 # Location of OpenPose models
 params = dict()
 params["model_folder"] = curr_dir / r"..\3rdparty\openpose\models"
-
 
 # Helper function: converts bytes object to Matlike
 def getOpenPoseImageFromBytes(img_bytes):
@@ -50,6 +50,8 @@ def getOpenPoseImage(img):
     datum = op.Datum()
     datum.cvInputData = img
     openposeWrapper.emplaceAndPop(op.VectorDatum([datum]))
+
+
 
     # Encode data as jpg, then convert to bytes object
     img_encode = cv.imencode('.jpg', datum.cvOutputData)
