@@ -29,33 +29,28 @@ params = dict()
 params["model_folder"] = curr_dir / r"..\3rdparty\openpose\models"
 
 # Helper function: converts bytes object to Matlike
-def getOpenPoseImageFromBytes(img_bytes):
+def get_open_pose_image_from_bytes(img_bytes):
     nparr = np.frombuffer(img_bytes, np.uint8)
     img = cv.imdecode(nparr, cv.IMREAD_COLOR)
-    return getOpenPoseImage(img)
+    return get_open_pose_image(img)
 
 # Helper function: Grabs img from path and converts to Matlike
-def getOpenPoseImageFromPath(imgPath):
+def get_open_pose_image_from_path(imgPath):
     img = cv.imread(imgPath, cv.IMREAD_COLOR)
-    return getOpenPoseImage(img)
+    return get_open_pose_image(img)
     
 # Input is Matlike, Feed into OpenPose, Return processed image as bytes
-def getOpenPoseImage(img):
+def get_open_pose_image(img):
     # Get OpenPose python wrapper
-    openposeWrapper = op.WrapperPython()
-    openposeWrapper.configure(params)
-    openposeWrapper.start()
-
+    openpose_wrapper = op.WrapperPython()
+    openpose_wrapper.configure(params)
+    openpose_wrapper.start()
     # Process input image to get OpenPose image with skeleton lines
     datum = op.Datum()
     datum.cvInputData = img
-    openposeWrapper.emplaceAndPop(op.VectorDatum([datum]))
-
-
-
+    openpose_wrapper.emplaceAndPop(op.VectorDatum([datum]))
     # Encode data as jpg, then convert to bytes object
     img_encode = cv.imencode('.jpg', datum.cvOutputData)
     data_encode = np.array(img_encode[1])
-    byte_encode = data_encode.tobytes()
-    
+    byte_encode = data_encode.tobytes()   
     return byte_encode

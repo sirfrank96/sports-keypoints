@@ -3,26 +3,66 @@ package computer_vision_sports_proto;
 
 import "common.proto";
 
-service GolfComputerVisionService {
-    rpc showDTLPoseImage(stream Image) returns (stream Image) {}
-    //rpc showDTLAllData(stream Image) returns {}
-    rpc identifyDTLPoseDifferences(stream ImagePair) returns (DTLGolfSetupPoints) {}
-    //rpc identifyDTLTempoDifferences(stream ImagePair) returns {}
-    //rpc identifyDTLGripDifferences (stream ImagePair) returns {}
-    //rpc identifyDTLWeightDistributionDifferences (stream ImagePair) returns {}
+service ComputerVisionGolfService {
+    rpc showDTLPoseImage(ShowDTLPoseImageRequest) returns (ShowDTLPoseImageResponse) {}
+    rpc showFaceOnPoseImage(ShowFaceOnPoseImageRequest) returns (ShowFaceOnPoseImageResponse) {}
+    rpc identifyDTLPoseDifferences(IdentifyDTLPoseDifferencesRequest) returns (IdentifyDTLPoseDifferencesResponse) {}
+    rpc identifyFaceOnPoseDifferences(IdentifyFaceOnPoseDifferencesRequest) returns (IdentifyFaceOnPoseDifferencesResponse) {}
+    //rpc identifyDTLGripDifferences (ImagePair) returns {}
+    //rpc identifyFaceOnGripDifferences (ImagePair) returns {}
+    //rpc identifyDTLWeightDistributionDifferences (ImagePair) returns {}
+    //rpc identifyFaceOnWeightDistributionDifferences (ImagePair) returns {}
+    //rpc showFaceOnAllData(Image) returns {}
+    //rpc showDTLAllData(Image) returns {}
 
-    rpc showFaceOnPoseImage(stream Image) returns (stream Image) {}
-    //rpc showFaceOnAllData(stream Image) returns {}
-    rpc identifyFaceOnPoseDifferences(stream ImagePair) returns (FaceOnGolfSetupPoints) {}
-    //rpc identifyFaceOnTempoDifferences(stream ImagePair) returns {}
-    //rpc identifyFaceOnGripDifferences (stream ImagePair) returns {}
-    //rpc identifyFaceOnWeightDistributionDifferences (stream ImagePair) returns {}
+    rpc showDTLPoseImagesFromVideo(stream ShowDTLPoseImageRequest) returns (stream ShowDTLPoseImageResponse) {}
+    rpc showFaceOnPoseImagesFromVideo(stream ShowFaceOnPoseImageRequest) returns (stream ShowFaceOnPoseImageResponse) {}
+    //rpc identifyDTLTempoDifferencesFromVideo(stream ImagePair) returns {}
+    //rpc identifyFaceOnTempoDifferencesFromVideo(stream ImagePair) returns {}
+    //rpc identifyDTLWeightDistributionDifferencesFromVideo (stream ImagePair) returns {}
+    //rpc identifyFaceOnWeightDistributionDifferencesFromVideo (stream ImagePair) returns {}
+
+    //TODO: User CRUD rpcs: CreateUser, ReadUser, UpdateUser, DeleteUser
+    //TODO: Image/Video CRUD rpcs: CreateImage, CreateVideo, ... 
 }
 
-message DTLPoseDifferencesRequest {
+message ShowDTLPoseImageRequest {
+    Image image = 1;
+}
+
+message ShowDTLPoseImageResponse {
+    Image image = 2;
+}
+
+message ShowFaceOnPoseImageRequest {
+    Image image = 1;
+}
+
+message ShowFaceOnPoseImageResponse {
+    Image image = 2;
+}
+
+message IdentifyDTLPoseDifferencesRequest {
     ImagePair pair = 1;
     //float angle_tolerance = 2; // how much difference there has to be in angle to report as a difference (might have to be tolerance for each field with some default values)
 }
+
+message IdentifyDTLPoseDifferencesResponse {
+    DTLGolfSetupPoints setup_points_original = 1;
+    DTLGolfSetupPoints setup_points_new = 2;
+    DTLGolfSetupPoints setup_points_diff = 3;
+}
+
+message IdentifyFaceOnPoseDifferencesRequest {
+    ImagePair pair = 1;
+    //float angle_tolerance = 2;
+}
+
+message IdentifyFaceOnPoseDifferencesResponse {
+    FaceOnGolfSetupPoints setup_points_original = 1;
+    FaceOnGolfSetupPoints setup_points_new = 2;
+    FaceOnGolfSetupPoints setup_points_diff = 3;
+}   
 
 message DTLGolfSetupPoints {
     float spine_angle = 1;

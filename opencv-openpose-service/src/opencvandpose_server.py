@@ -8,37 +8,67 @@ import opencvandpose_pb2_grpc
 import common_pb2
 import common_pb2_grpc
 
-#TODO: Rename python module to opencv_service/computervision_service
-# Implement rpcs
+#TODO: Implement all rpcs
 class OpenCVAndPoseServiceServicer(opencvandpose_pb2_grpc.OpenCVAndPoseServiceServicer):
     def __init__(self):
         self.__init__
 
-    def GetOpenPoseImage(self, request_iterator, context):
+    def GetOpenPoseImage(self, request, context):
         print("GetOpenPoseImage grpc request")
-        image = bytes()
-        for new_image in request_iterator:
-            image += new_image.bytes
-        processedImg = openpose.getOpenPoseImageFromBytes(image)
-        print("GetOpenPoseImage grpc request processed")
-        print(f"ProcessedImg size is {len(processedImg)}")
-        openPoseImage = common_pb2.Image(
-            name="OpenPose Image Processed",
-            bytes=processedImg
+        image = request.image.bytes
+        processed_img = openpose.get_open_pose_image_from_bytes(image)
+        print(f"Processed image. It's size is {len(processed_img)}")
+        open_pose_image = common_pb2.Image(
+            name=f"Processed image",
+            bytes=processed_img
         )
-        yield openPoseImage
-
-    def GetOpenPoseData(self, request_iterator, context):
-        return super().GetOpenPoseData(request_iterator, context)
+        print("GetOpenPoseImage grpc request finished")
+        return opencvandpose_pb2.GetOpenPoseImageResponse(
+            image=open_pose_image
+        )
     
-    def GetOpenPoseHandImage(self, request_iterator, context):
-        return super().GetOpenPoseHandImage(request_iterator, context)
+    def GetOpenPoseData(self, request, context):
+        return super().GetOpenPoseData(request, context)
     
-    def GetOpenPoseHandData(self, request_iterator, context):
-        return super().GetOpenPoseHandData(request_iterator, context)
+    def GetOpenPoseHandImage(self, request, context):
+        return super().GetOpenPoseHandImage(request, context)
     
-    def GetOpenPoseAllData(self, request_iterator, context):
-        return super().GetOpenPoseAllData(request_iterator, context)
+    def GetOpenPoseHandData(self, request, context):
+        return super().GetOpenPoseHandData(request, context)
+    
+    def GetOpenPoseAll(self, request, context):
+        return super().GetOpenPoseAll(request, context)
+    
+    def GetOpenPoseImagesFromVideo(self, request_iterator, context):
+        print("GetOpenPoseImagesFromVideo grpc request")
+        img_idx = 0
+        for get_open_pose_image_request in request_iterator:
+            img_idx += 1
+            image = get_open_pose_image_request.image.bytes
+            processed_img = openpose.get_open_pose_image_from_bytes(image)
+            print(f"Processed image #{img_idx}. It's size is {len(processed_img)}")
+            open_pose_image = common_pb2.Image(
+                name=f"Processed image #{img_idx}",
+                bytes=processed_img
+            )
+            get_open_pose_image_response = opencvandpose_pb2.GetOpenPoseImageResponse(
+                image=open_pose_image
+            )
+            yield get_open_pose_image_response
+        print("GetOpenPoseImagesFromVideo grpc request finished")
+    
+    def GetOpenPoseDataFromVideo(self, request_iterator, context):
+        return super().GetOpenPoseDataFromVideo(request_iterator, context)
+    
+    def GetOpenPoseHandImagesFromVideo(self, request_iterator, context):
+        return super().GetOpenPoseHandImagesFromVideo(request_iterator, context)
+    
+    def GetOpenPoseHandDataFromVideo(self, request_iterator, context):
+        return super().GetOpenPoseHandDataFromVideo(request_iterator, context)
+    
+    def GetOpenPoseAllFromVideo(self, request_iterator, context):
+        return super().GetOpenPoseAllFromVideo(request_iterator, context)
+    
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
@@ -47,7 +77,8 @@ def serve():
     )
     server.add_insecure_port("[::]:50051")
     server.start()
-    print("Waiting for requests at port 50051")
+    print("Waiting for opencv and openpose requests at port 50051")
+    print("Waiting for sigint to stop services")
     server.wait_for_termination()
 
 

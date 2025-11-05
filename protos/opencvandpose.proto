@@ -3,43 +3,60 @@ package computer_vision_sports_proto;
 
 import "common.proto";
 
-// TODO: Rename opencv/openpose service?
 service OpenCVAndPoseService {
-    //rpc GetOpenPoseDTLPoseImage(stream Image) returns (stream Image) {}
-    //rpc GetOpenPoseFaceOnPoseImage(stream Image) returns (stream Image) {}
-    //rpc GetOpenPoseDTLPoseData(stream Image) returns (PoseData) {}
-    //rpc GetOpenPoseFaceOnPoseData(stream Image) returns (PoseData) {}
+    rpc GetOpenPoseImage(GetOpenPoseImageRequest) returns (GetOpenPoseImageResponse) {}
+    rpc GetOpenPoseData(GetOpenPoseDataRequest) returns (GetOpenPoseDataResponse) {}
+    rpc GetOpenPoseHandImage(GetOpenPoseHandImageRequest) returns (GetOpenPoseHandImageResponse) {}
+    rpc GetOpenPoseHandData(GetOpenPoseHandDataRequest) returns (GetOpenPoseHandDataResponse) {}
+    rpc GetOpenPoseAll(GetOpenPoseAllRequest) returns (GetOpenPoseAllResponse) {}
 
-    //rpc GetOpenPoseDTLHandImage(stream Image) returns (stream Image) {}
-    //rpc GetOpenPoseFaceOnHandImage(stream Image) returns (stream Image) {}
-    //rpc GetOpenPoseDTLHandData(stream Image) returns (HandData) {}
-    //rpc GetOpenPoseFaceOnHandData(stream Image) returns (HandData) {}
-
-    //rpc GetOpenPoseDTLAllData(stream Image) returns (stream AllImageData) {}
-    //rpc GetOpenPoseFaceOnALLData(stream Image) returns (stream AllImageData) {}
-
-    rpc GetOpenPoseImage(stream Image) returns (stream Image) {}
-    rpc GetOpenPoseData(stream Image) returns (PoseData) {}
-
-    rpc GetOpenPoseHandImage(stream Image) returns (stream Image) {}
-    rpc GetOpenPoseHandData(stream Image) returns (HandData) {}
-
-    rpc GetOpenPoseAllData(stream Image) returns (stream AllImageData) {}
-
-    //TODO: Video rpcs
+    rpc GetOpenPoseImagesFromVideo(stream GetOpenPoseImageRequest) returns (stream GetOpenPoseImageResponse) {}
+    rpc GetOpenPoseDataFromVideo(stream GetOpenPoseDataRequest) returns (stream GetOpenPoseDataResponse) {}
+    rpc GetOpenPoseHandImagesFromVideo(stream GetOpenPoseHandImageRequest) returns (stream GetOpenPoseHandImageResponse) {}
+    rpc GetOpenPoseHandDataFromVideo(stream GetOpenPoseHandDataRequest) returns (stream GetOpenPoseHandDataResponse) {}
+    rpc GetOpenPoseAllFromVideo(stream GetOpenPoseAllRequest) returns (stream GetOpenPoseAllResponse) {}
 }
 
-// TODO: Use Request and Response in message names
-message AllImageData {
-    string name = 1;
-    Image image = 2;
-    PoseData pose_data = 3;
-    HandData hand_data = 4;
+message GetOpenPoseImageRequest {
+    Image image = 1;
 }
 
-message PoseData {
-    string name = 1;
-    Body25PoseKeypoints keypoints = 2;
+message GetOpenPoseImageResponse {
+    Image image = 1;
+}
+
+message GetOpenPoseDataRequest {
+    Image image = 1;
+}
+
+message GetOpenPoseDataResponse {
+    Body25PoseKeypoints keypoints = 1;
+}
+
+message GetOpenPoseHandImageRequest {
+    Image image = 1;
+}
+
+message GetOpenPoseHandImageResponse {
+    Image image = 1;
+}
+
+message GetOpenPoseHandDataRequest {
+    Image image = 1;
+}
+
+message GetOpenPoseHandDataResponse {
+    Body25HandKeypoints keypoints = 1;
+}
+
+message GetOpenPoseAllRequest {
+    Image image = 1;
+}
+
+message GetOpenPoseAllResponse {
+    Image image = 1;
+    Body25PoseKeypoints pose_keypoints = 2;
+    Body25HandKeypoints hand_keypoints = 3;
 }
 
 message Body25PoseKeypoints {
@@ -68,11 +85,6 @@ message Body25PoseKeypoints {
     Keypoint r_big_toe = 23;
     Keypoint r_small_toe = 24;
     Keypoint r_heel = 25;
-}
-
-message HandData {
-    string name = 1;
-    Body25HandKeypoints keypoints = 2;
 }
 
 message Body25HandKeypoints {
@@ -125,4 +137,3 @@ message Keypoint {
     float y = 2;
     float confidence = 3;
 }
-

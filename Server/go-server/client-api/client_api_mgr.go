@@ -51,14 +51,18 @@ func (c *ClientApiManager) StartGolfComputerVisionServer() {
 
 	var opts []grpc.ServerOption
 	c.grpcServer = grpc.NewServer(opts...)
-	cv.RegisterGolfComputerVisionServiceServer(c.grpcServer, createNewGolfComputerVisionServer(c.ctx, c.prcsr))
+	cv.RegisterComputerVisionGolfServiceServer(c.grpcServer, createNewComputerVisionGolfServer(c.ctx, c.prcsr))
 	c.grpcServer.Serve(lis)
+}
+
+func (c *ClientApiManager) StartOpenCvApiClient() {
+	c.prcsr.StartOpenCvApiClient()
 }
 
 func (c *ClientApiManager) StopGolfComputerVisionServer() {
 	c.grpcServer.GracefulStop()
 }
 
-func (c *ClientApiManager) StartOpenCVApiClient() {
-	c.prcsr.StartOpenCVApiClient()
+func (c *ClientApiManager) CloseOpenCvApiClient() {
+	c.prcsr.CloseOpenCvApiClient()
 }

@@ -28,15 +28,16 @@ var (
 	cvsportsserveraddr = flag.String("addr", "localhost:50052", "the address to connect to")
 )
 
+// TODO: 1 conn and client
 // Middle arg is a close function, should be called by calling function
-func initGolfComputerVisionServiceGrpcClient(serveraddr string) (cv.GolfComputerVisionServiceClient, func() error, error) {
+func initComputerVisionGolfServiceGrpcClient(serveraddr string) (cv.ComputerVisionGolfServiceClient, func() error, error) {
 	// Set up a connection to the cv_api server.
 	conn, err := grpc.NewClient(*cvsportsserveraddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, conn.Close, err
 	}
 	// Init ComputerVisionGolf grpc client
-	c := cv.NewGolfComputerVisionServiceClient(conn)
+	c := cv.NewComputerVisionGolfServiceClient(conn)
 	return c, conn.Close, nil
 }
 
@@ -90,35 +91,15 @@ func writeBytesToJpgFile(byteSlice []byte, path string) (func() error, error) {
 	return jpegFile.Close, nil
 }
 
-func testShowDTLPoseImageSingleImage(ctx context.Context) {
-	c, closeConn, err := initGolfComputerVisionServiceGrpcClient(*cvsportsserveraddr)
+func testShowDTLPoseImage(ctx context.Context) {
+	log.Printf("Starting testShowDTLPoseImage...")
+	c, closeConn, err := initComputerVisionGolfServiceGrpcClient(*cvsportsserveraddr)
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}
 	defer closeConn()
-	// Start goroutine that waits for return data from stream, concatenates bytes for images that are chunked
-	stream, err := c.ShowDTLPoseImage(ctx)
-	if err != nil {
-		log.Fatalf("c.GetOpenPoseImage failed: %v", err)
-	}
-	waitc := make(chan struct{})
-	imgSliceBytes := []byte{}
-	go func() {
-		for {
-			imgReturn, err := stream.Recv()
-			if err == io.EOF { // read done
-				close(waitc)
-				return
-			}
-			if err != nil {
-				log.Fatalf("Failed to receive stream: %v", err)
-			}
-			log.Printf("Received from stream")
-			imgSliceBytes = append(imgSliceBytes, imgReturn.GetBytes()...)
-		}
-	}()
 	// Send 1 image to ShowDTLPoseImage
-	faceOnPath := `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\faceon.jpg`
+	faceOnPath := `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\dtl.jpg`
 	file, closeFile, err := getFileFromPath(faceOnPath)
 	if err != nil {
 		log.Fatalf("Failed to getFileFromPath: %w", err)
@@ -128,14 +109,12 @@ func testShowDTLPoseImageSingleImage(ctx context.Context) {
 	if err != nil {
 		log.Fatalf("Failed to decodeAndEncodeFileAsJpg for original image: %w", err)
 	}
-	if err := stream.Send(&cv.Image{Name: "Image from go to python", Bytes: bytesEncodedAsJpg}); err != nil {
-		log.Fatalf("client.GetOpenPoseFaceOnImage: stream.Send() failed: %v", err)
+	response, err := c.ShowDTLPoseImage(ctx, &cv.ShowDTLPoseImageRequest{Image: &cv.Image{Name: "Image from go to python", Bytes: bytesEncodedAsJpg}})
+	if err != nil {
+		log.Fatalf("c.GetOpenPoseImage failed: %v", err)
 	}
-	stream.CloseSend()
-	log.Printf("Sent data in test_client")
-	// Once receive stream is done, goroutine finishes
-	<-waitc
-	log.Printf("Received data in test_client")
+	log.Printf("Sent and received data in testShowDTLPoseImage")
+	imgSliceBytes := response.Image.Bytes
 	jpegBytes, err := decodeAndEncodeBytesAsJpg(imgSliceBytes)
 	if err != nil {
 		log.Fatalf("Failed to decodeAndEncodeBytesAsJpg for return image: %w", err)
@@ -147,14 +126,15 @@ func testShowDTLPoseImageSingleImage(ctx context.Context) {
 	defer close()
 }
 
-func testShowDTLPoseImageVideo(ctx context.Context) {
-	c, closeConn, err := initGolfComputerVisionServiceGrpcClient(*cvsportsserveraddr)
+func testShowDTLPoseImagesFromVideo(ctx context.Context) {
+	log.Printf("Starting testShowDTLPoseImagesFromVideo")
+	c, closeConn, err := initComputerVisionGolfServiceGrpcClient(*cvsportsserveraddr)
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}
 	defer closeConn()
 	// Start goroutine that waits for return data from stream, concatenates bytes for images that are chunked
-	stream, err := c.ShowDTLPoseImage(ctx)
+	stream, err := c.ShowDTLPoseImagesFromVideo(ctx)
 	if err != nil {
 		log.Fatalf("c.GetOpenPoseImage failed: %v", err)
 	}
@@ -162,8 +142,9 @@ func testShowDTLPoseImageVideo(ctx context.Context) {
 	returnImages := [][]byte{}
 	go func() {
 		for {
-			imgReturn, err := stream.Recv()
+			response, err := stream.Recv()
 			if err == io.EOF { // read done
+				log.Printf("Read EOF")
 				close(waitc)
 				return
 			}
@@ -171,7 +152,7 @@ func testShowDTLPoseImageVideo(ctx context.Context) {
 				log.Fatalf("Failed to receive stream: %v", err)
 			}
 			log.Printf("Received from stream")
-			returnImages = append(returnImages, imgReturn.GetBytes())
+			returnImages = append(returnImages, response.Image.Bytes)
 		}
 	}()
 
@@ -210,18 +191,19 @@ func testShowDTLPoseImageVideo(ctx context.Context) {
 			if err != nil {
 				log.Fatalf("Failed to decodeAndEncodeFileAsJpg for original image: %w", err)
 			}
-			if err := stream.Send(&cv.Image{Name: fmt.Sprintf("Image %d from go to python", numImgs), Bytes: bytesEncodedAsJpg}); err != nil {
+			if err := stream.Send(&cv.ShowDTLPoseImageRequest{Image: &cv.Image{Name: fmt.Sprintf("Image %d from go to python", numImgs), Bytes: bytesEncodedAsJpg}}); err != nil {
 				log.Fatalf("client.GetOpenPoseFaceOnImage: stream.Send() failed: %v", err)
 			}
-			log.Printf("Send img # %d, size of img is %d", numImgs, len(currImgBytes))
+			log.Printf("Sent img # %d, size of img is %d", numImgs, len(currImgBytes))
 		} else {
 			xFFWasPrevByte = false
 		}
 	}
 
 	stream.CloseSend()
-	log.Printf("Sent all data in test_client")
+	log.Printf("Sent all data in testShowDTLPoseImagesFromVideo")
 	<-waitc
+	log.Printf("Received all data in testShowDTLPoseImagesFromVideo")
 
 	// iterate over all processed images and output to jpgs
 	for idx, imgSliceBytes := range returnImages {
@@ -242,9 +224,9 @@ func main() {
 	ctx := context.Background()
 	flag.Parse()
 
-	testShowDTLPoseImageSingleImage(ctx)
+	testShowDTLPoseImage(ctx)
 
-	testShowDTLPoseImageVideo(ctx)
+	testShowDTLPoseImagesFromVideo(ctx)
 
 	log.Printf("Ending go test_client")
 }
