@@ -36,45 +36,49 @@ func NewOpenCvApiManager() *OpenCvApiManager {
 	return o
 }
 
-func (o *OpenCvApiManager) StartOpenCvApiClient() {
+func (o *OpenCvApiManager) StartOpenCvApiClient() error {
 	log.Printf("Starting OpenCvApiClient")
 	flag.Parse()
 	// Set up a connection to the opencvandpose server.
 	var err error
 	o.conn, err = grpc.NewClient(*opencvaddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		return fmt.Errorf("could not connect grpc client: %w", err)
 	}
 	// Init OpenCvAndPoseService grpc client
 	o.c = cv.NewOpenCVAndPoseServiceClient(o.conn)
+	return nil
 }
 
-func (o *OpenCvApiManager) CloseOpenCvApiClient() {
+func (o *OpenCvApiManager) CloseOpenCvApiClient() error {
 	log.Printf("Closing OpenCvApiClient")
 	o.conn.Close()
+	return nil
 }
 
-func (o *OpenCvApiManager) GetOpenPoseImage(img []byte) *cv.GetOpenPoseImageResponse {
+func (o *OpenCvApiManager) GetOpenPoseImage(img []byte) (*cv.GetOpenPoseImageResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	getOpenPoseImageRequest := &cv.GetOpenPoseImageRequest{Image: &cv.Image{Name: "", Bytes: img}}
 	getOpenPoseImageResponse, err := o.c.GetOpenPoseImage(ctx, getOpenPoseImageRequest)
 	if err != nil {
-		log.Fatalf("c.GetOpenPoseImage failed: %v", err)
+		return nil, fmt.Errorf("opencv/openpose client GetOpenPoseImage failed: %w", err)
 	}
-	return getOpenPoseImageResponse
+	return getOpenPoseImageResponse, nil
 }
 
-func (o *OpenCvApiManager) GetOpenPoseImagesFromFromVideo(images [][]byte) []*cv.GetOpenPoseImageResponse {
-	// Create rpc stream for GetOpenPoseImage
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+func (o *OpenCvApiManager) GetOpenPoseImagesFromFromVideo(images [][]byte) ([]*cv.GetOpenPoseImageResponse, error) {
+	// TODO: Get rid of timeout?
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 	stream, err := o.c.GetOpenPoseImagesFromVideo(ctx)
 	if err != nil {
-		log.Fatalf("c.GetOpenPoseImagesFromVideo initial call failed: %v", err)
+		return nil, fmt.Errorf("opencv/open pose client GetOpenPoseImagesFromVideo get stream failed: %w", err)
 	}
+
 	// Start goroutine that waits for return images from stream
 	waitc := make(chan struct{})
+	errChan := make(chan error)
 	responses := []*cv.GetOpenPoseImageResponse{}
 	go func() {
 		responseIdx := 0
@@ -83,14 +87,15 @@ func (o *OpenCvApiManager) GetOpenPoseImagesFromFromVideo(images [][]byte) []*cv
 			response, err := stream.Recv()
 			if err == io.EOF { // read done
 				close(waitc)
+				close(errChan)
 				return
 			}
 			if err != nil {
-				log.Fatalf("Failed to receive stream for response #%d: %v", responseIdx, err)
+				errChan <- fmt.Errorf("failed to receive stream for response #%d: %w", responseIdx, err)
+				return
 			}
 			log.Printf("Received from stream, response #%d", responseIdx)
 			responses = append(responses, response)
-
 		}
 	}()
 
@@ -100,28 +105,14 @@ func (o *OpenCvApiManager) GetOpenPoseImagesFromFromVideo(images [][]byte) []*cv
 			log.Fatalf("getOpenPoseImagesFromVideo for img #%d stream.Send() failed: %v", idx, err)
 		}
 	}
-
 	stream.CloseSend()
 	log.Printf("Sent all images from cv_api_mgr")
+
 	// Once receive stream is done, goroutine finishes
 	<-waitc
+	if <-errChan != nil {
+		return nil, fmt.Errorf("could not get all responses: %w", err)
+	}
 	log.Printf("Received all images in cv_api_mgr")
-
-	// TODO: Probably dont have to decode and encode (python wrapper will have done this)
-	// Decode and encode images as jpg
-	/*processedImages := [][]byte{}
-	for idx, imgReturn := range imagesReturned {
-		imgReturnDecode, err := jpeg.Decode(bytes.NewReader(imgReturn))
-		if err != nil {
-			log.Fatalf("failed to decode return image #%d: %w", idx, err)
-		}
-		buf := new(bytes.Buffer) //var opts jpeg.Options // opts.Quality = 80
-		err = jpeg.Encode(buf, imgReturnDecode, nil)
-		if err != nil {
-			log.Fatalf("Failed to encode return image #%d to jpg: %v", idx, err)
-		}
-		jpegBytes := buf.Bytes()
-		processedImages = append(processedImages, jpegBytes)
-	}*/
-	return responses
+	return responses, nil
 }

@@ -25,13 +25,12 @@ func createNewComputerVisionGolfServer(ctx context.Context, processor *processor
 }
 
 func (c *computerVisionGolfServer) ShowDTLPoseImage(ctx context.Context, request *cv.ShowDTLPoseImageRequest) (*cv.ShowDTLPoseImageResponse, error) {
-	response := c.prcsr.ShowDTLPoseImage(request)
-	return response, nil
+	return c.prcsr.ShowDTLPoseImage(request)
+
 }
 
 func (c *computerVisionGolfServer) ShowFaceOnPoseImage(ctx context.Context, request *cv.ShowFaceOnPoseImageRequest) (*cv.ShowFaceOnPoseImageResponse, error) {
-	response := c.prcsr.ShowFaceOnPoseImage(request)
-	return response, nil
+	return c.prcsr.ShowFaceOnPoseImage(request)
 }
 
 func (c *computerVisionGolfServer) IdentifyDTLPoseDifferences(ctx context.Context, request *cv.IdentifyDTLPoseDifferencesRequest) (*cv.IdentifyDTLPoseDifferencesResponse, error) {
@@ -54,7 +53,10 @@ func (c *computerVisionGolfServer) ShowDTLPoseImagesFromVideo(stream cv.Computer
 		}
 		requests = append(requests, in)
 	}
-	responses := c.prcsr.ShowDTLPoseImagesFromVideo(requests)
+	responses, err := c.prcsr.ShowDTLPoseImagesFromVideo(requests)
+	if err != nil {
+		return err
+	}
 	for _, response := range responses {
 		if err := stream.Send(response); err != nil {
 			return err
@@ -68,14 +70,17 @@ func (c *computerVisionGolfServer) ShowFaceOnPoseImagesFromVideo(stream cv.Compu
 	for {
 		in, err := stream.Recv()
 		if err == io.EOF {
-			return nil
+			break
 		}
 		if err != nil {
 			return err
 		}
 		requests = append(requests, in)
 	}
-	responses := c.prcsr.ShowFaceOnPoseImagesFromVideo(requests)
+	responses, err := c.prcsr.ShowFaceOnPoseImagesFromVideo(requests)
+	if err != nil {
+		return err
+	}
 	for _, response := range responses {
 		if err := stream.Send(response); err != nil {
 			return err

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -11,17 +12,31 @@ import (
 )
 
 func startServices(clientApiMgr *clientapimgr.ClientApiManager) error {
-	go clientApiMgr.StartGolfComputerVisionServer()
+	go func() {
+		err := clientApiMgr.StartComputerVisionGolfServer()
+		if err != nil {
+			log.Fatalf("Could not start computervisiongolfserver %w", err)
+		}
+	}()
 	log.Printf("Started Golf Computer Vision Server")
-	go clientApiMgr.StartOpenCvApiClient()
+	err := clientApiMgr.StartOpenCvApiClient()
+	if err != nil {
+		return fmt.Errorf("could not start opencvapiclient %w", err)
+	}
 	log.Printf("Started OpenCV Api client")
 	return nil
 }
 
 func stopServices(clientApiMgr *clientapimgr.ClientApiManager) error {
-	clientApiMgr.StopGolfComputerVisionServer()
+	err := clientApiMgr.StopGolfComputerVisionServer()
+	if err != nil {
+		return fmt.Errorf("could not stop computervisiongolfserver %w", err)
+	}
 	log.Printf("Stopped Golf Computer Vision Server")
-	clientApiMgr.CloseOpenCvApiClient()
+	err = clientApiMgr.CloseOpenCvApiClient()
+	if err != nil {
+		return fmt.Errorf("could not close opencvapiclient %w", err)
+	}
 	log.Printf("Closed OpenCv Api client")
 	return nil
 }
@@ -30,7 +45,10 @@ func main() {
 	ctx := context.Background()
 	clientApiMgr := clientapimgr.NewClientApiManager(ctx)
 	log.Printf("Starting services")
-	startServices(clientApiMgr)
+	err := startServices(clientApiMgr)
+	if err != nil {
+		log.Fatalf("Could not start services: %w", err)
+	}
 	// Set up a channel to listen for OS signals
 	stopChan := make(chan os.Signal, 1)
 	signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
@@ -38,5 +56,8 @@ func main() {
 	log.Printf("Waiting for sigint to stop services...")
 	<-stopChan
 	log.Printf("Stopping services")
-	stopServices(clientApiMgr)
+	err = stopServices(clientApiMgr)
+	if err != nil {
+		log.Fatalf("Could not stop services: %w", err)
+	}
 }

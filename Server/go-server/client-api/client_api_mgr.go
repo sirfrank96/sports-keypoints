@@ -42,27 +42,28 @@ func NewClientApiManager(ctx context.Context) *ClientApiManager {
 	return c
 }
 
-func (c *ClientApiManager) StartGolfComputerVisionServer() {
+func (c *ClientApiManager) StartComputerVisionGolfServer() error {
 	flag.Parse()
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		return fmt.Errorf("failed to listen: %w", err)
 	}
-
 	var opts []grpc.ServerOption
 	c.grpcServer = grpc.NewServer(opts...)
 	cv.RegisterComputerVisionGolfServiceServer(c.grpcServer, createNewComputerVisionGolfServer(c.ctx, c.prcsr))
 	c.grpcServer.Serve(lis)
+	return nil
 }
 
-func (c *ClientApiManager) StartOpenCvApiClient() {
-	c.prcsr.StartOpenCvApiClient()
+func (c *ClientApiManager) StartOpenCvApiClient() error {
+	return c.prcsr.StartOpenCvApiClient()
 }
 
-func (c *ClientApiManager) StopGolfComputerVisionServer() {
+func (c *ClientApiManager) StopGolfComputerVisionServer() error {
 	c.grpcServer.GracefulStop()
+	return nil
 }
 
-func (c *ClientApiManager) CloseOpenCvApiClient() {
-	c.prcsr.CloseOpenCvApiClient()
+func (c *ClientApiManager) CloseOpenCvApiClient() error {
+	return c.prcsr.CloseOpenCvApiClient()
 }
