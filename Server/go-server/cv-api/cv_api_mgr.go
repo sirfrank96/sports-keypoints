@@ -67,8 +67,19 @@ func (o *OpenCvApiManager) GetOpenPoseImage(img []byte) (*cv.GetOpenPoseImageRes
 	return getOpenPoseImageResponse, nil
 }
 
+func (o *OpenCvApiManager) GetOpenPoseData(img []byte) (*cv.GetOpenPoseDataResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	getOpenPoseDataRequest := &cv.GetOpenPoseDataRequest{Image: &cv.Image{Name: "", Bytes: img}}
+	getOpenPoseDataResponse, err := o.c.GetOpenPoseData(ctx, getOpenPoseDataRequest)
+	if err != nil {
+		return nil, fmt.Errorf("opencv/openpose client GetOpenPoseData failed: %w", err)
+	}
+	return getOpenPoseDataResponse, nil
+}
+
 func (o *OpenCvApiManager) GetOpenPoseImagesFromFromVideo(images [][]byte) ([]*cv.GetOpenPoseImageResponse, error) {
-	// TODO: Get rid of timeout?
+	// TODO: Get rid of timeout? // or configure stream vs nonstream timeouts
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 	stream, err := o.c.GetOpenPoseImagesFromVideo(ctx)

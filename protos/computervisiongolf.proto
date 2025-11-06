@@ -6,6 +6,8 @@ import "common.proto";
 service ComputerVisionGolfService {
     rpc showDTLPoseImage(ShowDTLPoseImageRequest) returns (ShowDTLPoseImageResponse) {}
     rpc showFaceOnPoseImage(ShowFaceOnPoseImageRequest) returns (ShowFaceOnPoseImageResponse) {}
+    rpc getDTLPoseSetupPoints(GetDTLPoseSetupPointsRequest) returns (GetDTLPoseSetupPointsResponse) {}
+    rpc getFaceOnPoseSetupPoints(GetFaceOnPoseSetupPointsRequest) returns (GetFaceOnPoseSetupPointsResponse) {}
     rpc identifyDTLPoseDifferences(IdentifyDTLPoseDifferencesRequest) returns (IdentifyDTLPoseDifferencesResponse) {}
     rpc identifyFaceOnPoseDifferences(IdentifyFaceOnPoseDifferencesRequest) returns (IdentifyFaceOnPoseDifferencesResponse) {}
     //rpc identifyDTLGripDifferences (ImagePair) returns {}
@@ -42,8 +44,26 @@ message ShowFaceOnPoseImageResponse {
     Image image = 2;
 }
 
+message GetDTLPoseSetupPointsRequest {
+    CalibratedImage calibrated_image = 1;
+}
+
+message GetDTLPoseSetupPointsResponse {
+    DTLGolfSetupPoints setup_points = 1;
+}
+
+message GetFaceOnPoseSetupPointsRequest {
+    CalibratedImage calibrated_image = 1;
+}
+
+message GetFaceOnPoseSetupPointsResponse {
+    FaceOnGolfSetupPoints setup_points = 1;
+}
+
+
 message IdentifyDTLPoseDifferencesRequest {
-    ImagePair pair = 1;
+    CalibratedImage original_calibrated_image = 1;
+    CalibratedImage new_calibrated_image = 2;
     //float angle_tolerance = 2; // how much difference there has to be in angle to report as a difference (might have to be tolerance for each field with some default values)
 }
 
@@ -54,7 +74,8 @@ message IdentifyDTLPoseDifferencesResponse {
 }
 
 message IdentifyFaceOnPoseDifferencesRequest {
-    ImagePair pair = 1;
+    CalibratedImage original_calibrated_image = 1;
+    CalibratedImage new_calibrated_image = 2;
     //float angle_tolerance = 2;
 }
 
@@ -62,10 +83,15 @@ message IdentifyFaceOnPoseDifferencesResponse {
     FaceOnGolfSetupPoints setup_points_original = 1;
     FaceOnGolfSetupPoints setup_points_new = 2;
     FaceOnGolfSetupPoints setup_points_diff = 3;
-}   
+}
+
+message CalibratedImage {
+    Image calibration_image = 1; // stand straight up looking at camera, with feet out perpendicular to camera (determines horizontal and vertical axes and able to 3d)
+    Image image = 2;
+}
 
 message DTLGolfSetupPoints {
-    float spine_angle = 1;
+    double spine_angle = 1;
     //feet_alignment
     //shoulder_alignment
     //waist_alignment
@@ -78,7 +104,7 @@ message DTLGolfSetupPoints {
 }
 
 message FaceOnGolfSetupPoints {
-    float side_bend = 1;
+    double side_bend = 1;
     //l_foot_flare
     //r_foot_flare
     //stance_width

@@ -133,7 +133,7 @@ message Body25HandKeypoints {
 }
 
 message Keypoint {
-    float x = 1;
-    float y = 2;
-    float confidence = 3;
+    double x = 1;
+    double y = 2;
+    double confidence = 3;
 }

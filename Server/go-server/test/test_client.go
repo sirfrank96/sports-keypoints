@@ -99,8 +99,8 @@ func testShowDTLPoseImage(ctx context.Context) {
 	}
 	defer closeConn()
 	// Send 1 image to ShowDTLPoseImage
-	faceOnPath := `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\dtl.jpg`
-	file, closeFile, err := getFileFromPath(faceOnPath)
+	dtlPath := `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\dtl.jpg`
+	file, closeFile, err := getFileFromPath(dtlPath)
 	if err != nil {
 		log.Fatalf("Failed to getFileFromPath: %w", err)
 	}
@@ -119,7 +119,42 @@ func testShowDTLPoseImage(ctx context.Context) {
 	if err != nil {
 		log.Fatalf("Failed to decodeAndEncodeBytesAsJpg for return image: %w", err)
 	}
-	close, err := writeBytesToJpgFile(jpegBytes, `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\test.jpg`)
+	close, err := writeBytesToJpgFile(jpegBytes, `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\dtl.jpg`)
+	if err != nil {
+		log.Fatalf("Failed to writeBytesToJpgFile: %w", err)
+	}
+	defer close()
+}
+
+func testShowFaceOnPoseImage(ctx context.Context) {
+	log.Printf("Starting testShowFaceOnPoseImage...")
+	c, closeConn, err := initComputerVisionGolfServiceGrpcClient(*cvsportsserveraddr)
+	if err != nil {
+		log.Fatalf("Failed to connect: %v", err)
+	}
+	defer closeConn()
+	// Send 1 image to ShowDTLPoseImage
+	faceOnPath := `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\faceon.jpg`
+	file, closeFile, err := getFileFromPath(faceOnPath)
+	if err != nil {
+		log.Fatalf("Failed to getFileFromPath: %w", err)
+	}
+	defer closeFile()
+	bytesEncodedAsJpg, err := decodeAndEncodeFileAsJpg(file)
+	if err != nil {
+		log.Fatalf("Failed to decodeAndEncodeFileAsJpg for original image: %w", err)
+	}
+	response, err := c.ShowFaceOnPoseImage(ctx, &cv.ShowFaceOnPoseImageRequest{Image: &cv.Image{Name: "Image from go to python", Bytes: bytesEncodedAsJpg}})
+	if err != nil {
+		log.Fatalf("c.GetOpenPoseImage failed: %v", err)
+	}
+	log.Printf("Sent and received data in testShowDTLPoseImage")
+	imgSliceBytes := response.Image.Bytes
+	jpegBytes, err := decodeAndEncodeBytesAsJpg(imgSliceBytes)
+	if err != nil {
+		log.Fatalf("Failed to decodeAndEncodeBytesAsJpg for return image: %w", err)
+	}
+	close, err := writeBytesToJpgFile(jpegBytes, `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\faceon.jpg`)
 	if err != nil {
 		log.Fatalf("Failed to writeBytesToJpgFile: %w", err)
 	}
@@ -219,14 +254,93 @@ func testShowDTLPoseImagesFromVideo(ctx context.Context) {
 	}
 }
 
+func testGetFaceOnPoseSetupPoints(ctx context.Context) {
+	log.Printf("Starting testGetFaceOnPoseSetupPoints...")
+	c, closeConn, err := initComputerVisionGolfServiceGrpcClient(*cvsportsserveraddr)
+	if err != nil {
+		log.Fatalf("Failed to connect: %v", err)
+	}
+	defer closeConn()
+
+	// Get Calibration Image
+	calibrationImgPath := `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\faceon-goodcalibration.jpg`
+	calibrationfile, closeFile, err := getFileFromPath(calibrationImgPath)
+	if err != nil {
+		log.Fatalf("Failed to getFileFromPath calibrationfile %w", err)
+	}
+	defer closeFile()
+	calibrationBytesEncodedAsJpg, err := decodeAndEncodeFileAsJpg(calibrationfile)
+	if err != nil {
+		log.Fatalf("Failed to decodeAndEncodeFileAsJpg for calibration image: %w", err)
+	}
+
+	// Get Neutral Side Bend Image
+	neutralImgPath := `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\faceon.jpg`
+	neutralFile, closeFile, err := getFileFromPath(neutralImgPath)
+	if err != nil {
+		log.Fatalf("Failed to getFileFromPath neutralfile: %w", err)
+	}
+	defer closeFile()
+	neutralBytesEncodedAsJpg, err := decodeAndEncodeFileAsJpg(neutralFile)
+	if err != nil {
+		log.Fatalf("Failed to decodeAndEncodeFileAsJpg for neutral image: %w", err)
+	}
+	getFaceOnPoseSetupPointsNeutralResponse, err := c.GetFaceOnPoseSetupPoints(ctx, &cv.GetFaceOnPoseSetupPointsRequest{CalibratedImage: &cv.CalibratedImage{CalibrationImage: &cv.Image{Name: "Calibration img", Bytes: calibrationBytesEncodedAsJpg}, Image: &cv.Image{Name: "Neutral side bend img", Bytes: neutralBytesEncodedAsJpg}}})
+	if err != nil {
+		log.Fatalf("c.GetFaceOnPoseSetupPoints failed for neutral image: %v", err)
+	}
+	log.Printf("Sent and received data for neutral side bend GetFaceonPoseSetupPoints")
+	log.Printf("Neutral side bend is %f", getFaceOnPoseSetupPointsNeutralResponse.SetupPoints.SideBend)
+
+	// Get Left Side Bend Image
+	leftSideBendImgPath := `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\faceon-leftsidebend.jpg`
+	leftSideBendFile, closeFile, err := getFileFromPath(leftSideBendImgPath)
+	if err != nil {
+		log.Fatalf("Failed to getFileFromPath leftSideBendFile: %w", err)
+	}
+	defer closeFile()
+	leftSideBendBytesEncodedAsJpg, err := decodeAndEncodeFileAsJpg(leftSideBendFile)
+	if err != nil {
+		log.Fatalf("Failed to decodeAndEncodeFileAsJpg for left side bend image: %w", err)
+	}
+	getFaceOnPoseSetupPointsLeftSideBendResponse, err := c.GetFaceOnPoseSetupPoints(ctx, &cv.GetFaceOnPoseSetupPointsRequest{CalibratedImage: &cv.CalibratedImage{CalibrationImage: &cv.Image{Name: "Calibration img", Bytes: calibrationBytesEncodedAsJpg}, Image: &cv.Image{Name: "Left side bend img", Bytes: leftSideBendBytesEncodedAsJpg}}})
+	if err != nil {
+		log.Fatalf("c.GetFaceOnPoseSetupPoints failed for left side bend image: %v", err)
+	}
+	log.Printf("Sent and received data for left side bend testGetFaceOnPoseSetupPoints")
+	log.Printf("Left side bend is %f", getFaceOnPoseSetupPointsLeftSideBendResponse.SetupPoints.SideBend)
+
+	// Get Right Side Bend Image
+	rightSideBendImgPath := `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\faceon-rightsidebend.jpg`
+	rightSideBendFile, closeFile, err := getFileFromPath(rightSideBendImgPath)
+	if err != nil {
+		log.Fatalf("Failed to getFileFromPath rightSideBendFile: %w", err)
+	}
+	defer closeFile()
+	rightSideBendBytesEncodedAsJpg, err := decodeAndEncodeFileAsJpg(rightSideBendFile)
+	if err != nil {
+		log.Fatalf("Failed to decodeAndEncodeFileAsJpg for right side bend image: %w", err)
+	}
+	getFaceOnPoseSetupPointsRightSideBendResponse, err := c.GetFaceOnPoseSetupPoints(ctx, &cv.GetFaceOnPoseSetupPointsRequest{CalibratedImage: &cv.CalibratedImage{CalibrationImage: &cv.Image{Name: "Calibration img", Bytes: calibrationBytesEncodedAsJpg}, Image: &cv.Image{Name: "Right side bend img", Bytes: rightSideBendBytesEncodedAsJpg}}})
+	if err != nil {
+		log.Fatalf("c.GetFaceOnPoseSetupPoints failed for right side bend image: %v", err)
+	}
+	log.Printf("Sent and received data for right side bend testGetFaceOnPoseSetupPoints")
+	log.Printf("Right side bend is %f", getFaceOnPoseSetupPointsRightSideBendResponse.SetupPoints.SideBend)
+}
+
 func main() {
 	log.Printf("Starting test_client")
 	ctx := context.Background()
 	flag.Parse()
 
-	testShowDTLPoseImage(ctx)
+	//testShowDTLPoseImage(ctx)
 
-	testShowDTLPoseImagesFromVideo(ctx)
+	//testShowFaceOnPoseImage(ctx)
+
+	//testShowDTLPoseImagesFromVideo(ctx)
+
+	testGetFaceOnPoseSetupPoints(ctx)
 
 	log.Printf("Ending go test_client")
 }

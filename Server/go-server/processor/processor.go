@@ -52,6 +52,41 @@ func (p *Processor) ShowFaceOnPoseImage(request *cv.ShowFaceOnPoseImageRequest) 
 	return response, nil
 }
 
+func (p *Processor) GetDTLPoseSetupPoints(request *cv.GetDTLPoseSetupPointsRequest) (*cv.GetDTLPoseSetupPointsResponse, error) {
+	return nil, nil
+}
+
+func (p *Processor) GetFaceOnPoseSetupPoints(request *cv.GetFaceOnPoseSetupPointsRequest) (*cv.GetFaceOnPoseSetupPointsResponse, error) {
+	getOpenPoseDataResponseCalibration, err := p.ocvmgr.GetOpenPoseData(request.CalibratedImage.CalibrationImage.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	calibratedAxes, err := checkIfCalibrationImageIsGood(getOpenPoseDataResponseCalibration.Keypoints)
+	if err != nil {
+		return nil, err
+	}
+	getOpenPoseDataResponseImg, err := p.ocvmgr.GetOpenPoseData(request.CalibratedImage.Image.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	sideBend := getSideBend(getOpenPoseDataResponseImg.Keypoints, calibratedAxes)
+	log.Printf("Side bend is %f", sideBend)
+	response := &cv.GetFaceOnPoseSetupPointsResponse{
+		SetupPoints: &cv.FaceOnGolfSetupPoints{
+			SideBend: sideBend,
+		},
+	}
+	return response, nil
+}
+
+func (p *Processor) IdentifyDTLPoseDifferences(request *cv.IdentifyDTLPoseDifferencesRequest) (*cv.IdentifyDTLPoseDifferencesResponse, error) {
+	return nil, nil
+}
+
+func (p *Processor) IdentifyFaceOnPoseDifferences(request *cv.IdentifyFaceOnPoseDifferencesRequest) (*cv.IdentifyFaceOnPoseDifferencesResponse, error) {
+	return nil, nil
+}
+
 func (p *Processor) ShowDTLPoseImagesFromVideo(requests []*cv.ShowDTLPoseImageRequest) ([]*cv.ShowDTLPoseImageResponse, error) {
 	images := [][]byte{}
 	for _, request := range requests {
