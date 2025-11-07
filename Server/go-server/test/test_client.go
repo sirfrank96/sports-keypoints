@@ -285,7 +285,7 @@ func testGetFaceOnPoseSetupPoints(ctx context.Context) {
 	if err != nil {
 		log.Fatalf("Failed to decodeAndEncodeFileAsJpg for neutral image: %w", err)
 	}
-	getFaceOnPoseSetupPointsNeutralResponse, err := c.GetFaceOnPoseSetupPoints(ctx, &cv.GetFaceOnPoseSetupPointsRequest{CalibratedImage: &cv.CalibratedImage{CalibrationImage: &cv.Image{Name: "Calibration img", Bytes: calibrationBytesEncodedAsJpg}, Image: &cv.Image{Name: "Neutral side bend img", Bytes: neutralBytesEncodedAsJpg}}})
+	getFaceOnPoseSetupPointsNeutralResponse, err := c.GetFaceOnPoseSetupPoints(ctx, &cv.GetFaceOnPoseSetupPointsRequest{CalibratedImage: &cv.CalibratedFaceOnImage{CalibrationImageAxes: &cv.Image{Name: "Calibration img", Bytes: calibrationBytesEncodedAsJpg}, Image: &cv.Image{Name: "Neutral side bend img", Bytes: neutralBytesEncodedAsJpg}}})
 	if err != nil {
 		log.Fatalf("c.GetFaceOnPoseSetupPoints failed for neutral image: %v", err)
 	}
@@ -303,7 +303,7 @@ func testGetFaceOnPoseSetupPoints(ctx context.Context) {
 	if err != nil {
 		log.Fatalf("Failed to decodeAndEncodeFileAsJpg for left side bend image: %w", err)
 	}
-	getFaceOnPoseSetupPointsLeftSideBendResponse, err := c.GetFaceOnPoseSetupPoints(ctx, &cv.GetFaceOnPoseSetupPointsRequest{CalibratedImage: &cv.CalibratedImage{CalibrationImage: &cv.Image{Name: "Calibration img", Bytes: calibrationBytesEncodedAsJpg}, Image: &cv.Image{Name: "Left side bend img", Bytes: leftSideBendBytesEncodedAsJpg}}})
+	getFaceOnPoseSetupPointsLeftSideBendResponse, err := c.GetFaceOnPoseSetupPoints(ctx, &cv.GetFaceOnPoseSetupPointsRequest{CalibratedImage: &cv.CalibratedFaceOnImage{CalibrationImageAxes: &cv.Image{Name: "Calibration img", Bytes: calibrationBytesEncodedAsJpg}, Image: &cv.Image{Name: "Left side bend img", Bytes: leftSideBendBytesEncodedAsJpg}}})
 	if err != nil {
 		log.Fatalf("c.GetFaceOnPoseSetupPoints failed for left side bend image: %v", err)
 	}
@@ -321,7 +321,7 @@ func testGetFaceOnPoseSetupPoints(ctx context.Context) {
 	if err != nil {
 		log.Fatalf("Failed to decodeAndEncodeFileAsJpg for right side bend image: %w", err)
 	}
-	getFaceOnPoseSetupPointsRightSideBendResponse, err := c.GetFaceOnPoseSetupPoints(ctx, &cv.GetFaceOnPoseSetupPointsRequest{CalibratedImage: &cv.CalibratedImage{CalibrationImage: &cv.Image{Name: "Calibration img", Bytes: calibrationBytesEncodedAsJpg}, Image: &cv.Image{Name: "Right side bend img", Bytes: rightSideBendBytesEncodedAsJpg}}})
+	getFaceOnPoseSetupPointsRightSideBendResponse, err := c.GetFaceOnPoseSetupPoints(ctx, &cv.GetFaceOnPoseSetupPointsRequest{CalibratedImage: &cv.CalibratedFaceOnImage{CalibrationImageAxes: &cv.Image{Name: "Calibration img", Bytes: calibrationBytesEncodedAsJpg}, Image: &cv.Image{Name: "Right side bend img", Bytes: rightSideBendBytesEncodedAsJpg}}})
 	if err != nil {
 		log.Fatalf("c.GetFaceOnPoseSetupPoints failed for right side bend image: %v", err)
 	}
@@ -349,7 +349,7 @@ func testGetFaceOnPoseSetupPointsBadCalibration(ctx context.Context) {
 		log.Fatalf("Failed to decodeAndEncodeFileAsJpg for bad calibration image: %w", err)
 	}
 
-	_, err = c.GetFaceOnPoseSetupPoints(ctx, &cv.GetFaceOnPoseSetupPointsRequest{CalibratedImage: &cv.CalibratedImage{CalibrationImage: &cv.Image{Name: "Calibration img", Bytes: calibrationBytesEncodedAsJpg}, Image: nil}})
+	_, err = c.GetFaceOnPoseSetupPoints(ctx, &cv.GetFaceOnPoseSetupPointsRequest{CalibratedImage: &cv.CalibratedFaceOnImage{CalibrationImageAxes: &cv.Image{Name: "Calibration img", Bytes: calibrationBytesEncodedAsJpg}, Image: nil}})
 	if err != nil {
 		log.Printf("c.GetFaceOnPoseSetupPointsBadCalibration failed successfully: %v", err)
 	} else {
@@ -388,7 +388,7 @@ func testGetFaceOnPoseSetupPointsTiltedCalibration(ctx context.Context) {
 	if err != nil {
 		log.Fatalf("Failed to decodeAndEncodeFileAsJpg for tilted neutral image: %w", err)
 	}
-	getFaceOnPoseSetupPointsNeutralResponse, err := c.GetFaceOnPoseSetupPoints(ctx, &cv.GetFaceOnPoseSetupPointsRequest{CalibratedImage: &cv.CalibratedImage{CalibrationImage: &cv.Image{Name: "Calibration img", Bytes: calibrationBytesEncodedAsJpg}, Image: &cv.Image{Name: "Neutral side bend img", Bytes: neutralBytesEncodedAsJpg}}})
+	getFaceOnPoseSetupPointsNeutralResponse, err := c.GetFaceOnPoseSetupPoints(ctx, &cv.GetFaceOnPoseSetupPointsRequest{CalibratedImage: &cv.CalibratedFaceOnImage{CalibrationImageAxes: &cv.Image{Name: "Calibration img", Bytes: calibrationBytesEncodedAsJpg}, Image: &cv.Image{Name: "Neutral side bend img", Bytes: neutralBytesEncodedAsJpg}}})
 	if err != nil {
 		log.Fatalf("c.GetFaceOnPoseSetupPoints failed for tilted neutral image: %v", err)
 	}
@@ -406,7 +406,7 @@ func testGetFaceOnPoseSetupPointsTiltedCalibration(ctx context.Context) {
 	if err != nil {
 		log.Fatalf("Failed to decodeAndEncodeFileAsJpg for tilted left side bend image: %w", err)
 	}
-	getFaceOnPoseSetupPointsLeftSideBendResponse, err := c.GetFaceOnPoseSetupPoints(ctx, &cv.GetFaceOnPoseSetupPointsRequest{CalibratedImage: &cv.CalibratedImage{CalibrationImage: &cv.Image{Name: "Calibration img", Bytes: calibrationBytesEncodedAsJpg}, Image: &cv.Image{Name: "Left side bend img", Bytes: leftSideBendBytesEncodedAsJpg}}})
+	getFaceOnPoseSetupPointsLeftSideBendResponse, err := c.GetFaceOnPoseSetupPoints(ctx, &cv.GetFaceOnPoseSetupPointsRequest{CalibratedImage: &cv.CalibratedFaceOnImage{CalibrationImageAxes: &cv.Image{Name: "Calibration img", Bytes: calibrationBytesEncodedAsJpg}, Image: &cv.Image{Name: "Left side bend img", Bytes: leftSideBendBytesEncodedAsJpg}}})
 	if err != nil {
 		log.Fatalf("c.GetFaceOnPoseSetupPoints failed for tilted left side bend image: %v", err)
 	}
@@ -424,12 +424,147 @@ func testGetFaceOnPoseSetupPointsTiltedCalibration(ctx context.Context) {
 	if err != nil {
 		log.Fatalf("Failed to decodeAndEncodeFileAsJpg for tilted right side bend image: %w", err)
 	}
-	getFaceOnPoseSetupPointsRightSideBendResponse, err := c.GetFaceOnPoseSetupPoints(ctx, &cv.GetFaceOnPoseSetupPointsRequest{CalibratedImage: &cv.CalibratedImage{CalibrationImage: &cv.Image{Name: "Calibration img", Bytes: calibrationBytesEncodedAsJpg}, Image: &cv.Image{Name: "Right side bend img", Bytes: rightSideBendBytesEncodedAsJpg}}})
+	getFaceOnPoseSetupPointsRightSideBendResponse, err := c.GetFaceOnPoseSetupPoints(ctx, &cv.GetFaceOnPoseSetupPointsRequest{CalibratedImage: &cv.CalibratedFaceOnImage{CalibrationImageAxes: &cv.Image{Name: "Calibration img", Bytes: calibrationBytesEncodedAsJpg}, Image: &cv.Image{Name: "Right side bend img", Bytes: rightSideBendBytesEncodedAsJpg}}})
 	if err != nil {
 		log.Fatalf("c.GetFaceOnPoseSetupPoints failed for tilted right side bend image: %v", err)
 	}
 	log.Printf("Sent and received data for right side bend testGetFaceOnPoseSetupPointsTiltedCalibration")
 	log.Printf("Tilted right side bend is %f", getFaceOnPoseSetupPointsRightSideBendResponse.SetupPoints.SideBend)
+}
+
+func testGetDTLPoseSetupPoints(ctx context.Context) {
+	log.Printf("Starting testGetDTLPoseSetupPoints...")
+	c, closeConn, err := initComputerVisionGolfServiceGrpcClient(*cvsportsserveraddr)
+	if err != nil {
+		log.Fatalf("Failed to connect: %v", err)
+	}
+	defer closeConn()
+
+	// Get Calibration Axes Image
+	calibrationImgAxesPath := `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\dtl-goodcalibrationaxes.jpg`
+	calibrationAxesFile, closeFile, err := getFileFromPath(calibrationImgAxesPath)
+	if err != nil {
+		log.Fatalf("Failed to getFileFromPath calibration axes file %w", err)
+	}
+	defer closeFile()
+	calibrationAxesBytesEncodedAsJpg, err := decodeAndEncodeFileAsJpg(calibrationAxesFile)
+	if err != nil {
+		log.Fatalf("Failed to decodeAndEncodeFileAsJpg for calibration axes image: %w", err)
+	}
+
+	// Get Calibration Vanishing Point Image
+	calibrationImgVanishingPath := `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\dtl-goodcalibrationvanishingpoint.jpg`
+	calibrationVanishingFile, closeFile, err := getFileFromPath(calibrationImgVanishingPath)
+	if err != nil {
+		log.Fatalf("Failed to getFileFromPath calibration vanishing file %w", err)
+	}
+	defer closeFile()
+	calibrationVanishingBytesEncodedAsJpg, err := decodeAndEncodeFileAsJpg(calibrationVanishingFile)
+	if err != nil {
+		log.Fatalf("Failed to decodeAndEncodeFileAsJpg for calibration vanishing image: %w", err)
+	}
+
+	// Get Normal spine angle
+	normalImgPath := `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\dtl-normal.jpg`
+	normalFile, closeFile, err := getFileFromPath(normalImgPath)
+	if err != nil {
+		log.Fatalf("Failed to getFileFromPath normal file: %w", err)
+	}
+	defer closeFile()
+	normalBytesEncodedAsJpg, err := decodeAndEncodeFileAsJpg(normalFile)
+	if err != nil {
+		log.Fatalf("Failed to decodeAndEncodeFileAsJpg for normal image: %w", err)
+	}
+	normalRequest := &cv.GetDTLPoseSetupPointsRequest{
+		CalibratedImage: &cv.CalibratedDTLImage{
+			CalibrationImageAxes: &cv.Image{
+				Name:  "Calibration axes img",
+				Bytes: calibrationAxesBytesEncodedAsJpg,
+			},
+			CalibrationImageVanishingPoint: &cv.Image{
+				Name:  "Calibration vanishing point img",
+				Bytes: calibrationVanishingBytesEncodedAsJpg,
+			},
+			Image: &cv.Image{
+				Name:  "Normal side bend img",
+				Bytes: normalBytesEncodedAsJpg,
+			},
+		},
+	}
+	getDTLPoseSetupPointsNormalResponse, err := c.GetDTLPoseSetupPoints(ctx, normalRequest)
+	if err != nil {
+		log.Fatalf("c.GetDTLPoseSetupPoints failed for normal image: %v", err)
+	}
+	log.Printf("Sent and received data for normal spine angle GetDTLPoseSetupPoints")
+	log.Printf("Normal spine angle is %f", getDTLPoseSetupPointsNormalResponse.SetupPoints.SpineAngle)
+
+	// Get Big spine angle
+	bigSpineImgPath := `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\dtl-bigspineangle.jpg`
+	bigSpineFile, closeFile, err := getFileFromPath(bigSpineImgPath)
+	if err != nil {
+		log.Fatalf("Failed to getFileFromPath big spine file: %w", err)
+	}
+	defer closeFile()
+	bigSpineBytesEncodedAsJpg, err := decodeAndEncodeFileAsJpg(bigSpineFile)
+	if err != nil {
+		log.Fatalf("Failed to decodeAndEncodeFileAsJpg for big spine image: %w", err)
+	}
+	bigSpineRequest := &cv.GetDTLPoseSetupPointsRequest{
+		CalibratedImage: &cv.CalibratedDTLImage{
+			CalibrationImageAxes: &cv.Image{
+				Name:  "Calibration axes img",
+				Bytes: calibrationAxesBytesEncodedAsJpg,
+			},
+			CalibrationImageVanishingPoint: &cv.Image{
+				Name:  "Calibration vanishing point img",
+				Bytes: calibrationVanishingBytesEncodedAsJpg,
+			},
+			Image: &cv.Image{
+				Name:  "Big side bend img",
+				Bytes: bigSpineBytesEncodedAsJpg,
+			},
+		},
+	}
+	getDTLPoseSetupPointsBigSpineResponse, err := c.GetDTLPoseSetupPoints(ctx, bigSpineRequest)
+	if err != nil {
+		log.Fatalf("c.GetDTLPoseSetupPoints failed for big spine image: %v", err)
+	}
+	log.Printf("Sent and received data for big spine angle GetDTLPoseSetupPoints")
+	log.Printf("Big spine angle is %f", getDTLPoseSetupPointsBigSpineResponse.SetupPoints.SpineAngle)
+
+	// Get Small spine angle
+	smallSpineImgPath := `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\dtl-smallspineangle.jpg`
+	smallSpineFile, closeFile, err := getFileFromPath(smallSpineImgPath)
+	if err != nil {
+		log.Fatalf("Failed to getFileFromPath small spine file: %w", err)
+	}
+	defer closeFile()
+	smallSpineBytesEncodedAsJpg, err := decodeAndEncodeFileAsJpg(smallSpineFile)
+	if err != nil {
+		log.Fatalf("Failed to decodeAndEncodeFileAsJpg for small spine image: %w", err)
+	}
+	smallSpineRequest := &cv.GetDTLPoseSetupPointsRequest{
+		CalibratedImage: &cv.CalibratedDTLImage{
+			CalibrationImageAxes: &cv.Image{
+				Name:  "Calibration axes img",
+				Bytes: calibrationAxesBytesEncodedAsJpg,
+			},
+			CalibrationImageVanishingPoint: &cv.Image{
+				Name:  "Calibration vanishing point img",
+				Bytes: calibrationVanishingBytesEncodedAsJpg,
+			},
+			Image: &cv.Image{
+				Name:  "Small side bend img",
+				Bytes: smallSpineBytesEncodedAsJpg,
+			},
+		},
+	}
+	getDTLPoseSetupPointsSmallSpineResponse, err := c.GetDTLPoseSetupPoints(ctx, smallSpineRequest)
+	if err != nil {
+		log.Fatalf("c.GetDTLPoseSetupPoints failed for small spine image: %v", err)
+	}
+	log.Printf("Sent and received data for small spine angle GetDTLPoseSetupPoints")
+	log.Printf("Small spine angle is %f", getDTLPoseSetupPointsSmallSpineResponse.SetupPoints.SpineAngle)
 }
 
 func main() {
@@ -443,11 +578,13 @@ func main() {
 
 	//testShowDTLPoseImagesFromVideo(ctx)
 
-	testGetFaceOnPoseSetupPoints(ctx)
+	//testGetFaceOnPoseSetupPoints(ctx)
 
-	testGetFaceOnPoseSetupPointsBadCalibration(ctx)
+	//testGetFaceOnPoseSetupPointsBadCalibration(ctx)
 
-	testGetFaceOnPoseSetupPointsTiltedCalibration(ctx)
+	//testGetFaceOnPoseSetupPointsTiltedCalibration(ctx)
+
+	testGetDTLPoseSetupPoints(ctx)
 
 	log.Printf("Ending go test_client")
 }

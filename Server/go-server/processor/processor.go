@@ -52,16 +52,40 @@ func (p *Processor) ShowFaceOnPoseImage(request *cv.ShowFaceOnPoseImageRequest) 
 	return response, nil
 }
 
+//TODO: Error checking to see if points were even found by openpose (ie. if midhip was able to be identified)
 func (p *Processor) GetDTLPoseSetupPoints(request *cv.GetDTLPoseSetupPointsRequest) (*cv.GetDTLPoseSetupPointsResponse, error) {
-	return nil, nil
-}
-
-func (p *Processor) GetFaceOnPoseSetupPoints(request *cv.GetFaceOnPoseSetupPointsRequest) (*cv.GetFaceOnPoseSetupPointsResponse, error) {
-	getOpenPoseDataResponseCalibration, err := p.ocvmgr.GetOpenPoseData(request.CalibratedImage.CalibrationImage.Bytes)
+	getOpenPoseDataResponseCalibrationAxes, err := p.ocvmgr.GetOpenPoseData(request.CalibratedImage.CalibrationImageAxes.Bytes)
 	if err != nil {
 		return nil, err
 	}
-	calibratedAxes, err := checkIfCalibrationImageIsGood(getOpenPoseDataResponseCalibration.Keypoints)
+	getOpenPoseDataResponseCalibrationVanishingPoint, err := p.ocvmgr.GetOpenPoseData(request.CalibratedImage.CalibrationImageVanishingPoint.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	calibratedAxes, err := checkIfDTLCalibrationImagesAreGood(getOpenPoseDataResponseCalibrationAxes.Keypoints, getOpenPoseDataResponseCalibrationVanishingPoint.Keypoints)
+	if err != nil {
+		return nil, err
+	}
+	getOpenPoseDataResponseImg, err := p.ocvmgr.GetOpenPoseData(request.CalibratedImage.Image.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	spineAngle := getSpineAngle(getOpenPoseDataResponseImg.Keypoints, calibratedAxes)
+	log.Printf("Spine angle is %f", spineAngle)
+	response := &cv.GetDTLPoseSetupPointsResponse{
+		SetupPoints: &cv.DTLGolfSetupPoints{
+			SpineAngle: spineAngle,
+		},
+	}
+	return response, nil
+}
+
+func (p *Processor) GetFaceOnPoseSetupPoints(request *cv.GetFaceOnPoseSetupPointsRequest) (*cv.GetFaceOnPoseSetupPointsResponse, error) {
+	getOpenPoseDataResponseCalibration, err := p.ocvmgr.GetOpenPoseData(request.CalibratedImage.CalibrationImageAxes.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	calibratedAxes, err := checkIfFaceOnCalibrationImageIsGood(getOpenPoseDataResponseCalibration.Keypoints)
 	if err != nil {
 		return nil, err
 	}

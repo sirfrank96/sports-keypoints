@@ -4,6 +4,7 @@ import traceback
 import sys
 import numpy as np
 from pathlib import Path
+import opencvandpose_pb2
 
 # Import pyopenpose, make sure sys can find paths necessary dlls and binaries
 curr_dir = Path(__file__).parent.resolve()
@@ -53,8 +54,24 @@ def run_open_pose(img):
 # Input is Matlike, Feed into OpenPose, Return processed image as bytes
 def get_open_pose_image(img):
     datum = run_open_pose(img)
+
+    # Add labels
+    body_pose_keypoints_descriptor = opencvandpose_pb2.Body25PoseKeypoints.DESCRIPTOR
+    body_pose_field_descriptors = body_pose_keypoints_descriptor.fields
+    output_img = datum.cvOutputData
+    keypoints = datum.poseKeypoints
+    if keypoints.shape != (): # Check if keypoints are detected
+        idx = 0
+        curr_keypoints = keypoints[0]
+        for keypoint in curr_keypoints:
+            pos = (int(keypoint[0]), int(keypoint[1]))
+            if pos[0] > 0 and pos[1] > 0: # Check if point is valid
+                cv.putText(output_img, body_pose_field_descriptors[idx].name, pos, cv.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255), 1, cv.LINE_AA)
+            idx += 1
+            
+
     # Encode data as jpg, then convert to bytes object
-    img_encode = cv.imencode('.jpg', datum.cvOutputData)
+    img_encode = cv.imencode('.jpg', output_img)
     data_encode = np.array(img_encode[1])
     byte_encode = data_encode.tobytes()   
     return byte_encode

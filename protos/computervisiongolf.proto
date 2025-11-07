@@ -45,7 +45,8 @@ message ShowFaceOnPoseImageResponse {
 }
 
 message GetDTLPoseSetupPointsRequest {
-    CalibratedImage calibrated_image = 1;
+    CalibratedDTLImage calibrated_image = 1;
+    //bool lefthanded = 2; // TODO: Add lefty support
 }
 
 message GetDTLPoseSetupPointsResponse {
@@ -53,7 +54,7 @@ message GetDTLPoseSetupPointsResponse {
 }
 
 message GetFaceOnPoseSetupPointsRequest {
-    CalibratedImage calibrated_image = 1;
+    CalibratedFaceOnImage calibrated_image = 1;
 }
 
 message GetFaceOnPoseSetupPointsResponse {
@@ -62,8 +63,8 @@ message GetFaceOnPoseSetupPointsResponse {
 
 
 message IdentifyDTLPoseDifferencesRequest {
-    CalibratedImage original_calibrated_image = 1;
-    CalibratedImage new_calibrated_image = 2;
+    CalibratedDTLImage original_calibrated_image = 1;
+    CalibratedDTLImage new_calibrated_image = 2;
     //float angle_tolerance = 2; // how much difference there has to be in angle to report as a difference (might have to be tolerance for each field with some default values)
 }
 
@@ -74,8 +75,8 @@ message IdentifyDTLPoseDifferencesResponse {
 }
 
 message IdentifyFaceOnPoseDifferencesRequest {
-    CalibratedImage original_calibrated_image = 1;
-    CalibratedImage new_calibrated_image = 2;
+    CalibratedFaceOnImage original_calibrated_image = 1;
+    CalibratedFaceOnImage new_calibrated_image = 2;
     //float angle_tolerance = 2;
 }
 
@@ -85,8 +86,18 @@ message IdentifyFaceOnPoseDifferencesResponse {
     FaceOnGolfSetupPoints setup_points_diff = 3;
 }
 
-message CalibratedImage {
-    Image calibration_image = 1; // stand straight up looking at camera, with feet out perpendicular to camera (determines horizontal and vertical axes and able to 3d)
+// calibration image and image should be same env and not move camera between
+// recommend taking a video, doing poses for calibration, then swinging all in 1 video, then take snapshots at each image wanted
+message CalibratedDTLImage {
+    Image calibration_image_axes = 1;
+    Image calibration_image_vanishing_point = 2;
+    Image image = 3;
+}
+
+// calibration image and image should be same env and not move camera between
+// recommend taking a video, doing poses for calibration, then swinging all in 1 video, then take snapshots at each image wanted
+message CalibratedFaceOnImage {
+    Image calibration_image_axes = 1; // stand straight up looking at camera, with feet out perpendicular to camera (determines horizontal and vertical axes and able to 3d)
     Image image = 2;
 }
 

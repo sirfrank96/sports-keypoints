@@ -28,7 +28,19 @@ type Intersection struct {
 	angleAtIntersect float64
 }
 
+type CalibrationInfo struct {
+	horAxisLine    *Line
+	vertAxisLine   *Line
+	vanishingPoint *Point
+}
+
 //util
+func getLengthBetweenTwoPoints(point1 *Point, point2 *Point) float64 {
+	term1 := math.Pow(point2.xPos-point1.xPos, 2)
+	term2 := math.Pow(point2.yPos-point1.yPos, 2)
+	return math.Sqrt(term1 + term2)
+}
+
 func getSlope(point1 *cv.Keypoint, point2 *cv.Keypoint) float64 {
 	rise := point2.Y - point1.Y
 	run := point2.X - point1.X
@@ -114,4 +126,15 @@ func getDegreesOfLineAlwaysPositive(deg float64) float64 {
 
 func convertCvKeypointToPoint(cvKeypoint *cv.Keypoint) *Point {
 	return &Point{xPos: cvKeypoint.X, yPos: cvKeypoint.Y}
+}
+
+// main axes
+// Heel to heel (on ground)
+func getHorizontalAxisLine(lHeel *cv.Keypoint, rHeel *cv.Keypoint) *Line {
+	return getLine(lHeel, rHeel)
+}
+
+// Midhip to neck
+func getVerticalAxisLine(midhip *cv.Keypoint, neck *cv.Keypoint) *Line {
+	return getLine(midhip, neck)
 }
