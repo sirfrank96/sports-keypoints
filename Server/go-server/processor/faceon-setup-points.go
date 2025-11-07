@@ -37,8 +37,9 @@ func checkIfCalibrationImageIsGood(keypoints *cv.Body25PoseKeypoints) (*Calibrat
 	vertAxisLine := getFaceOnVerticalAxisLine(keypoints.Midhip, keypoints.Neck)
 	horDeg := convertSlopeToDegrees(horAxisLine.slope)
 	vertDeg := convertSlopeToDegrees(vertAxisLine.slope)
-	if math.Abs(vertDeg-horDeg-90) > 5 {
-		return nil, fmt.Errorf("calibration image off. horizontal axis between heels is %f degrees. vertical axis between midhip and neck is %f degrees. difference is too large. please adjust camera, stance, or posture", horDeg, vertDeg)
+	diff := math.Abs(vertDeg) + math.Abs(horDeg) - 90
+	if math.Abs(diff) > 10 {
+		return nil, fmt.Errorf("calibration image off. horizontal axis between heels is %f degrees. vertical axis between midhip and neck is %f degrees. difference of %f degrees is too large. please adjust camera, stance, or posture", horDeg, vertDeg, diff)
 	}
 	fmt.Printf("Good calibration. Horizontal axis between heels is %f degrees. vertical axis between midhip and neck is %f degrees\n", horDeg, vertDeg)
 	return &CalibratedAxes{horAxisLine: horAxisLine, vertAxisLine: vertAxisLine}, nil
