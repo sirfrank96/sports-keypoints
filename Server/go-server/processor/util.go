@@ -9,6 +9,8 @@ import (
 
 //assuming right handed golfer
 
+//TODO: Be able to pass around Point or cv.Keypoint by using an interface
+
 type Point struct {
 	xPos float64
 	yPos float64
@@ -128,10 +130,18 @@ func convertCvKeypointToPoint(cvKeypoint *cv.Keypoint) *Point {
 	return &Point{xPos: cvKeypoint.X, yPos: cvKeypoint.Y}
 }
 
+func convertPointToCvKeypoint(point *Point) *cv.Keypoint {
+	return &cv.Keypoint{X: point.xPos, Y: point.yPos}
+}
+
 // main axes
 // Heel to heel (on ground)
 func getHorizontalAxisLine(lHeel *cv.Keypoint, rHeel *cv.Keypoint) *Line {
 	return getLine(lHeel, rHeel)
+}
+
+func getHorizontalAxisToeLine(lBigToe *cv.Keypoint, rBigToe *cv.Keypoint) *Line {
+	return getLine(lBigToe, rBigToe)
 }
 
 // Midhip to neck

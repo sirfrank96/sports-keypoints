@@ -10,6 +10,9 @@ import common_pb2_grpc
 
 #TODO: Implement all rpcs
 class OpenCVAndPoseServiceServicer(opencvandpose_pb2_grpc.OpenCVAndPoseServiceServicer):
+
+    body_pose_field_descriptors = opencvandpose_pb2.Body25PoseKeypoints.DESCRIPTOR.fields
+
     def __init__(self):
         self.__init__
 
@@ -17,7 +20,7 @@ class OpenCVAndPoseServiceServicer(opencvandpose_pb2_grpc.OpenCVAndPoseServiceSe
         print("GetOpenPoseImage grpc request")
         image_bytes = request.image.bytes
         image = openpose.get_image_from_bytes(image_bytes)
-        processed_img = openpose.get_open_pose_image(image)
+        processed_img = openpose.get_open_pose_image(image, self.body_pose_field_descriptors)
         print(f"Processed image. It's size is {len(processed_img)}")
         open_pose_image = common_pb2.Image(
             name=f"Processed image",
@@ -73,7 +76,7 @@ class OpenCVAndPoseServiceServicer(opencvandpose_pb2_grpc.OpenCVAndPoseServiceSe
             img_idx += 1
             image_bytes = get_open_pose_image_request.image.bytes
             image = openpose.get_image_from_bytes(image_bytes)
-            processed_img = openpose.get_open_pose_image(image)
+            processed_img = openpose.get_open_pose_image(image, self.body_pose_field_descriptors)
             print(f"Processed image #{img_idx}. It's size is {len(processed_img)}")
             open_pose_image = common_pb2.Image(
                 name=f"Processed image #{img_idx}",

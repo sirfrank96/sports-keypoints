@@ -10,7 +10,7 @@ import (
 //assuming right handed golfer
 
 // TODO: Make how far off axes are configurable
-func checkIfFaceOnCalibrationImageIsGood(keypoints *cv.Body25PoseKeypoints) (*CalibrationInfo, error) {
+func verifyFaceOnCalibrationImage(keypoints *cv.Body25PoseKeypoints) (*CalibrationInfo, error) {
 	horAxisLine := getHorizontalAxisLine(keypoints.LHeel, keypoints.RHeel)
 	vertAxisLine := getVerticalAxisLine(keypoints.Midhip, keypoints.Neck)
 	horDeg := convertSlopeToDegrees(horAxisLine.slope)
@@ -23,10 +23,15 @@ func checkIfFaceOnCalibrationImageIsGood(keypoints *cv.Body25PoseKeypoints) (*Ca
 	return &CalibrationInfo{horAxisLine: horAxisLine, vertAxisLine: vertAxisLine}, nil
 }
 
+func verifyFaceOnImage(keypoints *cv.Body25PoseKeypoints) error {
+	return nil
+}
+
 //side bend
 //line from midhip to neck
 //angle of intersect between that and vertical axis through midhip
-func getSideBend(keypoints *cv.Body25PoseKeypoints, calibrationInfo *CalibrationInfo) float64 {
+func getSideBend(keypoints *cv.Body25PoseKeypoints, calibrationInfo *CalibrationInfo) (float64, error) {
+	// TODO: CHECK CONFIDENCE LEVELS
 	vertAxisLine := calibrationInfo.vertAxisLine
 	fmt.Printf("VertAxisLine object: %+v\n", vertAxisLine)
 	vertAxisThroughMidhipLine := getLineWithSlope(keypoints.Midhip, vertAxisLine.slope)
@@ -41,9 +46,9 @@ func getSideBend(keypoints *cv.Body25PoseKeypoints, calibrationInfo *Calibration
 	angleAtIntersect := getAngleAtIntersection(neckPoint, midhipPoint, pointUpVertAxisSameHeightAsNeck)
 	// determine if left or right side bend
 	if keypoints.Neck.X < keypoints.Midhip.X { // right
-		return angleAtIntersect
+		return angleAtIntersect, nil
 	} else { // left
-		return float64(-1) * angleAtIntersect
+		return float64(-1) * angleAtIntersect, nil
 	}
 }
 

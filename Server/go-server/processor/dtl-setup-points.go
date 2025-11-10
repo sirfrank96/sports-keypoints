@@ -15,7 +15,7 @@ import (
 // get vanishing point, intersection of vertaxis and heels axis
 
 //TODO: pull out axes calibration into common func
-func checkIfDTLCalibrationImagesAreGood(axesKeypoints *cv.Body25PoseKeypoints, vanishingPointKeypoints *cv.Body25PoseKeypoints) (*CalibrationInfo, error) {
+func verifyDTLCalibrationImages(axesKeypoints *cv.Body25PoseKeypoints, vanishingPointKeypoints *cv.Body25PoseKeypoints) (*CalibrationInfo, error) {
 	horAxisLine := getHorizontalAxisLine(axesKeypoints.LHeel, axesKeypoints.RHeel)
 	vertAxisLine := getVerticalAxisLine(axesKeypoints.Midhip, axesKeypoints.Neck)
 	horDeg := convertSlopeToDegrees(horAxisLine.slope)
@@ -38,23 +38,23 @@ func checkIfDTLCalibrationImagesAreGood(axesKeypoints *cv.Body25PoseKeypoints, v
 	return &CalibrationInfo{horAxisLine: horAxisLine, vertAxisLine: vertAxisLine, vanishingPoint: intersection.intersectPoint}, nil
 }
 
+func verifyDTLImage(keypoints *cv.Body25PoseKeypoints) error {
+	return nil
+}
+
 //spine angle
 //line from midhip to neck
 //angle between that and vertical axis
-func getSpineAngle(keypoints *cv.Body25PoseKeypoints, calibrationInfo *CalibrationInfo) float64 {
+func getSpineAngle(keypoints *cv.Body25PoseKeypoints, calibrationInfo *CalibrationInfo) (float64, error) {
+	// TODO: CHECK CONFIDENCE LEVELS
 	vertAxisLine := calibrationInfo.vertAxisLine
-	fmt.Printf("VertAxisLine object: %+v\n", vertAxisLine)
 	vertAxisThroughMidhipLine := getLineWithSlope(keypoints.Midhip, vertAxisLine.slope)
-	fmt.Printf("VertAxisThroughMidhipLine object: %+v\n", vertAxisThroughMidhipLine)
 	neckPoint := convertCvKeypointToPoint(keypoints.Neck)
-	fmt.Printf("NeckPoint: %+v\n", neckPoint)
 	xOnVertAxis := (keypoints.Neck.Y - vertAxisThroughMidhipLine.yIntercept) / vertAxisThroughMidhipLine.slope
 	pointUpVertAxisSameHeightAsNeck := &Point{xPos: xOnVertAxis, yPos: keypoints.Neck.Y}
-	fmt.Printf("PointUpVertAxisSameHeightAsNeck: %+v\n", pointUpVertAxisSameHeightAsNeck)
 	midhipPoint := convertCvKeypointToPoint(keypoints.Midhip)
-	fmt.Printf("MidhipPoint: %+v\n", midhipPoint)
 	angleAtIntersect := getAngleAtIntersection(neckPoint, midhipPoint, pointUpVertAxisSameHeightAsNeck)
-	return angleAtIntersect
+	return angleAtIntersect, nil
 }
 
 //knee bend
@@ -72,6 +72,48 @@ func getSpineAngle(keypoints *cv.Body25PoseKeypoints, calibrationInfo *Calibrati
 //any line that goes to vanishing point
 //line from rshoulder to lshoulder
 //find difference in angles
+
+//feet alignment
+//assume feet are left of vert axis (maybe use toes? easier to see?)
+//TODO: add other edge cases for feet crossing vertaxis
+//TODO: Use toes??? easier to see (If confidence is < 0.5, use toes)
+/*func getFeetAlignment(keypoints *cv.Body25PoseKeypoints, calibrationInfo *CalibrationInfo) float64 {
+	fmt.Printf("LHeel: %+v\n, RHeel: %+v\n, vanishingPoint: %+v\n", keypoints.LHeel, keypoints.RHeel, calibrationInfo.vanishingPoint)
+	feetDegrees := getAngleAtIntersection(convertCvKeypointToPoint(keypoints.LHeel), convertCvKeypointToPoint(keypoints.RHeel), calibrationInfo.vanishingPoint)
+	fmt.Printf("Angle at right heel intersection: %f\n", feetDegrees)
+	realParallelLine := getLine(convertPointToCvKeypoint(calibrationInfo.vanishingPoint), keypoints.RHeel) // line that converges at vanishing point
+	fmt.Printf("Real parallel is %+v\n", realParallelLine)
+	heelLine := getLine(keypoints.RHeel, keypoints.LHeel)
+	fmt.Printf("Current heel line is %+v\n", heelLine)
+	//determine if closed or open
+	if heelLine.slope == realParallelLine.slope { // neutral
+		return 0
+	} else if heelLine.slope > realParallelLine.slope && heelLine.slope <= 0 { // closed (will return positive number)
+		return feetDegrees
+	} else { // open (will return negative number)
+		return float64(-1) * feetDegrees
+	}
+}*/
+
+// test toes
+func getFeetAlignment(keypoints *cv.Body25PoseKeypoints, calibrationInfo *CalibrationInfo) (float64, error) {
+	// TODO: CHECK CONFIDENCE LEVELS
+	fmt.Printf("LBigToe: %+v\n, RBigToe: %+v\n, vanishingPoint: %+v\n", keypoints.LBigToe, keypoints.RBigToe, calibrationInfo.vanishingPoint)
+	feetDegrees := getAngleAtIntersection(convertCvKeypointToPoint(keypoints.LBigToe), convertCvKeypointToPoint(keypoints.RBigToe), calibrationInfo.vanishingPoint)
+	fmt.Printf("Angle at right toe intersection: %f\n", feetDegrees)
+	realParallelLine := getLine(convertPointToCvKeypoint(calibrationInfo.vanishingPoint), keypoints.RBigToe) // line that converges at vanishing point
+	fmt.Printf("Real parallel is %+v\n", realParallelLine)
+	toeLine := getLine(keypoints.RBigToe, keypoints.LBigToe)
+	fmt.Printf("Current toe line is %+v\n", toeLine)
+	//determine if closed or open
+	if toeLine.slope == realParallelLine.slope { // neutral
+		return 0, nil
+	} else if toeLine.slope > realParallelLine.slope && toeLine.slope <= 0 { // closed (will return positive number)
+		return feetDegrees, nil
+	} else { // open (will return negative number)
+		return float64(-1) * feetDegrees, nil
+	}
+}
 
 //alignents
 //all relative to heel alignment (open to heels, closed to heels)

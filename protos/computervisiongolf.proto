@@ -89,21 +89,31 @@ message IdentifyFaceOnPoseDifferencesResponse {
 // calibration image and image should be same env and not move camera between
 // recommend taking a video, doing poses for calibration, then swinging all in 1 video, then take snapshots at each image wanted
 message CalibratedDTLImage {
-    Image calibration_image_axes = 1;
-    Image calibration_image_vanishing_point = 2;
-    Image image = 3;
+    FeetLineMethod method = 1;
+    Image calibration_image_axes = 2;
+    Image calibration_image_vanishing_point = 3;
+    Image image = 4;
 }
 
 // calibration image and image should be same env and not move camera between
 // recommend taking a video, doing poses for calibration, then swinging all in 1 video, then take snapshots at each image wanted
 message CalibratedFaceOnImage {
-    Image calibration_image_axes = 1; // stand straight up looking at camera, with feet out perpendicular to camera (determines horizontal and vertical axes and able to 3d)
-    Image image = 2;
+    FeetLineMethod method = 1;
+    Image calibration_image_axes = 2; // stand straight up looking at camera, with feet out perpendicular to camera (determines horizontal and vertical axes and able to 3d)
+    Image image = 3;
+}
+
+enum FeetLineMethod {
+    DEFAULT = 0; // use heel line
+    USE_HEEL_LINE = 1;
+    USE_TOE_LINE = 2;
 }
 
 message DTLGolfSetupPoints {
-    double spine_angle = 1;
-    //feet_alignment
+    Double spine_angle = 1;
+    Double feet_alignment = 2;
+    Double heel_alignment = 3;
+    Double toe_alignment = 4;
     //shoulder_alignment
     //waist_alignment
     //distance_from_ball
@@ -115,7 +125,7 @@ message DTLGolfSetupPoints {
 }
 
 message FaceOnGolfSetupPoints {
-    double side_bend = 1;
+    Double side_bend = 1;
     //l_foot_flare
     //r_foot_flare
     //stance_width

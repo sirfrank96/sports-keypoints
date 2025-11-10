@@ -52,12 +52,10 @@ def run_open_pose(img):
     return datum
 
 # Input is Matlike, Feed into OpenPose, Return processed image as bytes
-def get_open_pose_image(img):
+def get_open_pose_image(img, field_descriptors):
     datum = run_open_pose(img)
 
     # Add labels
-    body_pose_keypoints_descriptor = opencvandpose_pb2.Body25PoseKeypoints.DESCRIPTOR
-    body_pose_field_descriptors = body_pose_keypoints_descriptor.fields
     output_img = datum.cvOutputData
     keypoints = datum.poseKeypoints
     if keypoints.shape != (): # Check if keypoints are detected
@@ -66,7 +64,7 @@ def get_open_pose_image(img):
         for keypoint in curr_keypoints:
             pos = (int(keypoint[0]), int(keypoint[1]))
             if pos[0] > 0 and pos[1] > 0: # Check if point is valid
-                cv.putText(output_img, body_pose_field_descriptors[idx].name, pos, cv.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255), 1, cv.LINE_AA)
+                cv.putText(output_img, field_descriptors[idx].name, pos, cv.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255), 1, cv.LINE_AA)
             idx += 1
             
 
