@@ -52,7 +52,6 @@ func (p *Processor) ShowFaceOnPoseImage(request *cv.ShowFaceOnPoseImageRequest) 
 	return response, nil
 }
 
-//TODO: Error checking to see if points were even found by openpose (ie. if midhip was able to be identified)
 func (p *Processor) GetDTLPoseSetupPoints(request *cv.GetDTLPoseSetupPointsRequest) (*cv.GetDTLPoseSetupPointsResponse, error) {
 	getOpenPoseDataResponseCalibrationAxes, err := p.ocvmgr.GetOpenPoseData(request.CalibratedImage.CalibrationImageAxes.Bytes)
 	if err != nil {
@@ -62,7 +61,7 @@ func (p *Processor) GetDTLPoseSetupPoints(request *cv.GetDTLPoseSetupPointsReque
 	if err != nil {
 		return nil, err
 	}
-	calibrationInfo, err := verifyDTLCalibrationImages(getOpenPoseDataResponseCalibrationAxes.Keypoints, getOpenPoseDataResponseCalibrationVanishingPoint.Keypoints)
+	calibrationInfo, err := verifyDTLCalibrationImages(getOpenPoseDataResponseCalibrationAxes.Keypoints, getOpenPoseDataResponseCalibrationVanishingPoint.Keypoints, request.CalibratedImage.FeetLineMethod)
 	if err != nil {
 		return nil, err
 	}
@@ -70,32 +69,27 @@ func (p *Processor) GetDTLPoseSetupPoints(request *cv.GetDTLPoseSetupPointsReque
 	if err != nil {
 		return nil, err
 	}
-	//If error for individual fields, log, but let it go (how to notify user??) (optional error msg in .proto message)
-	err = verifyDTLImage(getOpenPoseDataResponseImg.Keypoints)
-	if err != nil {
-		return nil, err
-	}
 	spineAngle, err := getSpineAngle(getOpenPoseDataResponseImg.Keypoints, calibrationInfo)
-	var spineAngleErr string
+	var spineAngleWarning string
 	if err != nil {
-		spineAngleErr = err.Error()
+		spineAngleWarning = err.Error()
 	}
 	log.Printf("Spine angle is %f", spineAngle)
 	feetAlignment, err := getFeetAlignment(getOpenPoseDataResponseImg.Keypoints, calibrationInfo)
-	var feetAlignmentErr string
+	var feetAlignmentWarning string
 	if err != nil {
-		feetAlignmentErr = err.Error()
+		feetAlignmentWarning = err.Error()
 	}
 	log.Printf("Feet alignment is %f", feetAlignment)
 	response := &cv.GetDTLPoseSetupPointsResponse{
 		SetupPoints: &cv.DTLGolfSetupPoints{
 			SpineAngle: &cv.Double{
-				Data:  spineAngle,
-				Error: spineAngleErr,
+				Data:    spineAngle,
+				Warning: spineAngleWarning,
 			},
 			FeetAlignment: &cv.Double{
-				Data:  feetAlignment,
-				Error: feetAlignmentErr,
+				Data:    feetAlignment,
+				Warning: feetAlignmentWarning,
 			},
 		},
 	}
@@ -107,7 +101,7 @@ func (p *Processor) GetFaceOnPoseSetupPoints(request *cv.GetFaceOnPoseSetupPoint
 	if err != nil {
 		return nil, err
 	}
-	calibrationInfo, err := verifyFaceOnCalibrationImage(getOpenPoseDataResponseCalibration.Keypoints)
+	calibrationInfo, err := verifyFaceOnCalibrationImage(getOpenPoseDataResponseCalibration.Keypoints, request.CalibratedImage.FeetLineMethod)
 	if err != nil {
 		return nil, err
 	}
@@ -115,22 +109,17 @@ func (p *Processor) GetFaceOnPoseSetupPoints(request *cv.GetFaceOnPoseSetupPoint
 	if err != nil {
 		return nil, err
 	}
-	//If error for individual fields, log, but let it go (how to notify user??)
-	err = verifyFaceOnImage(getOpenPoseDataResponseImg.Keypoints)
-	if err != nil {
-		return nil, err
-	}
 	sideBend, err := getSideBend(getOpenPoseDataResponseImg.Keypoints, calibrationInfo)
-	var sideBendErr string
+	var sideBendWarning string
 	if err != nil {
-		sideBendErr = err.Error()
+		sideBendWarning = err.Error()
 	}
 	log.Printf("Side bend is %f", sideBend)
 	response := &cv.GetFaceOnPoseSetupPointsResponse{
 		SetupPoints: &cv.FaceOnGolfSetupPoints{
 			SideBend: &cv.Double{
-				Data:  sideBend,
-				Error: sideBendErr,
+				Data:    sideBend,
+				Warning: sideBendWarning,
 			},
 		},
 	}

@@ -111,17 +111,17 @@ func testGetDTLPoseSetupPoints(ctx context.Context, c cv.ComputerVisionGolfServi
 	log.Printf("Spine angle tests...\n")
 	calibrationImgAxesPath := filepath.Join(currentFileDirectory, "static", "dtl-spineangle-axescalibration.jpg")
 	calibrationImgVanishingPath := filepath.Join(currentFileDirectory, "static", "dtl-spineangle-vanishingpointcalibration.jpg")
-	dTLPoseSetupPointsResponse, err := cvclient.GetDTLPoseSetupPoints(ctx, c, calibrationImgAxesPath, calibrationImgVanishingPath, filepath.Join(currentFileDirectory, "static", "dtl-spineangle-normal.jpg"))
+	dTLPoseSetupPointsResponse, err := cvclient.GetDTLPoseSetupPoints(ctx, c, calibrationImgAxesPath, calibrationImgVanishingPath, cv.FeetLineMethod_USE_TOE_LINE, filepath.Join(currentFileDirectory, "static", "dtl-spineangle-normal.jpg"))
 	if err != nil {
 		log.Fatalf("Error in GetDTLPoseSetupPoints normal spine angle %w", err)
 	}
 	log.Printf("Normal spine angle is %f", dTLPoseSetupPointsResponse.SetupPoints.SpineAngle.Data)
-	dTLPoseSetupPointsResponse, err = cvclient.GetDTLPoseSetupPoints(ctx, c, calibrationImgAxesPath, calibrationImgVanishingPath, filepath.Join(currentFileDirectory, "static", "dtl-spineangle-big.jpg"))
+	dTLPoseSetupPointsResponse, err = cvclient.GetDTLPoseSetupPoints(ctx, c, calibrationImgAxesPath, calibrationImgVanishingPath, cv.FeetLineMethod_USE_TOE_LINE, filepath.Join(currentFileDirectory, "static", "dtl-spineangle-big.jpg"))
 	if err != nil {
 		log.Fatalf("Error in GetDTLPoseSetupPoints big spine angle %w", err)
 	}
 	log.Printf("Big spine angle is %f", dTLPoseSetupPointsResponse.SetupPoints.SpineAngle.Data)
-	dTLPoseSetupPointsResponse, err = cvclient.GetDTLPoseSetupPoints(ctx, c, calibrationImgAxesPath, calibrationImgVanishingPath, filepath.Join(currentFileDirectory, "static", "dtl-spineangle-small.jpg"))
+	dTLPoseSetupPointsResponse, err = cvclient.GetDTLPoseSetupPoints(ctx, c, calibrationImgAxesPath, calibrationImgVanishingPath, cv.FeetLineMethod_USE_TOE_LINE, filepath.Join(currentFileDirectory, "static", "dtl-spineangle-small.jpg"))
 	if err != nil {
 		log.Fatalf("Error in GetDTLPoseSetupPoints small spine angle %w", err)
 	}
@@ -131,21 +131,26 @@ func testGetDTLPoseSetupPoints(ctx context.Context, c cv.ComputerVisionGolfServi
 	log.Printf("Feet align tests...\n")
 	calibrationImgAxesPath = `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\dtl-feetalign-axescalibration.jpg`
 	calibrationImgVanishingPath = `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\dtl-feetalign-vanishingpointcalibration.jpg`
-	dTLPoseSetupPointsResponse, err = cvclient.GetDTLPoseSetupPoints(ctx, c, calibrationImgAxesPath, calibrationImgVanishingPath, filepath.Join(currentFileDirectory, "static", "dtl-feetalign-neutral.jpg"))
+	dTLPoseSetupPointsResponse, err = cvclient.GetDTLPoseSetupPoints(ctx, c, calibrationImgAxesPath, calibrationImgVanishingPath, cv.FeetLineMethod_USE_HEEL_LINE, filepath.Join(currentFileDirectory, "static", "dtl-feetalign-neutral.jpg"))
 	if err != nil {
-		log.Fatalf("Error in GetDTLPoseSetupPoints neutral feet align %w", err)
+		log.Fatalf("Error in GetDTLPoseSetupPoints neutral feet align on heel line %w", err)
 	}
-	log.Printf("Neutral feet alignment is %f", dTLPoseSetupPointsResponse.SetupPoints.FeetAlignment.Data)
-	dTLPoseSetupPointsResponse, err = cvclient.GetDTLPoseSetupPoints(ctx, c, calibrationImgAxesPath, calibrationImgVanishingPath, filepath.Join(currentFileDirectory, "static", "dtl-feetalign-open.jpg"))
+	log.Printf("Neutral feet alignment on heel line (bad heel line) is %f, associated warning msg is %s", dTLPoseSetupPointsResponse.SetupPoints.FeetAlignment.Data, dTLPoseSetupPointsResponse.SetupPoints.FeetAlignment.Warning)
+	dTLPoseSetupPointsResponse, err = cvclient.GetDTLPoseSetupPoints(ctx, c, calibrationImgAxesPath, calibrationImgVanishingPath, cv.FeetLineMethod_USE_TOE_LINE, filepath.Join(currentFileDirectory, "static", "dtl-feetalign-neutral.jpg"))
 	if err != nil {
-		log.Fatalf("Error in GetDTLPoseSetupPoints open feet align %w", err)
+		log.Fatalf("Error in GetDTLPoseSetupPoints neutral feet align on toe line %w", err)
 	}
-	log.Printf("Open feet alignment is %f", dTLPoseSetupPointsResponse.SetupPoints.FeetAlignment.Data)
-	dTLPoseSetupPointsResponse, err = cvclient.GetDTLPoseSetupPoints(ctx, c, calibrationImgAxesPath, calibrationImgVanishingPath, filepath.Join(currentFileDirectory, "static", "dtl-feetalign-closed.jpg"))
+	log.Printf("Neutral feet alignment on toe line is %f, associated warning msg is %s", dTLPoseSetupPointsResponse.SetupPoints.FeetAlignment.Data, dTLPoseSetupPointsResponse.SetupPoints.FeetAlignment.Warning)
+	dTLPoseSetupPointsResponse, err = cvclient.GetDTLPoseSetupPoints(ctx, c, calibrationImgAxesPath, calibrationImgVanishingPath, cv.FeetLineMethod_USE_TOE_LINE, filepath.Join(currentFileDirectory, "static", "dtl-feetalign-open.jpg"))
 	if err != nil {
-		log.Fatalf("Error in GetDTLPoseSetupPoints closed feet align %w", err)
+		log.Fatalf("Error in GetDTLPoseSetupPoints open feet align on toe line %w", err)
 	}
-	log.Printf("Closed feet alignment is %f", dTLPoseSetupPointsResponse.SetupPoints.FeetAlignment.Data)
+	log.Printf("Open feet alignment on toe line is %f, associated warning msg is %s", dTLPoseSetupPointsResponse.SetupPoints.FeetAlignment.Data, dTLPoseSetupPointsResponse.SetupPoints.FeetAlignment.Warning)
+	dTLPoseSetupPointsResponse, err = cvclient.GetDTLPoseSetupPoints(ctx, c, calibrationImgAxesPath, calibrationImgVanishingPath, cv.FeetLineMethod_USE_TOE_LINE, filepath.Join(currentFileDirectory, "static", "dtl-feetalign-closed.jpg"))
+	if err != nil {
+		log.Fatalf("Error in GetDTLPoseSetupPoints closed feet align on toe line %w", err)
+	}
+	log.Printf("Closed feet alignment one toe line is %f", dTLPoseSetupPointsResponse.SetupPoints.FeetAlignment.Data)
 
 	log.Printf("Finished testGetDTLPoseSetupPoints...\n")
 }

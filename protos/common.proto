@@ -8,5 +8,5 @@ message Image {
 
 message Double {
     double data = 1;
-    string error = 2; // optional
+    string warning = 2; // optional
 }

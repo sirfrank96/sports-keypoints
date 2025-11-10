@@ -232,7 +232,7 @@ func GetFaceOnPoseSetupPoints(ctx context.Context, c cv.ComputerVisionGolfServic
 	return getFaceOnPoseSetupPointsResponse, nil
 }
 
-func GetDTLPoseSetupPoints(ctx context.Context, c cv.ComputerVisionGolfServiceClient, calibrationImgAxesPath string, calibrationImgVanishingPointPath string, inputImgPath string) (*cv.GetDTLPoseSetupPointsResponse, error) {
+func GetDTLPoseSetupPoints(ctx context.Context, c cv.ComputerVisionGolfServiceClient, calibrationImgAxesPath string, calibrationImgVanishingPointPath string, feetLineMethod cv.FeetLineMethod, inputImgPath string) (*cv.GetDTLPoseSetupPointsResponse, error) {
 	// Get Calibration Image Axes
 	calibrationFileAxes, closeFile, err := testutil.GetFileFromPath(calibrationImgAxesPath)
 	if err != nil {
@@ -267,6 +267,7 @@ func GetDTLPoseSetupPoints(ctx context.Context, c cv.ComputerVisionGolfServiceCl
 	getDTLPoseSetupPointsResponse, err := c.GetDTLPoseSetupPoints(ctx,
 		&cv.GetDTLPoseSetupPointsRequest{
 			CalibratedImage: &cv.CalibratedDTLImage{
+				FeetLineMethod: feetLineMethod,
 				CalibrationImageAxes: &cv.Image{
 					Name:  "Calibration img axes",
 					Bytes: calibrationAxesBytesEncodedAsJpg,

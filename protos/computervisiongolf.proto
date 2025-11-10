@@ -89,7 +89,7 @@ message IdentifyFaceOnPoseDifferencesResponse {
 // calibration image and image should be same env and not move camera between
 // recommend taking a video, doing poses for calibration, then swinging all in 1 video, then take snapshots at each image wanted
 message CalibratedDTLImage {
-    FeetLineMethod method = 1;
+    FeetLineMethod feet_line_method = 1;
     Image calibration_image_axes = 2;
     Image calibration_image_vanishing_point = 3;
     Image image = 4;
@@ -98,7 +98,7 @@ message CalibratedDTLImage {
 // calibration image and image should be same env and not move camera between
 // recommend taking a video, doing poses for calibration, then swinging all in 1 video, then take snapshots at each image wanted
 message CalibratedFaceOnImage {
-    FeetLineMethod method = 1;
+    FeetLineMethod feet_line_method = 1;
     Image calibration_image_axes = 2; // stand straight up looking at camera, with feet out perpendicular to camera (determines horizontal and vertical axes and able to 3d)
     Image image = 3;
 }

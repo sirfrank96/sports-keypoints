@@ -2,7 +2,6 @@ package processor
 
 import (
 	"fmt"
-	"math"
 
 	cv "github.com/sirfrank96/go-server/computer-vision-sports-proto"
 )
@@ -10,31 +9,24 @@ import (
 //assuming right handed golfer
 
 // TODO: Make how far off axes are configurable
-func verifyFaceOnCalibrationImage(keypoints *cv.Body25PoseKeypoints) (*CalibrationInfo, error) {
-	horAxisLine := getHorizontalAxisLine(keypoints.LHeel, keypoints.RHeel)
-	vertAxisLine := getVerticalAxisLine(keypoints.Midhip, keypoints.Neck)
-	horDeg := convertSlopeToDegrees(horAxisLine.slope)
-	vertDeg := convertSlopeToDegrees(vertAxisLine.slope)
-	diff := math.Abs(vertDeg) + math.Abs(horDeg) - 90
-	if math.Abs(diff) > 10 { // make this 5 or less after better test images
-		return nil, fmt.Errorf("axes calibration image off. horizontal axis between heels is %f degrees. vertical axis between midhip and neck is %f degrees. difference of %f degrees is too large. please adjust camera, stance, or posture. recommend using alignment sticks to help calibration", horDeg, vertDeg, diff)
-	}
-	fmt.Printf("Good axes calibration. Horizontal axis between heels is %f degrees. vertical axis between midhip and neck is %f degrees\n", horDeg, vertDeg)
-	return &CalibrationInfo{horAxisLine: horAxisLine, vertAxisLine: vertAxisLine}, nil
-}
-
-func verifyFaceOnImage(keypoints *cv.Body25PoseKeypoints) error {
-	return nil
+func verifyFaceOnCalibrationImage(keypoints *cv.Body25PoseKeypoints, feetLineMethod cv.FeetLineMethod) (*CalibrationInfo, error) {
+	return verifyCalibrationImageAxes(keypoints, feetLineMethod)
 }
 
 //side bend
 //line from midhip to neck
 //angle of intersect between that and vertical axis through midhip
 func getSideBend(keypoints *cv.Body25PoseKeypoints, calibrationInfo *CalibrationInfo) (float64, error) {
-	// TODO: CHECK CONFIDENCE LEVELS
+	var warning error
+	if err := verifyKeypoint(keypoints.Midhip, "midhip", 0.5); err != nil {
+		warning = appendError(warning, err)
+	}
+	if err := verifyKeypoint(keypoints.Neck, "neck", 0.5); err != nil {
+		warning = appendError(warning, err)
+	}
 	vertAxisLine := calibrationInfo.vertAxisLine
 	fmt.Printf("VertAxisLine object: %+v\n", vertAxisLine)
-	vertAxisThroughMidhipLine := getLineWithSlope(keypoints.Midhip, vertAxisLine.slope)
+	vertAxisThroughMidhipLine := getLineWithSlope(convertCvKeypointToPoint(keypoints.Midhip), vertAxisLine.slope)
 	fmt.Printf("VertAxisThroughMidhipLine object: %+v\n", vertAxisThroughMidhipLine)
 	neckPoint := convertCvKeypointToPoint(keypoints.Neck)
 	fmt.Printf("NeckPoint: %+v\n", neckPoint)
@@ -46,9 +38,9 @@ func getSideBend(keypoints *cv.Body25PoseKeypoints, calibrationInfo *Calibration
 	angleAtIntersect := getAngleAtIntersection(neckPoint, midhipPoint, pointUpVertAxisSameHeightAsNeck)
 	// determine if left or right side bend
 	if keypoints.Neck.X < keypoints.Midhip.X { // right
-		return angleAtIntersect, nil
+		return angleAtIntersect, warning
 	} else { // left
-		return float64(-1) * angleAtIntersect, nil
+		return float64(-1) * angleAtIntersect, warning
 	}
 }
 
