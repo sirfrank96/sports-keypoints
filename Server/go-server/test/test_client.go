@@ -58,7 +58,7 @@ func testGetFaceOnPoseSetupPoints(ctx context.Context, c cv.ComputerVisionGolfSe
 	calibrationImgPath := filepath.Join(currentFileDirectory, "static", "faceon-sidebend-goodcalibration.jpg")
 	faceOnPoseSetupPointsResponse, err := cvclient.GetFaceOnPoseSetupPoints(ctx, c, calibrationImgPath, filepath.Join(currentFileDirectory, "static", "faceon.jpg"))
 	if err != nil {
-		log.Fatalf("Error in GetFaceOnPoseSetupPoints neutral image %w", err)
+		log.Fatalf("Error in GetFaceOnPoseSetupPoints neutral side bend image %w", err)
 	}
 	log.Printf("Neutral side bend is %f\n", faceOnPoseSetupPointsResponse.SetupPoints.SideBend.Data)
 	faceOnPoseSetupPointsResponse, err = cvclient.GetFaceOnPoseSetupPoints(ctx, c, calibrationImgPath, filepath.Join(currentFileDirectory, "static", "faceon-sidebend-left.jpg"))
@@ -100,6 +100,25 @@ func testGetFaceOnPoseSetupPoints(ctx context.Context, c cv.ComputerVisionGolfSe
 		log.Fatalf("Error in GetFaceOnPoseSetupPoints tilted right side bend image %w", err)
 	}
 	log.Printf("Tilted right side bend is %f\n", faceOnPoseSetupPointsResponse.SetupPoints.SideBend.Data)
+
+	// Feet flare imgs
+	log.Printf("Feet flare tests...\n")
+	calibrationImgPath = filepath.Join(currentFileDirectory, "static", "faceon-feetflare-calibration.jpg")
+	faceOnPoseSetupPointsResponse, err = cvclient.GetFaceOnPoseSetupPoints(ctx, c, calibrationImgPath, filepath.Join(currentFileDirectory, "static", "faceon-feetflare-neutral.jpg"))
+	if err != nil {
+		log.Fatalf("Error in GetFaceOnPoseSetupPoints neutral feet flare image %w", err)
+	}
+	log.Printf("Neutral left foot flare is %f, right foot flare is %f\n", faceOnPoseSetupPointsResponse.SetupPoints.LFootFlare.Data, faceOnPoseSetupPointsResponse.SetupPoints.RFootFlare.Data)
+	faceOnPoseSetupPointsResponse, err = cvclient.GetFaceOnPoseSetupPoints(ctx, c, calibrationImgPath, filepath.Join(currentFileDirectory, "static", "faceon-feetflare-external.jpg"))
+	if err != nil {
+		log.Fatalf("Error in GetFaceOnPoseSetupPoints external feet flare image %w", err)
+	}
+	log.Printf("External left foot flare is %f, right foot flare is %f\n", faceOnPoseSetupPointsResponse.SetupPoints.LFootFlare.Data, faceOnPoseSetupPointsResponse.SetupPoints.RFootFlare.Data)
+	faceOnPoseSetupPointsResponse, err = cvclient.GetFaceOnPoseSetupPoints(ctx, c, calibrationImgPath, filepath.Join(currentFileDirectory, "static", "faceon-feetflare-internal.jpg"))
+	if err != nil {
+		log.Fatalf("Error in GetFaceOnPoseSetupPoints internal feet flare image %w", err)
+	}
+	log.Printf("Internal left foot flare is %f, right foot flare is %f\n", faceOnPoseSetupPointsResponse.SetupPoints.LFootFlare.Data, faceOnPoseSetupPointsResponse.SetupPoints.RFootFlare.Data)
 
 	log.Printf("Finished testGetFaceOnPoseSetupPoints...\n")
 }
@@ -174,11 +193,11 @@ func main() {
 	}
 	defer closeConn()
 
-	testShowDTLPoseImage(ctx, c)
-	testShowFaceOnPoseImage(ctx, c)
-	testShowDTLPoseImagesFromVideo(ctx, c)
+	//testShowDTLPoseImage(ctx, c)
+	//testShowFaceOnPoseImage(ctx, c)
+	//testShowDTLPoseImagesFromVideo(ctx, c)
 	testGetFaceOnPoseSetupPoints(ctx, c)
-	testGetDTLPoseSetupPoints(ctx, c)
+	//testGetDTLPoseSetupPoints(ctx, c)
 
 	log.Printf("Ending go test_client")
 }

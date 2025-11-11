@@ -61,24 +61,24 @@ func (p *Processor) GetDTLPoseSetupPoints(request *cv.GetDTLPoseSetupPointsReque
 	if err != nil {
 		return nil, err
 	}
-	calibrationInfo, err := verifyDTLCalibrationImages(getOpenPoseDataResponseCalibrationAxes.Keypoints, getOpenPoseDataResponseCalibrationVanishingPoint.Keypoints, request.CalibratedImage.FeetLineMethod)
-	if err != nil {
-		return nil, err
+	calibrationInfo, warning := VerifyDTLCalibrationImages(getOpenPoseDataResponseCalibrationAxes.Keypoints, getOpenPoseDataResponseCalibrationVanishingPoint.Keypoints, request.CalibratedImage.FeetLineMethod)
+	if warning != nil {
+		return nil, warning
 	}
 	getOpenPoseDataResponseImg, err := p.ocvmgr.GetOpenPoseData(request.CalibratedImage.Image.Bytes)
 	if err != nil {
 		return nil, err
 	}
-	spineAngle, err := getSpineAngle(getOpenPoseDataResponseImg.Keypoints, calibrationInfo)
+	spineAngle, warning := GetSpineAngle(getOpenPoseDataResponseImg.Keypoints, calibrationInfo)
 	var spineAngleWarning string
-	if err != nil {
-		spineAngleWarning = err.Error()
+	if warning != nil {
+		spineAngleWarning = warning.Error()
 	}
 	log.Printf("Spine angle is %f", spineAngle)
-	feetAlignment, err := getFeetAlignment(getOpenPoseDataResponseImg.Keypoints, calibrationInfo)
+	feetAlignment, warning := GetFeetAlignment(getOpenPoseDataResponseImg.Keypoints, calibrationInfo)
 	var feetAlignmentWarning string
-	if err != nil {
-		feetAlignmentWarning = err.Error()
+	if warning != nil {
+		feetAlignmentWarning = warning.Error()
 	}
 	log.Printf("Feet alignment is %f", feetAlignment)
 	response := &cv.GetDTLPoseSetupPointsResponse{
@@ -101,25 +101,47 @@ func (p *Processor) GetFaceOnPoseSetupPoints(request *cv.GetFaceOnPoseSetupPoint
 	if err != nil {
 		return nil, err
 	}
-	calibrationInfo, err := verifyFaceOnCalibrationImage(getOpenPoseDataResponseCalibration.Keypoints, request.CalibratedImage.FeetLineMethod)
-	if err != nil {
-		return nil, err
+	log.Printf("Before verify calibration")
+	calibrationInfo, warning := VerifyFaceOnCalibrationImage(getOpenPoseDataResponseCalibration.Keypoints, request.CalibratedImage.FeetLineMethod)
+	if warning != nil {
+		return nil, warning
 	}
+	log.Printf("After verify calibration")
 	getOpenPoseDataResponseImg, err := p.ocvmgr.GetOpenPoseData(request.CalibratedImage.Image.Bytes)
 	if err != nil {
 		return nil, err
 	}
-	sideBend, err := getSideBend(getOpenPoseDataResponseImg.Keypoints, calibrationInfo)
+	sideBend, warning := GetSideBend(getOpenPoseDataResponseImg.Keypoints, calibrationInfo)
 	var sideBendWarning string
-	if err != nil {
-		sideBendWarning = err.Error()
+	if warning != nil {
+		sideBendWarning = warning.Error()
 	}
 	log.Printf("Side bend is %f", sideBend)
+	lFootFlare, warning := GetLeftFootFlare(getOpenPoseDataResponseImg.Keypoints, calibrationInfo)
+	var lFootFlareWarning string
+	if warning != nil {
+		lFootFlareWarning = warning.Error()
+	}
+	log.Printf("Left foot flare is %f", lFootFlare)
+	rFootFlare, warning := GetRightFootFlare(getOpenPoseDataResponseImg.Keypoints, calibrationInfo)
+	var rFootFlareWarning string
+	if warning != nil {
+		rFootFlareWarning = warning.Error()
+	}
+	log.Printf("Right foot flare is %f", rFootFlare)
 	response := &cv.GetFaceOnPoseSetupPointsResponse{
 		SetupPoints: &cv.FaceOnGolfSetupPoints{
 			SideBend: &cv.Double{
 				Data:    sideBend,
 				Warning: sideBendWarning,
+			},
+			LFootFlare: &cv.Double{
+				Data:    lFootFlare,
+				Warning: lFootFlareWarning,
+			},
+			RFootFlare: &cv.Double{
+				Data:    rFootFlare,
+				Warning: rFootFlareWarning,
 			},
 		},
 	}

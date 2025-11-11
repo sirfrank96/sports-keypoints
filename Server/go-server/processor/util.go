@@ -1,7 +1,6 @@
 package processor
 
 import (
-	"fmt"
 	"math"
 
 	cv "github.com/sirfrank96/go-server/computer-vision-sports-proto"
@@ -28,20 +27,6 @@ type Intersection struct {
 	line2            *Line
 	intersectPoint   *Point
 	angleAtIntersect float64
-}
-
-type FeetLineInfo struct {
-	feetLineMethod cv.FeetLineMethod
-	lPoint         *cv.Keypoint
-	rPoint         *cv.Keypoint
-	feetLine       *Line
-}
-
-type CalibrationInfo struct {
-	feetLineInfo   *FeetLineInfo
-	horAxisLine    *Line
-	vertAxisLine   *Line
-	vanishingPoint *Point
 }
 
 //util
@@ -73,7 +58,7 @@ func getYIntercept(point *Point, slope float64) float64 {
 	return point.yPos - (slope * point.xPos)
 }
 
-func getMidpoint(point1 *Point, point2 Point) *Point {
+func getMidpoint(point1 *Point, point2 *Point) *Point {
 	xMid := (point1.xPos + point2.xPos) / float64(2)
 	yMid := (point1.yPos + point2.yPos) / float64(2)
 	return &Point{xPos: xMid, yPos: yMid}
@@ -140,74 +125,4 @@ func convertCvKeypointToPoint(cvKeypoint *cv.Keypoint) *Point {
 
 func convertPointToCvKeypoint(point *Point) *cv.Keypoint {
 	return &cv.Keypoint{X: point.xPos, Y: point.yPos}
-}
-
-func verifyKeypoint(keypoint *cv.Keypoint, keypointName string, threshold float64) error {
-	if keypoint.Confidence < threshold {
-		return fmt.Errorf("uncertain where %s is, confidence is %f. please make sure %s is visible in image", keypointName, keypoint.Confidence, keypointName)
-	}
-	return nil
-}
-
-func verifyFeetLineInfo(feetLineInfo *FeetLineInfo, threshold float64) error {
-	var err error
-	if e := verifyKeypoint(feetLineInfo.lPoint, "left point", threshold); e != nil {
-		err = appendError(err, fmt.Errorf("%w, please set a different FeetLineMethod", e))
-	}
-	if e := verifyKeypoint(feetLineInfo.rPoint, "right point", threshold); e != nil {
-		err = appendError(err, fmt.Errorf("%w, please set a different FeetLineMethod", e))
-	}
-	return err
-}
-
-func getFeetLineInfo(keypoints *cv.Body25PoseKeypoints, feetLineMethod cv.FeetLineMethod) (*FeetLineInfo, error) {
-	feetLineInfo := &FeetLineInfo{feetLineMethod: feetLineMethod}
-	if feetLineMethod == cv.FeetLineMethod_USE_TOE_LINE {
-		feetLineInfo.lPoint = keypoints.LBigToe
-		feetLineInfo.rPoint = keypoints.RBigToe
-	} else { // default is USE_HEEL_LINE
-		feetLineInfo.lPoint = keypoints.LHeel
-		feetLineInfo.rPoint = keypoints.RHeel
-	}
-	feetLineInfo.feetLine = getLine(convertCvKeypointToPoint(feetLineInfo.lPoint), convertCvKeypointToPoint(feetLineInfo.rPoint))
-	return feetLineInfo, nil
-}
-
-// TODO: Configure confidence level
-func verifyCalibrationImageAxes(keypoints *cv.Body25PoseKeypoints, feetLineMethod cv.FeetLineMethod) (*CalibrationInfo, error) {
-	// Get horizontal axis
-	feetLineInfo, _ := getFeetLineInfo(keypoints, feetLineMethod)
-	if err := verifyFeetLineInfo(feetLineInfo, 0.5); err != nil {
-		return nil, err
-	}
-	// Get vertical axis
-	if err := verifyKeypoint(keypoints.Midhip, "midhip", 0.5); err != nil {
-		return nil, err
-	}
-	if err := verifyKeypoint(keypoints.Neck, "neck", 0.5); err != nil {
-		return nil, err
-	}
-	horAxisLine := feetLineInfo.feetLine
-	vertAxisLine := getLine(convertCvKeypointToPoint(keypoints.Midhip), convertCvKeypointToPoint(keypoints.Neck))
-	// Check if angle between axes is around 90 degrees
-	horDeg := convertSlopeToDegrees(horAxisLine.slope)
-	vertDeg := convertSlopeToDegrees(vertAxisLine.slope)
-	diff := math.Abs(vertDeg) + math.Abs(horDeg) - 90
-	if math.Abs(diff) > 10 { // make this 5 or less after better test images
-		return nil, fmt.Errorf("axes calibration image off. horizontal axis between heels is %f degrees. vertical axis between midhip and neck is %f degrees. difference of %f degrees is too large. please adjust camera, stance, or posture. recommend using alignment sticks to help calibration", horDeg, vertDeg, diff)
-	}
-	fmt.Printf("Good axes calibration. Horizontal axis between heels is %f degrees. vertical axis between midhip and neck is %f degrees\n", horDeg, vertDeg)
-	return &CalibrationInfo{feetLineInfo: feetLineInfo, horAxisLine: horAxisLine, vertAxisLine: vertAxisLine}, nil
-}
-
-func appendError(err1 error, err2 error) error {
-	if err1 != nil && err2 != nil {
-		return fmt.Errorf("%w, %w", err1, err2)
-	} else if err1 == nil {
-		return err2
-	} else if err2 == nil {
-		return err1
-	} else {
-		return nil
-	}
 }

@@ -13,23 +13,26 @@ import (
 //img 1: stand straddled, check to make sure heel horizontal and spine vertical are close to 90
 //img 2: set alignment stick not centered, point alignment stick at target, set up with heels against alignment stick feet shoulder width or wider (check that heels are not centered in image)
 // get vanishing point, intersection of vertaxis and heels axis
-func verifyDTLCalibrationImages(axesKeypoints *cv.Body25PoseKeypoints, vanishingPointKeypoints *cv.Body25PoseKeypoints, feetLineMethod cv.FeetLineMethod) (*CalibrationInfo, error) {
+func VerifyDTLCalibrationImages(axesKeypoints *cv.Body25PoseKeypoints, vanishingPointKeypoints *cv.Body25PoseKeypoints, feetLineMethod cv.FeetLineMethod) (*CalibrationInfo, warning) {
 	// verify axes image
-	calibrationInfo, err := verifyCalibrationImageAxes(axesKeypoints, feetLineMethod)
-	if err != nil {
-		return nil, err
+	calibrationInfo, warning := VerifyCalibrationImageAxes(axesKeypoints, feetLineMethod)
+	if warning != nil {
+		return nil, warning
 	}
 	// verify vanishing point image
-	feetLineInfo, _ := getFeetLineInfo(vanishingPointKeypoints, feetLineMethod)
-	if err := verifyFeetLineInfo(feetLineInfo, 0.5); err != nil {
-		return nil, err
+	feetLine, warning := GetFeetLine(vanishingPointKeypoints, feetLineMethod)
+	if warning != nil {
+		return nil, warning
 	}
-	slopeDiff := math.Abs(feetLineInfo.feetLine.slope - calibrationInfo.vertAxisLine.slope)
+	slopeDiff := math.Abs(feetLine.line.slope - calibrationInfo.vertAxisLine.slope)
 	if slopeDiff < float64(1) { // TODO: Configure how close slope is (and how to determine how close slope is)
-		return nil, fmt.Errorf("vanishing point calibration image off. feet line slope %f and vertaxis line slope %f are too close (%f). make sure feet line is off centered or make sure alignment stick is pointed at target (parallel lines converge in distance)", feetLineInfo.feetLine.slope, calibrationInfo.vertAxisLine.slope, slopeDiff)
+		return nil, Warning{
+			warningType: SEVERE,
+			message:     fmt.Sprintf("vanishing point calibration image off. feet line slope %f and vertaxis line slope %f are too close (%f). make sure feet line is off centered or make sure alignment stick is pointed at target (parallel lines converge in distance)", feetLine.line.slope, calibrationInfo.vertAxisLine.slope, slopeDiff),
+		}
 	}
-	fmt.Printf("Good vanishing point calibration. heel line slope is %f, and vertaxis line slope is %f", feetLineInfo.feetLine.slope, calibrationInfo.vertAxisLine.slope)
-	intersection := getIntersection(feetLineInfo.feetLine, calibrationInfo.vertAxisLine)
+	fmt.Printf("Good vanishing point calibration. heel line slope is %f, and vertaxis line slope is %f", feetLine.line.slope, calibrationInfo.vertAxisLine.slope)
+	intersection := getIntersection(feetLine.line, calibrationInfo.vertAxisLine)
 	calibrationInfo.vanishingPoint = intersection.intersectPoint
 	return calibrationInfo, nil
 }
@@ -37,13 +40,19 @@ func verifyDTLCalibrationImages(axesKeypoints *cv.Body25PoseKeypoints, vanishing
 //spine angle
 //line from midhip to neck
 //angle between that and vertical axis
-func getSpineAngle(keypoints *cv.Body25PoseKeypoints, calibrationInfo *CalibrationInfo) (float64, error) {
-	var warning error
-	if err := verifyKeypoint(keypoints.Midhip, "midhip", 0.5); err != nil {
-		warning = appendError(warning, err)
+func GetSpineAngle(keypoints *cv.Body25PoseKeypoints, calibrationInfo *CalibrationInfo) (float64, warning) {
+	var warning warning
+	if w := verifyKeypoint(keypoints.Midhip, "midhip", 0.5); w != nil {
+		if w.WarningType() == SEVERE {
+			return 0, w
+		}
+		warning = appendMinorWarnings(warning, w)
 	}
-	if err := verifyKeypoint(keypoints.Neck, "neck", 0.5); err != nil {
-		warning = appendError(warning, err)
+	if w := verifyKeypoint(keypoints.Neck, "neck", 0.5); w != nil {
+		if w.WarningType() == SEVERE {
+			return 0, w
+		}
+		warning = appendMinorWarnings(warning, w)
 	}
 	vertAxisLine := calibrationInfo.vertAxisLine
 	vertAxisThroughMidhipLine := getLineWithSlope(convertCvKeypointToPoint(keypoints.Midhip), vertAxisLine.slope)
@@ -58,23 +67,26 @@ func getSpineAngle(keypoints *cv.Body25PoseKeypoints, calibrationInfo *Calibrati
 //feet alignment
 //assume feet are left of vert axis (maybe use toes? easier to see?)
 //TODO: add other edge cases for feet crossing vertaxis
-func getFeetAlignment(keypoints *cv.Body25PoseKeypoints, calibrationInfo *CalibrationInfo) (float64, error) {
-	var warning error
-	currFeetLineInfo, _ := getFeetLineInfo(keypoints, calibrationInfo.feetLineInfo.feetLineMethod)
-	if err := verifyFeetLineInfo(currFeetLineInfo, 0.6); err != nil {
-		warning = appendError(warning, err)
+func GetFeetAlignment(keypoints *cv.Body25PoseKeypoints, calibrationInfo *CalibrationInfo) (float64, warning) {
+	var warning warning
+	currFeetLine, w := GetFeetLine(keypoints, calibrationInfo.feetLine.feetLineMethod)
+	if w != nil {
+		if w.WarningType() == SEVERE {
+			return 0, w
+		}
+		warning = appendMinorWarnings(warning, w)
 	}
-	fmt.Printf("FeetLineInfo: %+v, LPoint: %+v, RPoint: %+v\n", currFeetLineInfo, currFeetLineInfo.lPoint, currFeetLineInfo.rPoint)
+	fmt.Printf("FeetLineInfo: %+v, LPoint: %+v, RPoint: %+v\n", currFeetLine, currFeetLine.lPoint, currFeetLine.rPoint)
 	fmt.Printf("VanishingPoint: %+v\n", calibrationInfo.vanishingPoint)
-	feetDegrees := getAngleAtIntersection(convertCvKeypointToPoint(currFeetLineInfo.lPoint), convertCvKeypointToPoint(currFeetLineInfo.rPoint), calibrationInfo.vanishingPoint)
+	feetDegrees := getAngleAtIntersection(currFeetLine.lPoint, currFeetLine.rPoint, calibrationInfo.vanishingPoint)
 	fmt.Printf("Angle at right point intersection: %f\n", feetDegrees)
-	realParallelLine := getLine(calibrationInfo.vanishingPoint, convertCvKeypointToPoint(currFeetLineInfo.rPoint)) // line that converges at vanishing point
+	realParallelLine := getLine(calibrationInfo.vanishingPoint, currFeetLine.rPoint) // line that converges at vanishing point
 	fmt.Printf("Real parallel is %+v\n", realParallelLine)
-	fmt.Printf("Current feet line is %+v\n", currFeetLineInfo.feetLine)
+	fmt.Printf("Current feet line is %+v\n", currFeetLine.line)
 	//determine if closed or open
-	if currFeetLineInfo.feetLine.slope == realParallelLine.slope { // neutral
+	if currFeetLine.line.slope == realParallelLine.slope { // neutral
 		return 0, warning
-	} else if currFeetLineInfo.feetLine.slope > realParallelLine.slope && currFeetLineInfo.feetLine.slope <= 0 { // closed (will return positive number)
+	} else if currFeetLine.line.slope > realParallelLine.slope && currFeetLine.line.slope <= 0 { // closed (will return positive number)
 		return feetDegrees, warning
 	} else { // open (will return negative number)
 		return float64(-1) * feetDegrees, warning

@@ -110,9 +110,13 @@ enum FeetLineMethod {
 }
 
 message DTLGolfSetupPoints {
+    // degrees from vertical
     Double spine_angle = 1;
+    // degrees from target (negative is open, positive is closed)
     Double feet_alignment = 2;
+    // degrees from target (negative is open, positive is closed)
     Double heel_alignment = 3;
+    // degrees from target (negative is open, positive is closed)
     Double toe_alignment = 4;
     //shoulder_alignment
     //waist_alignment
@@ -125,14 +129,17 @@ message DTLGolfSetupPoints {
 }
 
 message FaceOnGolfSetupPoints {
+    // degrees from vertical (positive is right side bend, negative is left side bend)
     Double side_bend = 1;
-    //l_foot_flare
-    //r_foot_flare
+    // degrees from line running through midpoint of heels, perpendicular to target line (positive external feet, negative is internal feet)
+    Double l_foot_flare = 2;
+    // degrees from line running through midpoint of heels, perpendicular to target line (positive external feet, negative is internal feet)
+    Double r_foot_flare = 3;
     //stance_width
     //shoulder_angle
     //waist_angle
     //shaft_lean
-    //ball_position
+    //ball_position (relative to feet and chest and head?)
     //head_position
     //chest_position
 }
