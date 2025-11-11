@@ -150,11 +150,12 @@ func testGetDTLPoseSetupPoints(ctx context.Context, c cv.ComputerVisionGolfServi
 	log.Printf("Feet align tests...\n")
 	calibrationImgAxesPath = `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\dtl-feetalign-axescalibration.jpg`
 	calibrationImgVanishingPath = `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\dtl-feetalign-vanishingpointcalibration.jpg`
-	dTLPoseSetupPointsResponse, err = cvclient.GetDTLPoseSetupPoints(ctx, c, calibrationImgAxesPath, calibrationImgVanishingPath, cv.FeetLineMethod_USE_HEEL_LINE, filepath.Join(currentFileDirectory, "static", "dtl-feetalign-neutral.jpg"))
+	_, err = cvclient.GetDTLPoseSetupPoints(ctx, c, calibrationImgAxesPath, calibrationImgVanishingPath, cv.FeetLineMethod_USE_HEEL_LINE, filepath.Join(currentFileDirectory, "static", "dtl-feetalign-neutral.jpg"))
 	if err != nil {
-		log.Fatalf("Error in GetDTLPoseSetupPoints neutral feet align on heel line %w", err)
+		log.Printf("Bad heel line error is %w", err)
+	} else {
+		log.Fatalf("Supposed to get error with heel line that has low confidence in calibrated image")
 	}
-	log.Printf("Neutral feet alignment on heel line (bad heel line) is %f, associated warning msg is %s", dTLPoseSetupPointsResponse.SetupPoints.FeetAlignment.Data, dTLPoseSetupPointsResponse.SetupPoints.FeetAlignment.Warning)
 	dTLPoseSetupPointsResponse, err = cvclient.GetDTLPoseSetupPoints(ctx, c, calibrationImgAxesPath, calibrationImgVanishingPath, cv.FeetLineMethod_USE_TOE_LINE, filepath.Join(currentFileDirectory, "static", "dtl-feetalign-neutral.jpg"))
 	if err != nil {
 		log.Fatalf("Error in GetDTLPoseSetupPoints neutral feet align on toe line %w", err)
@@ -193,11 +194,11 @@ func main() {
 	}
 	defer closeConn()
 
-	//testShowDTLPoseImage(ctx, c)
-	//testShowFaceOnPoseImage(ctx, c)
-	//testShowDTLPoseImagesFromVideo(ctx, c)
+	testShowDTLPoseImage(ctx, c)
+	testShowFaceOnPoseImage(ctx, c)
+	testShowDTLPoseImagesFromVideo(ctx, c)
 	testGetFaceOnPoseSetupPoints(ctx, c)
-	//testGetDTLPoseSetupPoints(ctx, c)
+	testGetDTLPoseSetupPoints(ctx, c)
 
 	log.Printf("Ending go test_client")
 }

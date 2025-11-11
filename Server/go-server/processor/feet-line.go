@@ -10,6 +10,8 @@ type FeetLineInfo struct {
 	feetLineMethod cv.FeetLineMethod
 	lKeypoint      *cv.Keypoint
 	rKeypoint      *cv.Keypoint
+	lKeypointName  string
+	rKeypointName  string
 	threshold      float64
 }
 
@@ -35,17 +37,21 @@ func getFeetLineInfo(keypoints *cv.Body25PoseKeypoints, feetLineMethod cv.FeetLi
 	feetLineInfo := &FeetLineInfo{feetLineMethod: feetLineMethod, threshold: 0.6}
 	if feetLineMethod == cv.FeetLineMethod_USE_TOE_LINE {
 		feetLineInfo.lKeypoint = keypoints.LBigToe
+		feetLineInfo.lKeypointName = "left big toe"
 		feetLineInfo.rKeypoint = keypoints.RBigToe
+		feetLineInfo.rKeypointName = "right big toe"
 	} else { // default is USE_HEEL_LINE
 		feetLineInfo.lKeypoint = keypoints.LHeel
+		feetLineInfo.lKeypointName = "left heel"
 		feetLineInfo.rKeypoint = keypoints.RHeel
+		feetLineInfo.lKeypointName = "right heel"
 	}
 	return feetLineInfo
 }
 
 func verifyFeetLineInfo(feetLineInfo *FeetLineInfo) warning {
 	var warning warning
-	if w := verifyKeypoint(feetLineInfo.lKeypoint, "left point", feetLineInfo.threshold); w != nil {
+	if w := verifyKeypoint(feetLineInfo.lKeypoint, feetLineInfo.lKeypointName, feetLineInfo.threshold); w != nil {
 		if w.WarningType() == SEVERE {
 			return w
 		}
@@ -55,7 +61,7 @@ func verifyFeetLineInfo(feetLineInfo *FeetLineInfo) warning {
 		}
 		warning = appendMinorWarnings(warning, wStruct)
 	}
-	if w := verifyKeypoint(feetLineInfo.rKeypoint, "right point", feetLineInfo.threshold); w != nil {
+	if w := verifyKeypoint(feetLineInfo.rKeypoint, feetLineInfo.rKeypointName, feetLineInfo.threshold); w != nil {
 		if w.WarningType() == SEVERE {
 			return w
 		}

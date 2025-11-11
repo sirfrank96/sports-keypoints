@@ -1,9 +1,8 @@
 package processor
 
 import (
-	//"context"
+	"fmt"
 	"log"
-	//"sync"
 
 	cv "github.com/sirfrank96/go-server/computer-vision-sports-proto"
 	cvapi "github.com/sirfrank96/go-server/cv-api"
@@ -63,7 +62,7 @@ func (p *Processor) GetDTLPoseSetupPoints(request *cv.GetDTLPoseSetupPointsReque
 	}
 	calibrationInfo, warning := VerifyDTLCalibrationImages(getOpenPoseDataResponseCalibrationAxes.Keypoints, getOpenPoseDataResponseCalibrationVanishingPoint.Keypoints, request.CalibratedImage.FeetLineMethod)
 	if warning != nil {
-		return nil, warning
+		return nil, fmt.Errorf("could not verify dtl calibration images: %w", warning)
 	}
 	getOpenPoseDataResponseImg, err := p.ocvmgr.GetOpenPoseData(request.CalibratedImage.Image.Bytes)
 	if err != nil {
@@ -101,12 +100,10 @@ func (p *Processor) GetFaceOnPoseSetupPoints(request *cv.GetFaceOnPoseSetupPoint
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Before verify calibration")
 	calibrationInfo, warning := VerifyFaceOnCalibrationImage(getOpenPoseDataResponseCalibration.Keypoints, request.CalibratedImage.FeetLineMethod)
 	if warning != nil {
-		return nil, warning
+		return nil, fmt.Errorf("could not verify face on calibration images: %w", warning)
 	}
-	log.Printf("After verify calibration")
 	getOpenPoseDataResponseImg, err := p.ocvmgr.GetOpenPoseData(request.CalibratedImage.Image.Bytes)
 	if err != nil {
 		return nil, err
