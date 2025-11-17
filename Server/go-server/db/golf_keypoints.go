@@ -85,7 +85,7 @@ func (d *DbManager) UpdateGolfKeypointsForInputImage(ctx context.Context, inputI
 		}
 		return nil, fmt.Errorf("could not update golfkeypoints: %w", err)
 	}
-	fmt.Printf("Update golfkeypoints result: %+v...\n", updatedGolfKeypoints)
+	fmt.Printf("Updated golf keypoints result: id: %s, userid: %s, inputimgid: %s\n", updatedGolfKeypoints.Id, updatedGolfKeypoints.UserId, updatedGolfKeypoints.InputImageId)
 	return &updatedGolfKeypoints, nil
 }
 

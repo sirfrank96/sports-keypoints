@@ -88,7 +88,7 @@ func (d *DbManager) UpdateInputImage(ctx context.Context, inputImgId string, new
 		return nil, fmt.Errorf("could not update input image: %w", err)
 	}
 	//updatedInputImage.Id = objectId.Hex()
-	fmt.Printf("Update input image result: %+v...\n", updatedInputImage)
+	fmt.Printf("Update input image result: imgId: %s, userId: %s, imageType: %s\n", updatedInputImage.Id, updatedInputImage.UserId, updatedInputImage.ImageType)
 	return &updatedInputImage, nil
 }
 

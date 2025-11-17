@@ -5,15 +5,15 @@ import (
 )
 
 // TODO: Change to Severity
-type WarningType int
+type Severity int
 
 const (
-	MINOR WarningType = iota
+	MINOR Severity = iota
 	SEVERE
 )
 
-func (wt WarningType) String() string {
-	switch wt {
+func (s Severity) String() string {
+	switch s {
 	case MINOR:
 		return "Minor"
 	case SEVERE:
@@ -24,26 +24,26 @@ func (wt WarningType) String() string {
 }
 
 type Warning interface {
-	GetWarningType() WarningType
+	GetSeverity() Severity
 	Error() string
 }
 
 type WarningImpl struct {
-	WarningType WarningType
-	Message     string
+	Severity Severity
+	Message  string
 }
 
 func (w WarningImpl) Error() string {
-	return fmt.Sprintf("warning type: %s. error is %s", w.WarningType.String(), w.Message)
+	return fmt.Sprintf("severity: %s. error is %s", w.Severity.String(), w.Message)
 }
 
-func (w WarningImpl) GetWarningType() WarningType {
-	return w.WarningType
+func (w WarningImpl) GetSeverity() Severity {
+	return w.Severity
 }
 
 func AppendMinorWarnings(warning1 Warning, warning2 Warning) Warning {
 	if warning1 != nil && warning2 != nil {
-		return WarningImpl{WarningType: MINOR, Message: fmt.Sprintf("%s, %s", warning1.Error(), warning2.Error())}
+		return WarningImpl{Severity: MINOR, Message: fmt.Sprintf("%s, %s", warning1.Error(), warning2.Error())}
 	} else if warning1 == nil {
 		return warning2
 	} else if warning2 == nil {

@@ -34,9 +34,10 @@ func (g *GolfKeypointsListener) UploadInputImage(ctx context.Context, request *s
 	}
 	// put image into db
 	inputImage := &db.InputImage{
-		UserId:    userId,
-		ImageType: request.ImageType,
-		InputImg:  request.Image,
+		UserId:          userId,
+		ImageType:       request.ImageType,
+		InputImg:        request.Image,
+		CalibrationInfo: *util.GetEmptyCalibrationInfo(),
 	}
 	inputImage, err := g.dbmgr.CreateInputImage(ctx, inputImage)
 	if err != nil {
@@ -135,7 +136,7 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 			}
 			var warning util.Warning
 			calibrationInfo, warning = util.VerifyCalibrationImageAxes(getOpenPoseDataResponse.Keypoints, calibrationInfo)
-			if warning != nil && warning.GetWarningType() == util.SEVERE {
+			if warning != nil && warning.GetSeverity() == util.SEVERE {
 				return nil, fmt.Errorf("could not verify calibration image axes: %s", warning.Error())
 			}
 			// vanishing point calibration
@@ -145,21 +146,21 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 					return nil, fmt.Errorf("could not get openpose data for calibration image vanishingpoint %w", err)
 				}
 				calibrationInfo, warning = util.VerifyCalibrationImageVanishingPoint(getOpenPoseDataResponse.Keypoints, calibrationInfo)
-				if warning != nil && warning.GetWarningType() == util.SEVERE {
+				if warning != nil && warning.GetSeverity() == util.SEVERE {
 					return nil, fmt.Errorf("could not verify calibration image axes: %s", warning.Error())
 				}
 				// no vanishing point calibration
 			} else {
 				calibrationInfo.VanishingPointCalibrationWarning = util.WarningImpl{
-					WarningType: util.MINOR,
-					Message:     "no vanishing point calibration, may not be able to provide all setup points",
+					Severity: util.MINOR,
+					Message:  "no vanishing point calibration, may not be able to provide all setup points",
 				}
 			}
 			// no axes or vanishing point calibration
 		} else {
 			calibrationInfo.AxesCalibrationWarning = util.WarningImpl{
-				WarningType: util.MINOR,
-				Message:     "no axes or vanishing point calibration, may not be able to provide all setup points",
+				Severity: util.MINOR,
+				Message:  "no axes or vanishing point calibration, may not be able to provide all setup points",
 			}
 		}
 		// face on calibration
@@ -172,14 +173,14 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 			}
 			var warning util.Warning
 			calibrationInfo, warning = util.VerifyCalibrationImageAxes(getOpenPoseDataResponse.Keypoints, calibrationInfo)
-			if warning != nil && warning.GetWarningType() == util.SEVERE {
+			if warning != nil && warning.GetSeverity() == util.SEVERE {
 				return nil, fmt.Errorf("could not verify calibration image axes: %s", warning.Error())
 			}
 			// no axes calibration
 		} else {
 			calibrationInfo.AxesCalibrationWarning = util.WarningImpl{
-				WarningType: util.MINOR,
-				Message:     "no axes calibration, may not be able to provide all setup points",
+				Severity: util.MINOR,
+				Message:  "no axes calibration, may not be able to provide all setup points",
 			}
 		}
 	}

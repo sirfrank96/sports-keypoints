@@ -10,7 +10,6 @@ import (
 )
 
 type Controller struct {
-	//mutex  sync.Mutex
 	ocvmgr *opencvclient.OpenCvClientManager
 	dbmgr  *db.DbManager
 	kpmgr  *kpmgr.KeypointsServerManager

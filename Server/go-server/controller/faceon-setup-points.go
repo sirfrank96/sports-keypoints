@@ -15,16 +15,21 @@ func VerifyFaceOnCalibrationImage(keypoints *skp.Body25PoseKeypoints, calibratio
 //line from midhip to neck
 //angle of intersect between that and vertical axis through midhip
 func GetSideBend(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
-	// TODO: IF calibrationInfo.AxesWarning is not nil return that
+	if calibrationInfo.CalibrationType == skp.CalibrationType_NO_CALIBRATION {
+		return 0, util.WarningImpl{
+			Severity: util.MINOR,
+			Message:  "Can't calculate side bend without axes calibration",
+		}
+	}
 	var warning util.Warning
 	if w := util.VerifyKeypoint(keypoints.Midhip, "midhip", 0.5); w != nil {
-		if w.GetWarningType() == util.SEVERE {
+		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
 	if w := util.VerifyKeypoint(keypoints.Neck, "neck", 0.5); w != nil {
-		if w.GetWarningType() == util.SEVERE {
+		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
@@ -59,22 +64,27 @@ func getFootFlare(heel *skp.Keypoint, toe *skp.Keypoint, calibrationInfo *util.C
 }
 
 func GetLeftFootFlare(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
-	// TODO: IF calibrationInfo.AxesWarning is not nil return that
+	if calibrationInfo.CalibrationType == skp.CalibrationType_NO_CALIBRATION {
+		return 0, util.WarningImpl{
+			Severity: util.MINOR,
+			Message:  "Can't calculate left foot flare without axes calibration",
+		}
+	}
 	var warning util.Warning
 	if w := util.VerifyKeypoint(keypoints.LHeel, "left heel", 0.5); w != nil {
-		if w.GetWarningType() == util.SEVERE {
+		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
 	if w := util.VerifyKeypoint(keypoints.RHeel, "right heel", 0.5); w != nil {
-		if w.GetWarningType() == util.SEVERE {
+		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
 	if w := util.VerifyKeypoint(keypoints.LBigToe, "left big toe", 0.5); w != nil {
-		if w.GetWarningType() == util.SEVERE {
+		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
@@ -84,22 +94,27 @@ func GetLeftFootFlare(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.
 }
 
 func GetRightFootFlare(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
-	// TODO: IF calibrationInfo.AxesWarning is not nil return that
+	if calibrationInfo.CalibrationType == skp.CalibrationType_NO_CALIBRATION {
+		return 0, util.WarningImpl{
+			Severity: util.MINOR,
+			Message:  "Can't calculate right foot flare without axes calibration",
+		}
+	}
 	var warning util.Warning
 	if w := util.VerifyKeypoint(keypoints.LHeel, "left heel", 0.5); w != nil {
-		if w.GetWarningType() == util.SEVERE {
+		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
 	if w := util.VerifyKeypoint(keypoints.RHeel, "right heel", 0.5); w != nil {
-		if w.GetWarningType() == util.SEVERE {
+		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
 	if w := util.VerifyKeypoint(keypoints.RBigToe, "right big toe", 0.5); w != nil {
-		if w.GetWarningType() == util.SEVERE {
+		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)

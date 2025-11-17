@@ -323,6 +323,60 @@ func testMainCodeFlow(ctx context.Context, uClient skp.UserServiceClient, gClien
 	log.Printf("Calculate golf keypoints dtl: %+v", calculateGolfKeypointsResponse.GolfKeypoints.DtlGolfSetupPoints)
 }
 
+func testNoCalibration(ctx context.Context, uClient skp.UserServiceClient, gClient skp.GolfKeypointsServiceClient) {
+	createUserResponse, err := uclient.CreateUser(ctx, uClient, "user_1", "password123", "user_1@gmail.com")
+	if err != nil {
+		log.Fatalf("Failed to create user: %s", err.Error())
+	}
+	log.Printf("CreateUserResponse: %+v", createUserResponse)
+
+	registerUserResponse, err := uclient.RegisterUser(ctx, uClient, "user_1", "password123")
+	if err != nil {
+		log.Fatalf("Failed to register user: %s", err.Error())
+	}
+	log.Printf("RegisterUserResponse: %+v", registerUserResponse)
+
+	uploadInputImageResponse, err := gclient.UploadInputImage(ctx, gClient, registerUserResponse.SessionToken, filepath.Join(currentFileDirectory, "static", "dtl-spineangle-normal.jpg"), skp.ImageType_DTL)
+	if err != nil {
+		log.Fatalf("Failed to upload input image: %s", err.Error())
+	}
+	log.Printf("UploadInputImageResponse: %+v", uploadInputImageResponse)
+
+	// no call to calibrateInputImage
+	calculateGolfKeypointsResponse, err := gclient.CalculateGolfKeypoints(ctx, gClient, registerUserResponse.SessionToken, uploadInputImageResponse.InputImageId, filepath.Join(currentFileDirectory, "dtl-spineangle-normal.jpg"))
+	if err != nil {
+		log.Fatalf("Failed to calculate golf keypoints: %s", err.Error())
+	}
+	log.Printf("Calculate golf keypoints dtl: %+v", calculateGolfKeypointsResponse.GolfKeypoints.DtlGolfSetupPoints)
+
+	// calibrateInputImage NO_CALIBRATION
+	calibrateInputImageResponse, err := gclient.CalibrateInputImage(ctx, gClient, registerUserResponse.SessionToken, uploadInputImageResponse.InputImageId, skp.ImageType_DTL, skp.CalibrationType_NO_CALIBRATION, skp.FeetLineMethod_USE_TOE_LINE, "", "")
+	if err != nil {
+		log.Fatalf("Failed to calibrate input image: %s", err.Error())
+	}
+	log.Printf("CalibrateInputImageResponse: %+v", calibrateInputImageResponse)
+
+	calculateGolfKeypointsResponse, err = gclient.CalculateGolfKeypoints(ctx, gClient, registerUserResponse.SessionToken, uploadInputImageResponse.InputImageId, filepath.Join(currentFileDirectory, "dtl-spineangle-normal.jpg"))
+	if err != nil {
+		log.Fatalf("Failed to calculate golf keypoints: %s", err.Error())
+	}
+	log.Printf("Calculate golf keypoints dtl: %+v", calculateGolfKeypointsResponse.GolfKeypoints.DtlGolfSetupPoints)
+
+	// calibrateInputImage AXES_CALIBRATION_ONLY
+	calibrationImgAxesPath := `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\dtl-feetalign-axescalibration.jpg`
+	calibrateInputImageResponse, err = gclient.CalibrateInputImage(ctx, gClient, registerUserResponse.SessionToken, uploadInputImageResponse.InputImageId, skp.ImageType_DTL, skp.CalibrationType_AXES_CALIBRATION_ONLY, skp.FeetLineMethod_USE_TOE_LINE, calibrationImgAxesPath, "")
+	if err != nil {
+		log.Fatalf("Failed to calibrate input image: %s", err.Error())
+	}
+	log.Printf("CalibrateInputImageResponse: %+v", calibrateInputImageResponse)
+
+	calculateGolfKeypointsResponse, err = gclient.CalculateGolfKeypoints(ctx, gClient, registerUserResponse.SessionToken, uploadInputImageResponse.InputImageId, filepath.Join(currentFileDirectory, "dtl-spineangle-normal.jpg"))
+	if err != nil {
+		log.Fatalf("Failed to calculate golf keypoints: %s", err.Error())
+	}
+	log.Printf("Calculate golf keypoints dtl: %+v", calculateGolfKeypointsResponse.GolfKeypoints.DtlGolfSetupPoints)
+}
+
 func main() {
 	log.Printf("Starting test_client")
 	ctx := context.Background()
@@ -348,7 +402,8 @@ func main() {
 	}
 	defer closeGolfConn()
 
-	testMainCodeFlow(ctx, uClient, gClient)
+	//testMainCodeFlow(ctx, uClient, gClient)
+	testNoCalibration(ctx, uClient, gClient)
 
 	log.Printf("Ending go test_client")
 }

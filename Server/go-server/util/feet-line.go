@@ -26,7 +26,7 @@ type FeetLine struct {
 func GetFeetLine(keypoints *skp.Body25PoseKeypoints, feetLineMethod skp.FeetLineMethod) (*FeetLine, Warning) {
 	feetLineInfo := GetFeetLineInfo(keypoints, feetLineMethod)
 	warning := VerifyFeetLineInfo(feetLineInfo)
-	if warning != nil && warning.GetWarningType() == SEVERE {
+	if warning != nil && warning.GetSeverity() == SEVERE {
 		return nil, warning
 	}
 	feetLine := GetFeetLineFromInfo(feetLineInfo)
@@ -53,22 +53,22 @@ func GetFeetLineInfo(keypoints *skp.Body25PoseKeypoints, feetLineMethod skp.Feet
 func VerifyFeetLineInfo(feetLineInfo *FeetLineInfo) Warning {
 	var warning Warning
 	if w := VerifyKeypoint(&feetLineInfo.LKeypoint, feetLineInfo.LKeypointName, feetLineInfo.Threshold); w != nil {
-		if w.GetWarningType() == SEVERE {
+		if w.GetSeverity() == SEVERE {
 			return w
 		}
 		wStruct := WarningImpl{
-			WarningType: w.GetWarningType(),
-			Message:     fmt.Sprintf("%w, please set a different FeetLineMethod", w.Error()),
+			Severity: w.GetSeverity(),
+			Message:  fmt.Sprintf("%w, please set a different FeetLineMethod", w.Error()),
 		}
 		warning = AppendMinorWarnings(warning, wStruct)
 	}
 	if w := VerifyKeypoint(&feetLineInfo.RKeypoint, feetLineInfo.RKeypointName, feetLineInfo.Threshold); w != nil {
-		if w.GetWarningType() == SEVERE {
+		if w.GetSeverity() == SEVERE {
 			return w
 		}
 		wStruct := WarningImpl{
-			WarningType: w.GetWarningType(),
-			Message:     fmt.Sprintf("%w, please set a different FeetLineMethod", w.Error()),
+			Severity: w.GetSeverity(),
+			Message:  fmt.Sprintf("%w, please set a different FeetLineMethod", w.Error()),
 		}
 		warning = AppendMinorWarnings(warning, wStruct)
 	}

@@ -29,16 +29,21 @@ func VerifyDTLCalibrationImages(axesKeypoints *skp.Body25PoseKeypoints, vanishin
 //line from midhip to neck
 //angle between that and vertical axis
 func GetSpineAngle(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
-	// TODO: IF calibrationInfo.AxesWarning is not nil return that
+	if calibrationInfo.CalibrationType == skp.CalibrationType_NO_CALIBRATION {
+		return 0, util.WarningImpl{
+			Severity: util.MINOR,
+			Message:  "Can't calculate spine angle without axes calibration",
+		}
+	}
 	var warning util.Warning
 	if w := util.VerifyKeypoint(keypoints.Midhip, "midhip", 0.5); w != nil {
-		if w.GetWarningType() == util.SEVERE {
+		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
 	if w := util.VerifyKeypoint(keypoints.Neck, "neck", 0.5); w != nil {
-		if w.GetWarningType() == util.SEVERE {
+		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
@@ -57,11 +62,22 @@ func GetSpineAngle(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.Cal
 //assume feet are left of vert axis (maybe use toes? easier to see?)
 //TODO: add other edge cases for feet crossing vertaxis
 func GetFeetAlignment(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
-	// TODO: IF calibrationInfo.AxesWarning or vanishing point is not nil return that
+	if calibrationInfo.CalibrationType == skp.CalibrationType_NO_CALIBRATION {
+		return 0, util.WarningImpl{
+			Severity: util.MINOR,
+			Message:  "Can't calculate feet alignment without axes calibration",
+		}
+	}
+	if calibrationInfo.CalibrationType == skp.CalibrationType_AXES_CALIBRATION_ONLY {
+		return 0, util.WarningImpl{
+			Severity: util.MINOR,
+			Message:  "Can't calculate feet alignment without vanishing point calibration",
+		}
+	}
 	var warning util.Warning
 	currFeetLine, w := util.GetFeetLine(keypoints, calibrationInfo.FeetLine.FeetLineMethod)
 	if w != nil {
-		if w.GetWarningType() == util.SEVERE {
+		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)

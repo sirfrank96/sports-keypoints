@@ -19,6 +19,12 @@ type CalibrationInfo struct {
 	VanishingPoint                   Point               `bson:"vanishing_point,omitempty"`
 }
 
+func GetEmptyCalibrationInfo() *CalibrationInfo {
+	return &CalibrationInfo{
+		CalibrationType: skp.CalibrationType_NO_CALIBRATION,
+	}
+}
+
 func CheckIfKeypointExists(keypoint *skp.Keypoint) bool {
 	return keypoint.X != 0 || keypoint.Y != 0
 }
@@ -26,14 +32,14 @@ func CheckIfKeypointExists(keypoint *skp.Keypoint) bool {
 func VerifyKeypoint(keypoint *skp.Keypoint, keypointName string, threshold float64) Warning {
 	if !CheckIfKeypointExists(keypoint) {
 		return WarningImpl{
-			WarningType: SEVERE,
-			Message:     fmt.Sprintf("could not find keypoint %s", keypointName),
+			Severity: SEVERE,
+			Message:  fmt.Sprintf("could not find keypoint %s", keypointName),
 		}
 	}
 	if keypoint.Confidence < threshold {
 		return WarningImpl{
-			WarningType: MINOR,
-			Message:     fmt.Sprintf("uncertain where %s is, confidence is %f. please make sure %s is visible in image", keypointName, keypoint.Confidence, keypointName),
+			Severity: MINOR,
+			Message:  fmt.Sprintf("uncertain where %s is, confidence is %f. please make sure %s is visible in image", keypointName, keypoint.Confidence, keypointName),
 		}
 	}
 	return nil
@@ -61,8 +67,8 @@ func VerifyCalibrationImageAxes(keypoints *skp.Body25PoseKeypoints, calibrationI
 	diff := math.Abs(vertDeg) + math.Abs(horDeg) - 90
 	if math.Abs(diff) > 10 { // make this 5 or less after better test images
 		return nil, WarningImpl{
-			WarningType: SEVERE,
-			Message:     fmt.Sprintf("axes calibration image off. horizontal axis between heels is %f degrees. vertical axis between midhip and neck is %f degrees. difference of %f degrees is too large. please adjust camera, stance, or posture. recommend using alignment sticks to help calibration", horDeg, vertDeg, diff),
+			Severity: SEVERE,
+			Message:  fmt.Sprintf("axes calibration image off. horizontal axis between heels is %f degrees. vertical axis between midhip and neck is %f degrees. difference of %f degrees is too large. please adjust camera, stance, or posture. recommend using alignment sticks to help calibration", horDeg, vertDeg, diff),
 		}
 	}
 	fmt.Printf("Good axes calibration. Horizontal axis between heels is %f degrees. vertical axis between midhip and neck is %f degrees\n", horDeg, vertDeg)
@@ -81,8 +87,8 @@ func VerifyCalibrationImageVanishingPoint(keypoints *skp.Body25PoseKeypoints, ca
 	slopeDiff := math.Abs(feetLine.Line.Slope - calibrationInfo.VertAxisLine.Slope)
 	if slopeDiff < float64(1) { // TODO: Configure how close slope is (and how to determine how close slope is)
 		return nil, WarningImpl{
-			WarningType: SEVERE,
-			Message:     fmt.Sprintf("vanishing point calibration image off. feet line slope %f and vertaxis line slope %f are too close (%f). make sure feet line is off centered or make sure alignment stick is pointed at target (parallel lines converge in distance)", feetLine.Line.Slope, calibrationInfo.VertAxisLine.Slope, slopeDiff),
+			Severity: SEVERE,
+			Message:  fmt.Sprintf("vanishing point calibration image off. feet line slope %f and vertaxis line slope %f are too close (%f). make sure feet line is off centered or make sure alignment stick is pointed at target (parallel lines converge in distance)", feetLine.Line.Slope, calibrationInfo.VertAxisLine.Slope, slopeDiff),
 		}
 	}
 	fmt.Printf("Good vanishing point calibration. heel line slope is %f, and vertaxis line slope is %f", feetLine.Line.Slope, calibrationInfo.VertAxisLine.Slope)
