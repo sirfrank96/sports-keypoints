@@ -31,7 +31,6 @@ message RegisterUserResponse {
 
 message ReadUserRequest {
     string session_token = 1;
-    string user_name = 2;
 }
 
 message ReadUserResponse {
@@ -48,13 +47,11 @@ message UpdateUserRequest {
 
 message UpdateUserResponse {
     bool success = 1;
-    string updated_user_token = 2;
     User updated_user = 3;
 }
 
 message DeleteUserRequest {
     string session_token = 1;
-    string user_name = 2;
 }
 
 message DeleteUserResponse {

@@ -60,7 +60,21 @@ func (g *GolfKeypointsListener) ListInputImagesForUser(ctx context.Context, requ
 	if _, err := verifyUserExists(ctx, g.dbmgr, userId); err != nil {
 		return nil, fmt.Errorf("could not verify user exists")
 	}
-	return nil, nil
+	// get all input images for userid from db
+	inputImgs, err := g.dbmgr.ReadInputImagesForUser(ctx, userId)
+	if err != nil {
+		return nil, fmt.Errorf("could not get images for user from db: %w", err)
+	}
+	var inputImgIds []string
+	for _, inputImg := range inputImgs {
+		inputImgIds = append(inputImgIds, inputImg.Id.Hex())
+	}
+	// return response
+	response := &skp.ListInputImagesForUserResponse{
+		Success:       true,
+		InputImageIds: inputImgIds,
+	}
+	return response, nil
 }
 
 func (g *GolfKeypointsListener) ReadInputImage(ctx context.Context, request *skp.ReadInputImageRequest) (*skp.ReadInputImageResponse, error) {
@@ -73,14 +87,17 @@ func (g *GolfKeypointsListener) ReadInputImage(ctx context.Context, request *skp
 		return nil, fmt.Errorf("could not verify user exists")
 	}
 	// get inputimg with inputimgid from db
-	_, err := g.dbmgr.ReadInputImage(ctx, request.InputImageId)
+	inputImg, err := g.dbmgr.ReadInputImage(ctx, request.InputImageId)
 	if err != nil {
 		return nil, fmt.Errorf("could not read input image with id: %s: %w", request.InputImageId, err)
 	}
 	// return response
 	response := &skp.ReadInputImageResponse{
-		Success: true,
-		//InputImage: db.ConvertInputImageToCVInputImage(inputImage),
+		Success:         true,
+		ImageType:       inputImg.ImageType,
+		Image:           inputImg.InputImg,
+		CalibrationType: inputImg.CalibrationInfo.CalibrationType,
+		FeetLineMethod:  inputImg.CalibrationInfo.FeetLineMethod,
 	}
 	return response, nil
 }
@@ -103,6 +120,7 @@ func (g *GolfKeypointsListener) DeleteInputImage(ctx context.Context, request *s
 	response := &skp.DeleteInputImageResponse{
 		Success: true,
 	}
+	// TODO: Delete golf keypoint assocaited with input image
 	return response, nil
 }
 
@@ -316,9 +334,21 @@ func (g *GolfKeypointsListener) ReadGolfKeypoints(ctx context.Context, request *
 	if _, err := verifyUserExists(ctx, g.dbmgr, userId); err != nil {
 		return nil, fmt.Errorf("could not verify user exists")
 	}
-
+	// find golf keypoints for associated input image id in db
+	golfKeypoints, err := g.dbmgr.ReadGolfKeypointsForInputImage(ctx, request.InputImageId)
+	if err != nil {
+		return nil, fmt.Errorf("could not read golf keypoints from db for input image: %s, %w", request.InputImageId, err)
+	}
 	// return response
-	return nil, nil
+	response := &skp.ReadGolfKeypointsResponse{
+		Success: true,
+		GolfKeypoints: &skp.GolfKeypoints{
+			OutputImg:             golfKeypoints.OutputImg,
+			DtlGolfSetupPoints:    &golfKeypoints.DtlGolfSetupPoints,
+			FaceonGolfSetupPoints: &golfKeypoints.FaceonGolfSetupPoints,
+		},
+	}
+	return response, nil
 }
 
 func (g *GolfKeypointsListener) DeleteGolfKeypoints(ctx context.Context, request *skp.DeleteGolfKeypointsRequest) (*skp.DeleteGolfKeypointsResponse, error) {
@@ -330,7 +360,14 @@ func (g *GolfKeypointsListener) DeleteGolfKeypoints(ctx context.Context, request
 	if _, err := verifyUserExists(ctx, g.dbmgr, userId); err != nil {
 		return nil, fmt.Errorf("could not verify user exists")
 	}
-
+	// delete golf keypoints for associated input image id in db
+	err := g.dbmgr.DeleteGolfKeypointsForInputImage(ctx, request.InputImageId)
+	if err != nil {
+		return nil, fmt.Errorf("could not delete golf keypoints from db for input image: %s, %w", request.InputImageId, err)
+	}
 	// return response
-	return nil, nil
+	response := &skp.DeleteGolfKeypointsResponse{
+		Success: true,
+	}
+	return response, nil
 }

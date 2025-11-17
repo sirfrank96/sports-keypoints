@@ -1,6 +1,5 @@
 syntax = "proto3";
 package sports_keypoints_proto;
-// TODO: DIFF Package name?
 
 import "common.proto";
 
@@ -33,12 +32,11 @@ message UploadInputImageResponse {
 
 message ListInputImagesForUserRequest{
     string session_token = 1;
-    string user_name = 2;
 }
 
 message ListInputImagesForUserResponse {
     bool success = 1;
-    repeated string input_image_id = 2;
+    repeated string input_image_ids = 2;
 }
 
 message ReadInputImageRequest {

@@ -40,6 +40,30 @@ func (d *DbManager) CreateInputImage(ctx context.Context, inputImg *InputImage) 
 	return inputImg, nil
 }
 
+func (d *DbManager) ReadInputImagesForUser(ctx context.Context, userId string) ([]*InputImage, error) {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+	fmt.Printf("Reading input images for user...\n")
+	filter := bson.M{"user_id": userId}
+	cursor, err := d.userCollection.Find(ctx, filter)
+	if err != nil {
+		if err == mongodb.ErrNoDocuments {
+			return nil, fmt.Errorf("no input images for user")
+		}
+		return nil, fmt.Errorf("could not read input images for user: %w", err)
+	}
+	defer cursor.Close(ctx)
+	var res []*InputImage
+	for cursor.Next(ctx) {
+		var inputImage InputImage
+		if err := cursor.Decode(&inputImage); err != nil {
+			return nil, fmt.Errorf("could not decode input image: %w", err)
+		}
+		res = append(res, &inputImage)
+	}
+	return res, nil
+}
+
 func (d *DbManager) ReadInputImage(ctx context.Context, inputImgId string) (*InputImage, error) {
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
