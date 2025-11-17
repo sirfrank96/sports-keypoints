@@ -1,6 +1,6 @@
 package cvclient
 
-import (
+/*import (
 	"bytes"
 	"context"
 	"fmt"
@@ -30,77 +30,100 @@ func InitComputerVisionGolfServiceGrpcClient(serveraddr string) (cv.ComputerVisi
 	return c, conn.Close, nil
 }
 
-func ShowDTLPoseImage(ctx context.Context, c cv.ComputerVisionGolfServiceClient, inputImgPath string, outputImgPath string) error {
-	// Send 1 image to ShowDTLPoseImage
-	file, closeFile, err := testutil.GetFileFromPath(inputImgPath)
-	if err != nil {
-		return fmt.Errorf("failed to getFileFromPath: %w", err)
-	}
-	defer closeFile()
-	bytesEncodedAsJpg, err := testutil.DecodeAndEncodeFileAsJpg(file)
-	if err != nil {
-		return fmt.Errorf("failed to decodeAndEncodeFileAsJpg for original image: %w", err)
-	}
-	response, err := c.ShowDTLPoseImage(ctx,
-		&cv.ShowDTLPoseImageRequest{
+func ReadImageInfo(ctx context.Context, c cv.ComputerVisionGolfServiceClient, userId string, imgId string) (*cv.ImageInfo, error) {
+	return c.ReadImageInfo(ctx, &cv.ReadImageInfoRequest{
+		UserId: userId,
+		ImgId:  imgId,
+	})
+}
+
+func GetDTLPoseImage(ctx context.Context, c cv.ComputerVisionGolfServiceClient, userId string, imgId string, inputImgPath string, outputImgPath string) (*cv.GetDTLPoseImageResponse, error) {
+	var request cv.GetDTLPoseImageRequest
+	if imgId != "" {
+		request = cv.GetDTLPoseImageRequest{
+			UserId: userId,
+			ImgId:  imgId,
+		}
+	} else {
+		// Send 1 image to ShowDTLPoseImage
+		file, closeFile, err := testutil.GetFileFromPath(inputImgPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to getFileFromPath: %w", err)
+		}
+		defer closeFile()
+		bytesEncodedAsJpg, err := testutil.DecodeAndEncodeFileAsJpg(file)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decodeAndEncodeFileAsJpg for original image: %w", err)
+		}
+		request = cv.GetDTLPoseImageRequest{
+			UserId: userId,
 			Image: &cv.Image{
-				Name:  "DTL img",
 				Bytes: bytesEncodedAsJpg,
 			},
-		})
+		}
+	}
+	response, err := c.GetDTLPoseImage(ctx, &request)
 	if err != nil {
-		return fmt.Errorf("c.ShowDTLPoseImage failed: %v", err)
+		return nil, fmt.Errorf("c.ShowDTLPoseImage failed: %v", err)
 	}
 	imgSliceBytes := response.Image.Bytes
 	jpegBytes, err := testutil.DecodeAndEncodeBytesAsJpg(imgSliceBytes)
 	if err != nil {
-		return fmt.Errorf("failed to decodeAndEncodeBytesAsJpg for return image: %w", err)
+		return nil, fmt.Errorf("failed to decodeAndEncodeBytesAsJpg for return image: %w", err)
 	}
 	close, err := testutil.WriteBytesToJpgFile(jpegBytes, outputImgPath)
 	if err != nil {
-		return fmt.Errorf("failed to writeBytesToJpgFile: %w", err)
+		return nil, fmt.Errorf("failed to writeBytesToJpgFile: %w", err)
 	}
 	defer close()
-	return nil
+	return response, nil
 }
 
-func ShowFaceOnPoseImage(ctx context.Context, c cv.ComputerVisionGolfServiceClient, inputImgPath string, outputImgPath string) error {
-	// Send 1 image to ShowFaceOnPoseImage
-	file, closeFile, err := testutil.GetFileFromPath(inputImgPath)
-	if err != nil {
-		return fmt.Errorf("failed to getFileFromPath: %w", err)
-	}
-	defer closeFile()
-	bytesEncodedAsJpg, err := testutil.DecodeAndEncodeFileAsJpg(file)
-	if err != nil {
-		return fmt.Errorf("failed to decodeAndEncodeFileAsJpg for original image: %w", err)
-	}
-	response, err := c.ShowFaceOnPoseImage(ctx,
-		&cv.ShowFaceOnPoseImageRequest{
+func GetFaceOnPoseImage(ctx context.Context, c cv.ComputerVisionGolfServiceClient, userId string, imgId string, inputImgPath string, outputImgPath string) (*cv.GetFaceOnPoseImageResponse, error) {
+	var request cv.GetFaceOnPoseImageRequest
+	if imgId != "" {
+		request = cv.GetFaceOnPoseImageRequest{
+			UserId: userId,
+			ImgId:  imgId,
+		}
+	} else {
+		// Send 1 image to ShowFaceOnPoseImage
+		file, closeFile, err := testutil.GetFileFromPath(inputImgPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to getFileFromPath: %w", err)
+		}
+		defer closeFile()
+		bytesEncodedAsJpg, err := testutil.DecodeAndEncodeFileAsJpg(file)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decodeAndEncodeFileAsJpg for original image: %w", err)
+		}
+		request = cv.GetFaceOnPoseImageRequest{
+			UserId: userId,
 			Image: &cv.Image{
-				Name:  "Image from go to python",
 				Bytes: bytesEncodedAsJpg,
 			},
-		})
+		}
+	}
+	response, err := c.GetFaceOnPoseImage(ctx, &request)
 	if err != nil {
-		return fmt.Errorf("c.ShowFaceOnPoseImage failed: %v", err)
+		return nil, fmt.Errorf("c.ShowFaceOnPoseImage failed: %v", err)
 	}
 	imgSliceBytes := response.Image.Bytes
 	jpegBytes, err := testutil.DecodeAndEncodeBytesAsJpg(imgSliceBytes)
 	if err != nil {
-		return fmt.Errorf("failed to decodeAndEncodeBytesAsJpg for return image: %w", err)
+		return nil, fmt.Errorf("failed to decodeAndEncodeBytesAsJpg for return image: %w", err)
 	}
 	close, err := testutil.WriteBytesToJpgFile(jpegBytes, outputImgPath)
 	if err != nil {
-		return fmt.Errorf("failed to writeBytesToJpgFile: %w", err)
+		return nil, fmt.Errorf("failed to writeBytesToJpgFile: %w", err)
 	}
 	defer close()
-	return nil
+	return response, nil
 }
 
-func ShowDTLPoseImagesFromVideo(ctx context.Context, c cv.ComputerVisionGolfServiceClient, inputImgPath string, outputImgPathBase string) error {
+func GetDTLPoseImagesFromVideo(ctx context.Context, c cv.ComputerVisionGolfServiceClient, userId string, inputImgPath string, outputImgPathBase string) error {
 	// Start goroutine that waits for return data from stream, concatenates bytes for images that are chunked
-	stream, err := c.ShowDTLPoseImagesFromVideo(ctx)
+	stream, err := c.GetDTLPoseImagesFromVideo(ctx)
 	if err != nil {
 		return fmt.Errorf("c.ShowDTLPoseImagesFromVideo failed: %v", err)
 	}
@@ -156,9 +179,9 @@ func ShowDTLPoseImagesFromVideo(ctx context.Context, c cv.ComputerVisionGolfServ
 				return fmt.Errorf("failed to decodeAndEncodeFileAsJpg for original image: %w", err)
 			}
 			err = stream.Send(
-				&cv.ShowDTLPoseImageRequest{
+				&cv.GetDTLPoseImageRequest{
+					UserId: userId,
 					Image: &cv.Image{
-						Name:  fmt.Sprintf("Image %d from go to python", numImgs),
 						Bytes: bytesEncodedAsJpg,
 					},
 				})
@@ -192,98 +215,107 @@ func ShowDTLPoseImagesFromVideo(ctx context.Context, c cv.ComputerVisionGolfServ
 	return nil
 }
 
-func GetFaceOnPoseSetupPoints(ctx context.Context, c cv.ComputerVisionGolfServiceClient, calibrationImgPath string, inputImgPath string) (*cv.GetFaceOnPoseSetupPointsResponse, error) {
-	// Get Calibration Image
-	calibrationFile, closeFile, err := testutil.GetFileFromPath(calibrationImgPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to getFileFromPath calibration file %w", err)
+func GetFaceOnPoseSetupPoints(ctx context.Context, c cv.ComputerVisionGolfServiceClient, userId string, imgId string, calibrationImgPath string, inputImgPath string) (*cv.GetFaceOnPoseSetupPointsResponse, error) {
+	request := &cv.GetFaceOnPoseSetupPointsRequest{
+		UserId:          userId,
+		CalibratedImage: &cv.CalibratedFaceOnImage{},
 	}
-	defer closeFile()
-	calibrationBytesEncodedAsJpg, err := testutil.DecodeAndEncodeFileAsJpg(calibrationFile)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decodeAndEncodeFileAsJpg for calibration image: %w", err)
+	if imgId != "" { // Get input image from db
+		request.ImgId = imgId
+	} else { // Get input image from path
+		file, closeFile, err := testutil.GetFileFromPath(inputImgPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to getFileFromPath file: %w", err)
+		}
+		defer closeFile()
+		bytesEncodedAsJpg, err := testutil.DecodeAndEncodeFileAsJpg(file)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decodeAndEncodeFileAsJpg for image: %w", err)
+		}
+		request.CalibratedImage.Image = &cv.Image{
+			Bytes: bytesEncodedAsJpg,
+		}
+	}
+	// Get Calibration Image
+	if calibrationImgPath != "" {
+		calibrationFileAxes, closeFile, err := testutil.GetFileFromPath(calibrationImgPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to getFileFromPath calibration file axes %w", err)
+		}
+		defer closeFile()
+		calibrationAxesBytesEncodedAsJpg, err := testutil.DecodeAndEncodeFileAsJpg(calibrationFileAxes)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decodeAndEncodeFileAsJpg for calibration image axes: %w", err)
+		}
+		request.CalibratedImage.CalibrationImageAxes = &cv.Image{
+			Bytes: calibrationAxesBytesEncodedAsJpg,
+		}
 	}
 
-	file, closeFile, err := testutil.GetFileFromPath(inputImgPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to getFileFromPath file: %w", err)
-	}
-	defer closeFile()
-	bytesEncodedAsJpg, err := testutil.DecodeAndEncodeFileAsJpg(file)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decodeAndEncodeFileAsJpg for image: %w", err)
-	}
-	getFaceOnPoseSetupPointsResponse, err := c.GetFaceOnPoseSetupPoints(ctx,
-		&cv.GetFaceOnPoseSetupPointsRequest{
-			CalibratedImage: &cv.CalibratedFaceOnImage{
-				CalibrationImageAxes: &cv.Image{
-					Name:  "Calibration img",
-					Bytes: calibrationBytesEncodedAsJpg,
-				},
-				Image: &cv.Image{
-					Name:  "Img",
-					Bytes: bytesEncodedAsJpg,
-				},
-			},
-		})
+	getFaceOnPoseSetupPointsResponse, err := c.GetFaceOnPoseSetupPoints(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("c.GetFaceOnPoseSetupPoints failed for image: %v", err)
 	}
 	return getFaceOnPoseSetupPointsResponse, nil
 }
 
-func GetDTLPoseSetupPoints(ctx context.Context, c cv.ComputerVisionGolfServiceClient, calibrationImgAxesPath string, calibrationImgVanishingPointPath string, feetLineMethod cv.FeetLineMethod, inputImgPath string) (*cv.GetDTLPoseSetupPointsResponse, error) {
+func GetDTLPoseSetupPoints(ctx context.Context, c cv.ComputerVisionGolfServiceClient, userId string, imgId string, calibrationImgAxesPath string, calibrationImgVanishingPointPath string, feetLineMethod cv.FeetLineMethod, inputImgPath string) (*cv.GetDTLPoseSetupPointsResponse, error) {
+	request := &cv.GetDTLPoseSetupPointsRequest{
+		UserId: userId,
+		CalibratedImage: &cv.CalibratedDTLImage{
+			FeetLineMethod: feetLineMethod,
+		},
+	}
+	if imgId != "" { // Get input image from db
+		request.ImgId = imgId
+	} else { // Get input image from path
+		file, closeFile, err := testutil.GetFileFromPath(inputImgPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to getFileFromPath file: %w", err)
+		}
+		defer closeFile()
+		bytesEncodedAsJpg, err := testutil.DecodeAndEncodeFileAsJpg(file)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decodeAndEncodeFileAsJpg for image: %w", err)
+		}
+		request.CalibratedImage.Image = &cv.Image{
+			Bytes: bytesEncodedAsJpg,
+		}
+	}
 	// Get Calibration Image Axes
-	calibrationFileAxes, closeFile, err := testutil.GetFileFromPath(calibrationImgAxesPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to getFileFromPath calibration file axes %w", err)
+	if calibrationImgAxesPath != "" {
+		calibrationFileAxes, closeFile, err := testutil.GetFileFromPath(calibrationImgAxesPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to getFileFromPath calibration file axes %w", err)
+		}
+		defer closeFile()
+		calibrationAxesBytesEncodedAsJpg, err := testutil.DecodeAndEncodeFileAsJpg(calibrationFileAxes)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decodeAndEncodeFileAsJpg for calibration image axes: %w", err)
+		}
+		request.CalibratedImage.CalibrationImageAxes = &cv.Image{
+			Bytes: calibrationAxesBytesEncodedAsJpg,
+		}
 	}
-	defer closeFile()
-	calibrationAxesBytesEncodedAsJpg, err := testutil.DecodeAndEncodeFileAsJpg(calibrationFileAxes)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decodeAndEncodeFileAsJpg for calibration image axes: %w", err)
-	}
-
 	// Get Vanishing Point Calibration Image
-	calibrationFileVanishingPoint, closeFile, err := testutil.GetFileFromPath(calibrationImgVanishingPointPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to getFileFromPath calibration file vanishing point %w", err)
-	}
-	defer closeFile()
-	calibrationVanishingBytesEncodedAsJpg, err := testutil.DecodeAndEncodeFileAsJpg(calibrationFileVanishingPoint)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decodeAndEncodeFileAsJpg for calibration image vanishing point: %w", err)
+	if calibrationImgVanishingPointPath != "" {
+		calibrationFileVanishingPoint, closeFile, err := testutil.GetFileFromPath(calibrationImgVanishingPointPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to getFileFromPath calibration file vanishing point %w", err)
+		}
+		defer closeFile()
+		calibrationVanishingBytesEncodedAsJpg, err := testutil.DecodeAndEncodeFileAsJpg(calibrationFileVanishingPoint)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decodeAndEncodeFileAsJpg for calibration image vanishing point: %w", err)
+		}
+		request.CalibratedImage.CalibrationImageVanishingPoint = &cv.Image{
+			Bytes: calibrationVanishingBytesEncodedAsJpg,
+		}
 	}
 
-	file, closeFile, err := testutil.GetFileFromPath(inputImgPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to getFileFromPath file: %w", err)
-	}
-	defer closeFile()
-	bytesEncodedAsJpg, err := testutil.DecodeAndEncodeFileAsJpg(file)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decodeAndEncodeFileAsJpg for image: %w", err)
-	}
-	getDTLPoseSetupPointsResponse, err := c.GetDTLPoseSetupPoints(ctx,
-		&cv.GetDTLPoseSetupPointsRequest{
-			CalibratedImage: &cv.CalibratedDTLImage{
-				FeetLineMethod: feetLineMethod,
-				CalibrationImageAxes: &cv.Image{
-					Name:  "Calibration img axes",
-					Bytes: calibrationAxesBytesEncodedAsJpg,
-				},
-				CalibrationImageVanishingPoint: &cv.Image{
-					Name:  "Calibration img vanishing point",
-					Bytes: calibrationVanishingBytesEncodedAsJpg,
-				},
-				Image: &cv.Image{
-					Name:  "Img",
-					Bytes: bytesEncodedAsJpg,
-				},
-			},
-		})
+	getDTLPoseSetupPointsResponse, err := c.GetDTLPoseSetupPoints(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("c.GetDTLPoseSetupPoints failed for image: %v", err)
 	}
 	return getDTLPoseSetupPointsResponse, nil
-}
+}*/

@@ -8,44 +8,48 @@ import (
 	"os/signal"
 	"syscall"
 
-	clientapimgr "github.com/sirfrank96/go-server/client-api"
+	"github.com/sirfrank96/go-server/controller"
 )
 
-func startServices(clientApiMgr *clientapimgr.ClientApiManager) error {
+func startServices(ctx context.Context, controller *controller.Controller) error {
 	go func() {
-		err := clientApiMgr.StartComputerVisionGolfServer()
-		if err != nil {
-			log.Fatalf("Could not start computervisiongolfserver %w", err)
+		if err := controller.StartKeypointsServer(); err != nil {
+			log.Fatalf("Could not start keypoints server %w", err)
 		}
 	}()
-	log.Printf("Started Golf Computer Vision Server")
-	err := clientApiMgr.StartOpenCvApiClient()
-	if err != nil {
-		return fmt.Errorf("could not start opencvapiclient %w", err)
+	log.Printf("Started Golf Keypoints Server")
+	if err := controller.StartDatabaseClient(ctx); err != nil {
+		return fmt.Errorf("could not start database: %w", err)
 	}
-	log.Printf("Started OpenCV Api client")
+	log.Printf("Started Database Client")
+	if err := controller.StartOpenCvClient(); err != nil {
+		return fmt.Errorf("could not start opencvclient %w", err)
+	}
+	log.Printf("Started OpenCV client")
 	return nil
 }
 
-func stopServices(clientApiMgr *clientapimgr.ClientApiManager) error {
-	err := clientApiMgr.StopGolfComputerVisionServer()
-	if err != nil {
-		return fmt.Errorf("could not stop computervisiongolfserver %w", err)
+func stopServices(ctx context.Context, controller *controller.Controller) error {
+	if err := controller.StopKeypointsServer(); err != nil {
+		return fmt.Errorf("could not stop keypoints server %w", err)
 	}
-	log.Printf("Stopped Golf Computer Vision Server")
-	err = clientApiMgr.CloseOpenCvApiClient()
-	if err != nil {
-		return fmt.Errorf("could not close opencvapiclient %w", err)
+	log.Printf("Stopped Golf Keypoints Server")
+	if err := controller.CloseDatabaseClient(ctx); err != nil {
+		return fmt.Errorf("could not stop database client %w", err)
 	}
-	log.Printf("Closed OpenCv Api client")
+	log.Printf("Stopped Database Client")
+	if err := controller.CloseOpenCvClient(); err != nil {
+		return fmt.Errorf("could not close opencvclient %w", err)
+	}
+	log.Printf("Closed OpenCv client")
 	return nil
 }
 
 func main() {
 	ctx := context.Background()
-	clientApiMgr := clientapimgr.NewClientApiManager(ctx)
+	controller := controller.NewController()
 	log.Printf("Starting services")
-	err := startServices(clientApiMgr)
+	err := startServices(ctx, controller)
 	if err != nil {
 		log.Fatalf("Could not start services: %w", err)
 	}
@@ -56,7 +60,7 @@ func main() {
 	log.Printf("Waiting for sigint to stop services...")
 	<-stopChan
 	log.Printf("Stopping services")
-	err = stopServices(clientApiMgr)
+	err = stopServices(ctx, controller)
 	if err != nil {
 		log.Fatalf("Could not stop services: %w", err)
 	}

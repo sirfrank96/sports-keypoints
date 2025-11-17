@@ -1,0 +1,335 @@
+package controller
+
+import (
+	"context"
+	"fmt"
+
+	cv "github.com/sirfrank96/go-server/computer-vision-sports-proto"
+	db "github.com/sirfrank96/go-server/db"
+	opencvclient "github.com/sirfrank96/go-server/opencv-client"
+	"github.com/sirfrank96/go-server/util"
+)
+
+type GolfKeypointsListener struct {
+	cv.UnimplementedGolfKeypointsServiceServer
+	ocvmgr *opencvclient.OpenCvClientManager
+	dbmgr  *db.DbManager
+}
+
+func newGolfKeypointsListener(ocvmgr *opencvclient.OpenCvClientManager, dbmgr *db.DbManager) *GolfKeypointsListener {
+	return &GolfKeypointsListener{
+		ocvmgr: ocvmgr,
+		dbmgr:  dbmgr,
+	}
+}
+
+func (g *GolfKeypointsListener) UploadInputImage(ctx context.Context, request *cv.UploadInputImageRequest) (*cv.UploadInputImageResponse, error) {
+	// make sure user exists
+	userId, ok := ctx.Value("userid").(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid user id")
+	}
+	if _, err := verifyUserExists(ctx, g.dbmgr, userId); err != nil {
+		return nil, fmt.Errorf("could not verify user exists")
+	}
+	// put image into db
+	inputImage := &db.InputImage{
+		UserId:    userId,
+		ImageType: request.ImageType,
+		InputImg:  request.Image,
+	}
+	inputImage, err := g.dbmgr.CreateInputImage(ctx, inputImage)
+	if err != nil {
+		return nil, fmt.Errorf("could not store input image: %w", err)
+	}
+	// return response
+	response := &cv.UploadInputImageResponse{
+		Success:      true,
+		InputImageId: inputImage.Id.Hex(),
+	}
+	return response, nil
+}
+
+func (g *GolfKeypointsListener) ListInputImagesForUser(ctx context.Context, request *cv.ListInputImagesForUserRequest) (*cv.ListInputImagesForUserResponse, error) {
+	// make sure user exists
+	userId, ok := ctx.Value("userid").(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid user id")
+	}
+	if _, err := verifyUserExists(ctx, g.dbmgr, userId); err != nil {
+		return nil, fmt.Errorf("could not verify user exists")
+	}
+	return nil, nil
+}
+
+func (g *GolfKeypointsListener) ReadInputImage(ctx context.Context, request *cv.ReadInputImageRequest) (*cv.ReadInputImageResponse, error) {
+	// make sure user exists
+	userId, ok := ctx.Value("userid").(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid user id")
+	}
+	if _, err := verifyUserExists(ctx, g.dbmgr, userId); err != nil {
+		return nil, fmt.Errorf("could not verify user exists")
+	}
+	// get inputimg with inputimgid from db
+	_, err := g.dbmgr.ReadInputImage(ctx, request.InputImageId)
+	if err != nil {
+		return nil, fmt.Errorf("could not read input image with id: %s: %w", request.InputImageId, err)
+	}
+	// return response
+	response := &cv.ReadInputImageResponse{
+		Success: true,
+		//InputImage: db.ConvertInputImageToCVInputImage(inputImage),
+	}
+	return response, nil
+}
+
+func (g *GolfKeypointsListener) DeleteInputImage(ctx context.Context, request *cv.DeleteInputImageRequest) (*cv.DeleteInputImageResponse, error) {
+	// make sure user exists
+	userId, ok := ctx.Value("userid").(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid user id")
+	}
+	if _, err := verifyUserExists(ctx, g.dbmgr, userId); err != nil {
+		return nil, fmt.Errorf("could not verify user exists")
+	}
+	// delete inputimg with inputimgid in db
+	err := g.dbmgr.DeleteInputImage(ctx, request.InputImageId)
+	if err != nil {
+		return nil, fmt.Errorf("could not delete input image with id: %s: %w", request.InputImageId, err)
+	}
+	// return response
+	response := &cv.DeleteInputImageResponse{
+		Success: true,
+	}
+	return response, nil
+}
+
+func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request *cv.CalibrateInputImageRequest) (*cv.CalibrateInputImageResponse, error) {
+	// make sure user exists
+	userId, ok := ctx.Value("userid").(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid user id")
+	}
+	if _, err := verifyUserExists(ctx, g.dbmgr, userId); err != nil {
+		return nil, fmt.Errorf("could not verify user exists")
+	}
+	// get inputimg with inputimgid from db
+	inputImage, err := g.dbmgr.ReadInputImage(ctx, request.InputImageId)
+	if err != nil {
+		return nil, fmt.Errorf("could not read input image with id: %s: %w", request.InputImageId, err)
+	}
+	inputImage.CalibrationImgAxes = request.CalibrationImageAxes
+	inputImage.CalibrationImgVanishingPoint = request.CalibrationImageVanishingPoint
+	calibrationInfo := &util.CalibrationInfo{
+		CalibrationType: request.CalibrationType,
+		FeetLineMethod:  request.FeetLineMethod,
+	}
+	// dtl calibration
+	if inputImage.ImageType == cv.ImageType_DTL {
+		// axes calibration
+		if calibrationInfo.CalibrationType != cv.CalibrationType_NO_CALIBRATION {
+			getOpenPoseDataResponse, err := g.ocvmgr.GetOpenPoseData(inputImage.CalibrationImgAxes)
+			if err != nil {
+				return nil, fmt.Errorf("could not get openpose data for calibration image axes %w", err)
+			}
+			var warning util.Warning
+			calibrationInfo, warning = util.VerifyCalibrationImageAxes(getOpenPoseDataResponse.Keypoints, calibrationInfo)
+			if warning != nil && warning.GetWarningType() == util.SEVERE {
+				return nil, fmt.Errorf("could not verify calibration image axes: %s", warning.Error())
+			}
+			// vanishing point calibration
+			if calibrationInfo.CalibrationType != cv.CalibrationType_AXES_CALIBRATION_ONLY {
+				getOpenPoseDataResponse, err := g.ocvmgr.GetOpenPoseData(inputImage.CalibrationImgVanishingPoint)
+				if err != nil {
+					return nil, fmt.Errorf("could not get openpose data for calibration image vanishingpoint %w", err)
+				}
+				calibrationInfo, warning = util.VerifyCalibrationImageVanishingPoint(getOpenPoseDataResponse.Keypoints, calibrationInfo)
+				if warning != nil && warning.GetWarningType() == util.SEVERE {
+					return nil, fmt.Errorf("could not verify calibration image axes: %s", warning.Error())
+				}
+				// no vanishing point calibration
+			} else {
+				calibrationInfo.VanishingPointCalibrationWarning = util.WarningImpl{
+					WarningType: util.MINOR,
+					Message:     "no vanishing point calibration, may not be able to provide all setup points",
+				}
+			}
+			// no axes or vanishing point calibration
+		} else {
+			calibrationInfo.AxesCalibrationWarning = util.WarningImpl{
+				WarningType: util.MINOR,
+				Message:     "no axes or vanishing point calibration, may not be able to provide all setup points",
+			}
+		}
+		// face on calibration
+	} else {
+		// axes calibration
+		if calibrationInfo.CalibrationType != cv.CalibrationType_NO_CALIBRATION {
+			getOpenPoseDataResponse, err := g.ocvmgr.GetOpenPoseData(inputImage.CalibrationImgAxes)
+			if err != nil {
+				return nil, fmt.Errorf("could not get openpose data for calibration image axes %w", err)
+			}
+			var warning util.Warning
+			calibrationInfo, warning = util.VerifyCalibrationImageAxes(getOpenPoseDataResponse.Keypoints, calibrationInfo)
+			if warning != nil && warning.GetWarningType() == util.SEVERE {
+				return nil, fmt.Errorf("could not verify calibration image axes: %s", warning.Error())
+			}
+			// no axes calibration
+		} else {
+			calibrationInfo.AxesCalibrationWarning = util.WarningImpl{
+				WarningType: util.MINOR,
+				Message:     "no axes calibration, may not be able to provide all setup points",
+			}
+		}
+	}
+	inputImage.CalibrationInfo = *calibrationInfo
+	// update inputimg with inputimgid in db
+	_, err = g.dbmgr.UpdateInputImage(ctx, request.InputImageId, inputImage)
+	if err != nil {
+		return nil, fmt.Errorf("could not update input image with id: %s with calibration info: %w", request.InputImageId, err)
+	}
+	// return response
+	response := &cv.CalibrateInputImageResponse{
+		Success: true,
+	}
+	return response, nil
+}
+
+func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, request *cv.CalculateGolfKeypointsRequest) (*cv.CalculateGolfKeypointsResponse, error) {
+	// make sure user exists
+	userId, ok := ctx.Value("userid").(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid user id")
+	}
+	if _, err := verifyUserExists(ctx, g.dbmgr, userId); err != nil {
+		return nil, fmt.Errorf("could not verify user exists")
+	}
+	// get inputimage from db
+	inputImage, err := g.dbmgr.ReadInputImage(ctx, request.InputImageId)
+	if err != nil {
+		return nil, fmt.Errorf("could not get input image with id: %s, error was %w", request.InputImageId, err)
+	}
+
+	// TODO: Use GETOPENPOSEALL
+	// get openpose image for input img
+	getOpenPoseImageResponse, err := g.ocvmgr.GetOpenPoseImage(inputImage.InputImg)
+	if err != nil {
+		return nil, fmt.Errorf("could not get open pose image for image: %w", err)
+	}
+	// get openpose data for input img
+	getOpenPoseDataResponse, err := g.ocvmgr.GetOpenPoseData(inputImage.InputImg)
+	if err != nil {
+		return nil, fmt.Errorf("could not get open pose data for image: %w", err)
+	}
+
+	// calculate golf setup points
+	golfKeypoints := &db.GolfKeypoints{
+		UserId:          userId,
+		InputImageId:    request.InputImageId,
+		OutputImg:       getOpenPoseImageResponse.Image,
+		OutputKeypoints: *getOpenPoseDataResponse.Keypoints,
+	}
+	// dtl setup points
+	if inputImage.ImageType == cv.ImageType_DTL {
+		spineAngle, warning := GetSpineAngle(getOpenPoseDataResponse.Keypoints, &inputImage.CalibrationInfo)
+		var spineAngleWarning string
+		if warning != nil {
+			spineAngleWarning = warning.Error()
+		}
+		fmt.Printf("Spine angle is %f", spineAngle)
+		feetAlignment, warning := GetFeetAlignment(getOpenPoseDataResponse.Keypoints, &inputImage.CalibrationInfo)
+		var feetAlignmentWarning string
+		if warning != nil {
+			feetAlignmentWarning = warning.Error()
+		}
+		fmt.Printf("Feet alignment is %f", feetAlignment)
+		dtlGolfSetupPoints := &cv.DTLGolfSetupPoints{
+			SpineAngle: &cv.Double{
+				Data:    spineAngle,
+				Warning: spineAngleWarning,
+			},
+			FeetAlignment: &cv.Double{
+				Data:    feetAlignment,
+				Warning: feetAlignmentWarning,
+			},
+		}
+		golfKeypoints.DtlGolfSetupPoints = *dtlGolfSetupPoints
+		// face on setup points
+	} else {
+		sideBend, warning := GetSideBend(getOpenPoseDataResponse.Keypoints, &inputImage.CalibrationInfo)
+		var sideBendWarning string
+		if warning != nil {
+			sideBendWarning = warning.Error()
+		}
+		fmt.Printf("Side bend is %f", sideBend)
+		lFootFlare, warning := GetLeftFootFlare(getOpenPoseDataResponse.Keypoints, &inputImage.CalibrationInfo)
+		var lFootFlareWarning string
+		if warning != nil {
+			lFootFlareWarning = warning.Error()
+		}
+		fmt.Printf("Left foot flare is %f", lFootFlare)
+		rFootFlare, warning := GetRightFootFlare(getOpenPoseDataResponse.Keypoints, &inputImage.CalibrationInfo)
+		var rFootFlareWarning string
+		if warning != nil {
+			rFootFlareWarning = warning.Error()
+		}
+		fmt.Printf("Right foot flare is %f", rFootFlare)
+		faceOnGolfSetupPoints := &cv.FaceOnGolfSetupPoints{
+			SideBend: &cv.Double{
+				Data:    sideBend,
+				Warning: sideBendWarning,
+			},
+			LFootFlare: &cv.Double{
+				Data:    lFootFlare,
+				Warning: lFootFlareWarning,
+			},
+			RFootFlare: &cv.Double{
+				Data:    rFootFlare,
+				Warning: rFootFlareWarning,
+			},
+		}
+		golfKeypoints.FaceonGolfSetupPoints = *faceOnGolfSetupPoints
+	}
+
+	// store golfkeypoints in db
+	_, err = g.dbmgr.CreateGolfKeypoints(ctx, golfKeypoints)
+	if err != nil {
+		return nil, fmt.Errorf("could not store golfkeypoints in db %w", err)
+	}
+
+	// return response
+	response := &cv.CalculateGolfKeypointsResponse{
+		Success:       true,
+		GolfKeypoints: db.ConvertGolfKeypointsToCVGolfKeypoints(golfKeypoints),
+	}
+	return response, nil
+}
+
+func (g *GolfKeypointsListener) ReadGolfKeypoints(ctx context.Context, request *cv.ReadGolfKeypointsRequest) (*cv.ReadGolfKeypointsResponse, error) {
+	// make sure user exists
+	userId, ok := ctx.Value("userid").(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid user id")
+	}
+	if _, err := verifyUserExists(ctx, g.dbmgr, userId); err != nil {
+		return nil, fmt.Errorf("could not verify user exists")
+	}
+
+	// return response
+	return nil, nil
+}
+
+func (g *GolfKeypointsListener) DeleteGolfKeypoints(ctx context.Context, request *cv.DeleteGolfKeypointsRequest) (*cv.DeleteGolfKeypointsResponse, error) {
+	// make sure user exists
+	userId, ok := ctx.Value("userid").(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid user id")
+	}
+	if _, err := verifyUserExists(ctx, g.dbmgr, userId); err != nil {
+		return nil, fmt.Errorf("could not verify user exists")
+	}
+
+	// return response
+	return nil, nil
+}

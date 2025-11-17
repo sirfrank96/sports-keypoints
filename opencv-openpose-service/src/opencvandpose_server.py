@@ -18,22 +18,18 @@ class OpenCVAndPoseServiceServicer(opencvandpose_pb2_grpc.OpenCVAndPoseServiceSe
 
     def GetOpenPoseImage(self, request, context):
         print("GetOpenPoseImage grpc request")
-        image_bytes = request.image.bytes
+        image_bytes = request.image
         image = openpose.get_image_from_bytes(image_bytes)
         processed_img = openpose.get_open_pose_image(image, self.body_pose_field_descriptors)
         print(f"Processed image. It's size is {len(processed_img)}")
-        open_pose_image = common_pb2.Image(
-            name=f"Processed image",
-            bytes=processed_img
-        )
         print("GetOpenPoseImage grpc request finished")
         return opencvandpose_pb2.GetOpenPoseImageResponse(
-            image=open_pose_image
+            image=processed_img
         )
     
     def GetOpenPoseData(self, request, context):
         print("GetOpenPoseData grpc request")
-        image_bytes = request.image.bytes
+        image_bytes = request.image
         image = openpose.get_image_from_bytes(image_bytes)
         data = openpose.get_open_pose_data(image)
         print(f"Processed image. Data is {data}. Length of data is {len(data)}")
@@ -43,9 +39,6 @@ class OpenCVAndPoseServiceServicer(opencvandpose_pb2_grpc.OpenCVAndPoseServiceSe
         for field_descriptor in body_25_pose_keypoints_descriptor.fields:
             field_name = field_descriptor.name
             field_number = field_descriptor.number
-            #xIdx = (field_number * 3) - 3
-            #yIdx = (field_number * 3) - 2
-            #confidenceIdx = (field_number * 3) - 1
             keypoint = opencvandpose_pb2.Keypoint(
                 x=data[field_number-1][0],
                 y=data[field_number-1][1],
@@ -53,7 +46,6 @@ class OpenCVAndPoseServiceServicer(opencvandpose_pb2_grpc.OpenCVAndPoseServiceSe
             )
             curr_field = getattr(body_25_pose_keypoints, field_name)
             curr_field.CopyFrom(keypoint)
-            #setattr(body_25_pose_keypoints, field_name, keypoint)
         print(f"Converted data array to Keypoints {body_25_pose_keypoints}")
         print("GetOpenPoseData grpc request finished")
         return opencvandpose_pb2.GetOpenPoseDataResponse(
@@ -74,16 +66,12 @@ class OpenCVAndPoseServiceServicer(opencvandpose_pb2_grpc.OpenCVAndPoseServiceSe
         img_idx = 0
         for get_open_pose_image_request in request_iterator:
             img_idx += 1
-            image_bytes = get_open_pose_image_request.image.bytes
+            image_bytes = get_open_pose_image_request.image
             image = openpose.get_image_from_bytes(image_bytes)
             processed_img = openpose.get_open_pose_image(image, self.body_pose_field_descriptors)
             print(f"Processed image #{img_idx}. It's size is {len(processed_img)}")
-            open_pose_image = common_pb2.Image(
-                name=f"Processed image #{img_idx}",
-                bytes=processed_img
-            )
             get_open_pose_image_response = opencvandpose_pb2.GetOpenPoseImageResponse(
-                image=open_pose_image
+                image=processed_img
             )
             yield get_open_pose_image_response
         print("GetOpenPoseImagesFromVideo grpc request finished")

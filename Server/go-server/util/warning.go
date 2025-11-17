@@ -1,9 +1,10 @@
-package processor
+package util
 
 import (
 	"fmt"
 )
 
+// TODO: Change to Severity
 type WarningType int
 
 const (
@@ -22,27 +23,27 @@ func (wt WarningType) String() string {
 	}
 }
 
-type warning interface {
-	WarningType() WarningType
+type Warning interface {
+	GetWarningType() WarningType
 	Error() string
 }
 
-type Warning struct {
-	warningType WarningType
-	message     string
+type WarningImpl struct {
+	WarningType WarningType
+	Message     string
 }
 
-func (w Warning) Error() string {
-	return fmt.Sprintf("warning type: %s. error is %s", w.warningType.String(), w.message)
+func (w WarningImpl) Error() string {
+	return fmt.Sprintf("warning type: %s. error is %s", w.WarningType.String(), w.Message)
 }
 
-func (w Warning) WarningType() WarningType {
-	return w.warningType
+func (w WarningImpl) GetWarningType() WarningType {
+	return w.WarningType
 }
 
-func appendMinorWarnings(warning1 warning, warning2 warning) warning {
+func AppendMinorWarnings(warning1 Warning, warning2 Warning) Warning {
 	if warning1 != nil && warning2 != nil {
-		return Warning{warningType: MINOR, message: fmt.Sprintf("%s, %s", warning1.Error(), warning2.Error())}
+		return WarningImpl{WarningType: MINOR, Message: fmt.Sprintf("%s, %s", warning1.Error(), warning2.Error())}
 	} else if warning1 == nil {
 		return warning2
 	} else if warning2 == nil {

@@ -1,11 +1,6 @@
 syntax = "proto3";
 package computer_vision_sports_proto;
 
-message Image {
-    string name = 1;
-    bytes bytes = 2;
-}
-
 message Double {
     double data = 1;
     string warning = 2; // optional

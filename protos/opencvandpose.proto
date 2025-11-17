@@ -1,8 +1,6 @@
 syntax = "proto3";
 package computer_vision_sports_proto;
 
-import "common.proto";
-
 service OpenCVAndPoseService {
     rpc GetOpenPoseImage(GetOpenPoseImageRequest) returns (GetOpenPoseImageResponse) {}
     rpc GetOpenPoseData(GetOpenPoseDataRequest) returns (GetOpenPoseDataResponse) {}
@@ -18,45 +16,50 @@ service OpenCVAndPoseService {
 }
 
 message GetOpenPoseImageRequest {
-    Image image = 1;
+    bytes image = 1;
 }
 
 message GetOpenPoseImageResponse {
-    Image image = 1;
+    bool success = 1;
+    bytes image = 2;
 }
 
 message GetOpenPoseDataRequest {
-    Image image = 1;
+    bytes image = 1;
 }
 
 message GetOpenPoseDataResponse {
-    Body25PoseKeypoints keypoints = 1;
+    bool success = 1;
+    Body25PoseKeypoints keypoints = 2;
 }
 
 message GetOpenPoseHandImageRequest {
-    Image image = 1;
+    bytes image = 1;
 }
 
 message GetOpenPoseHandImageResponse {
-    Image image = 1;
+    bool success = 1;
+    bytes image = 2;
 }
 
 message GetOpenPoseHandDataRequest {
-    Image image = 1;
+    bytes image = 1;
 }
 
 message GetOpenPoseHandDataResponse {
-    Body25HandKeypoints keypoints = 1;
+    bool success = 1;
+    Body25HandKeypoints keypoints = 2;
 }
 
 message GetOpenPoseAllRequest {
-    Image image = 1;
+    bytes image = 1;
 }
 
 message GetOpenPoseAllResponse {
-    Image image = 1;
-    Body25PoseKeypoints pose_keypoints = 2;
-    Body25HandKeypoints hand_keypoints = 3;
+    bool success = 1;
+    bytes image = 2;
+    Body25PoseKeypoints pose_keypoints = 3;
+    Body25HandKeypoints hand_keypoints = 4;
 }
 
 message Body25PoseKeypoints {

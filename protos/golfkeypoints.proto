@@ -1,0 +1,171 @@
+syntax = "proto3";
+package computer_vision_sports_proto;
+// TODO: DIFF Package name?
+
+import "common.proto";
+
+service GolfKeypointsService {
+    rpc uploadInputImage(UploadInputImageRequest) returns (UploadInputImageResponse) {}
+    rpc listInputImagesForUser(ListInputImagesForUserRequest) returns (ListInputImagesForUserResponse) {}
+    rpc readInputImage(ReadInputImageRequest) returns (ReadInputImageResponse) {}
+    rpc deleteInputImage(DeleteInputImageRequest) returns (DeleteInputImageResponse) {}
+
+    // optional if want specific keypoints
+    rpc calibrateInputImage(CalibrateInputImageRequest) returns (CalibrateInputImageResponse) {}
+
+    rpc calculateGolfKeypoints(CalculateGolfKeypointsRequest) returns (CalculateGolfKeypointsResponse) {}
+    rpc readGolfKeypoints(ReadGolfKeypointsRequest) returns (ReadGolfKeypointsResponse) {}
+    rpc deleteGolfKeypoints(DeleteGolfKeypointsRequest) returns (DeleteGolfKeypointsResponse) {}
+
+    // TODO: Stream for videos
+}
+
+message UploadInputImageRequest {
+    string session_token = 1;
+    ImageType image_type = 2;
+    bytes image = 3;
+}
+
+message UploadInputImageResponse {
+    bool success = 1;
+    string input_image_id = 2;
+}
+
+message ListInputImagesForUserRequest{
+    string session_token = 1;
+    string user_name = 2;
+}
+
+message ListInputImagesForUserResponse {
+    bool success = 1;
+    repeated string input_image_id = 2;
+}
+
+message ReadInputImageRequest {
+    string session_token = 1;
+    string input_image_id = 2;
+}
+
+message ReadInputImageResponse {
+    bool success = 1;
+    ImageType image_type = 2;
+    bytes image = 3;
+    CalibrationType calibration_type = 4;
+    FeetLineMethod feet_line_method = 5;
+}
+
+message DeleteInputImageRequest {
+    string session_token = 1;
+    string input_image_id = 2;
+}
+
+message DeleteInputImageResponse {
+    bool success = 1;
+}
+
+message CalibrateInputImageRequest {
+    string session_token = 1;
+    string input_image_id = 2;
+    CalibrationType calibration_type = 3;
+    FeetLineMethod feet_line_method = 4;
+    // only required if want certain data for DTL and Face On
+    bytes calibration_image_axes = 5;
+    // only required if want certain data for DTL
+    bytes calibration_image_vanishing_point = 6;
+}
+
+message CalibrateInputImageResponse {
+    bool success = 1;
+}
+
+message CalculateGolfKeypointsRequest {
+    string session_token = 1;
+    string input_image_id = 2;
+}
+
+message CalculateGolfKeypointsResponse {
+    bool success = 1;
+    GolfKeypoints golf_keypoints = 2;
+}
+
+message ReadGolfKeypointsRequest {
+    string session_token = 1;
+    string input_image_id = 2;
+}
+
+message ReadGolfKeypointsResponse {
+    bool success = 1;
+    GolfKeypoints golf_keypoints = 2;
+}
+
+message DeleteGolfKeypointsRequest {
+    string session_token = 1;
+    string input_image_id = 2;
+}
+
+message DeleteGolfKeypointsResponse {
+    bool success = 1;
+}
+
+enum ImageType {
+    IMAGE_TYPE_UNSPECIFIED = 0; 
+    FACE_ON = 1;
+    DTL = 2;
+}
+
+enum CalibrationType {
+    NO_CALIBRATION = 0;
+    AXES_CALIBRATION_ONLY = 1;
+    // vanishing point requires axes calibration as well, same as full for Dtl, will just do axes if faceon
+    AXES_AND_VANISHING_POINT_CALIBRATION = 2; 
+    // axes for Faceon, axes and vanishing point for Dtl
+    FULL_CALIBRATION = 3; 
+}
+
+enum FeetLineMethod {
+    // will default to use heel line
+    FEET_LINE_METHOD_UNSPECIFIED = 0; 
+    USE_HEEL_LINE = 1;
+    USE_TOE_LINE = 2;
+}
+
+message GolfKeypoints {
+    bytes output_img = 1;
+    DTLGolfSetupPoints dtl_golf_setup_points = 2;
+    FaceOnGolfSetupPoints faceon_golf_setup_points = 3;
+}
+
+message DTLGolfSetupPoints {
+    // degrees from vertical, requires axes calibration
+    Double spine_angle = 1;
+    // degrees from target (negative is open, positive is closed), requires axes and vanishing point calibration
+    Double feet_alignment = 2;
+    // degrees from target (negative is open, positive is closed), requires axes and vanishing point calibration
+    Double heel_alignment = 3;
+    // degrees from target (negative is open, positive is closed), requires axes and vanishing point calibration
+    Double toe_alignment = 4;
+    //shoulder_alignment, requires axes and vanishing point calibration
+    //waist_alignment, requires axes and vanishing point calibration
+    //distance_from_ball
+    //ulnar_deviation
+    //knee_bend
+    //waist_bend
+    //neck_angle
+    //spine_bend
+}
+
+message FaceOnGolfSetupPoints {
+    // degrees from vertical (positive is right side bend, negative is left side bend), requires axes calibration
+    Double side_bend = 1;
+    // degrees from line running through midpoint of heels, perpendicular to target line (positive external feet, negative is internal feet), requires axes calibration
+    Double l_foot_flare = 2;
+    // degrees from line running through midpoint of heels, perpendicular to target line (positive external feet, negative is internal feet), requires axes calibration
+    Double r_foot_flare = 3;
+    //stance_width
+    //shoulder_angle, requires axes calibration
+    //waist_angle, requires axes calibration
+    //shaft_lean
+    //ball_position (relative to feet and chest and head?)
+    //head_position
+    //chest_position
+}

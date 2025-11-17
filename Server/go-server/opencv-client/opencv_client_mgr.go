@@ -1,15 +1,11 @@
-package cvapi
+package opencvclient
 
 import (
-	//"bytes"
 	"context"
 	"flag"
-	//"image"
-	//"image/jpeg"
+	"fmt"
 	"io"
 	"log"
-	//"os"
-	"fmt"
 	"time"
 
 	cv "github.com/sirfrank96/go-server/computer-vision-sports-proto"
@@ -19,25 +15,25 @@ import (
 )
 
 var (
-	opencvaddr = flag.String("addr", "localhost:50051", "the address to connect to")
+	opencvaddr = flag.String("opencvaddr", "localhost:50051", "the address to connect to")
 )
 
 // TODO: Return errors for all functions instead of log.fatalf
 // TODO: Pass around objects instead of slices???
 
-type OpenCvApiManager struct {
+type OpenCvClientManager struct {
 	conn *grpc.ClientConn
 	c    cv.OpenCVAndPoseServiceClient
 }
 
-func NewOpenCvApiManager() *OpenCvApiManager {
-	o := &OpenCvApiManager{}
-	log.Printf("New OpenCV Api Mgr")
+func NewOpenCvClientManager() *OpenCvClientManager {
+	o := &OpenCvClientManager{}
+	log.Printf("New OpenCV Client Mgr")
 	return o
 }
 
-func (o *OpenCvApiManager) StartOpenCvApiClient() error {
-	log.Printf("Starting OpenCvApiClient")
+func (o *OpenCvClientManager) StartOpenCvClient() error {
+	log.Printf("Starting OpenCvClient")
 	flag.Parse()
 	// Set up a connection to the opencvandpose server.
 	var err error
@@ -50,16 +46,16 @@ func (o *OpenCvApiManager) StartOpenCvApiClient() error {
 	return nil
 }
 
-func (o *OpenCvApiManager) CloseOpenCvApiClient() error {
-	log.Printf("Closing OpenCvApiClient")
+func (o *OpenCvClientManager) CloseOpenCvClient() error {
+	log.Printf("Closing OpenCvClient")
 	o.conn.Close()
 	return nil
 }
 
-func (o *OpenCvApiManager) GetOpenPoseImage(img []byte) (*cv.GetOpenPoseImageResponse, error) {
+func (o *OpenCvClientManager) GetOpenPoseImage(img []byte) (*cv.GetOpenPoseImageResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	getOpenPoseImageRequest := &cv.GetOpenPoseImageRequest{Image: &cv.Image{Name: "", Bytes: img}}
+	getOpenPoseImageRequest := &cv.GetOpenPoseImageRequest{Image: img}
 	getOpenPoseImageResponse, err := o.c.GetOpenPoseImage(ctx, getOpenPoseImageRequest)
 	if err != nil {
 		return nil, fmt.Errorf("opencv/openpose client GetOpenPoseImage failed: %w", err)
@@ -67,10 +63,10 @@ func (o *OpenCvApiManager) GetOpenPoseImage(img []byte) (*cv.GetOpenPoseImageRes
 	return getOpenPoseImageResponse, nil
 }
 
-func (o *OpenCvApiManager) GetOpenPoseData(img []byte) (*cv.GetOpenPoseDataResponse, error) {
+func (o *OpenCvClientManager) GetOpenPoseData(img []byte) (*cv.GetOpenPoseDataResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	getOpenPoseDataRequest := &cv.GetOpenPoseDataRequest{Image: &cv.Image{Name: "", Bytes: img}}
+	getOpenPoseDataRequest := &cv.GetOpenPoseDataRequest{Image: img}
 	getOpenPoseDataResponse, err := o.c.GetOpenPoseData(ctx, getOpenPoseDataRequest)
 	if err != nil {
 		return nil, fmt.Errorf("opencv/openpose client GetOpenPoseData failed: %w", err)
@@ -78,7 +74,7 @@ func (o *OpenCvApiManager) GetOpenPoseData(img []byte) (*cv.GetOpenPoseDataRespo
 	return getOpenPoseDataResponse, nil
 }
 
-func (o *OpenCvApiManager) GetOpenPoseImagesFromFromVideo(images [][]byte) ([]*cv.GetOpenPoseImageResponse, error) {
+func (o *OpenCvClientManager) GetOpenPoseImagesFromFromVideo(images [][]byte) ([]*cv.GetOpenPoseImageResponse, error) {
 	// TODO: Get rid of timeout? // or configure stream vs nonstream timeouts
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
@@ -112,7 +108,7 @@ func (o *OpenCvApiManager) GetOpenPoseImagesFromFromVideo(images [][]byte) ([]*c
 
 	// Send all images via stream
 	for idx, img := range images {
-		if err := stream.Send(&cv.GetOpenPoseImageRequest{Image: &cv.Image{Name: fmt.Sprintf("Img #%d", idx), Bytes: img}}); err != nil {
+		if err := stream.Send(&cv.GetOpenPoseImageRequest{Image: img}); err != nil {
 			log.Fatalf("getOpenPoseImagesFromVideo for img #%d stream.Send() failed: %v", idx, err)
 		}
 	}

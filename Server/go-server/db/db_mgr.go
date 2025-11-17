@@ -16,13 +16,13 @@ var (
 )
 
 type DbManager struct {
-	mutex               sync.Mutex
-	clientOptions       *mongoopts.ClientOptions
-	client              *mongodb.Client
-	db                  *mongodb.Database
-	userCollection      *mongodb.Collection
-	imageCollection     *mongodb.Collection
-	imageInfoCollection *mongodb.Collection
+	mutex                  sync.Mutex
+	clientOptions          *mongoopts.ClientOptions
+	client                 *mongodb.Client
+	db                     *mongodb.Database
+	userCollection         *mongodb.Collection
+	inputImageCollection   *mongodb.Collection
+	golfKeypointCollection *mongodb.Collection
 }
 
 func NewDbManager() *DbManager {
@@ -34,35 +34,30 @@ func NewDbManager() *DbManager {
 func (d *DbManager) StartMongoDBClient(ctx context.Context) error {
 	log.Printf("Starting MongoDB Client")
 	flag.Parse()
-
 	// Set client options
 	d.clientOptions = mongoopts.Client().ApplyURI(*dbaddr)
-
 	// Connect to MongoDB
 	var err error
 	d.client, err = mongodb.Connect(ctx, d.clientOptions)
 	if err != nil {
 		return fmt.Errorf("could not connect to mongodb %w", err)
 	}
-
 	// Check the connection
 	err = d.client.Ping(ctx, nil)
 	if err != nil {
 		log.Printf("1.5\n")
 		return fmt.Errorf("could not ping mongodb %w", err)
 	}
-
 	// Create Database
-	d.db = d.client.Database("computervisiongolfdatabase")
-
+	d.db = d.client.Database("golfkeypointsdatabase")
 	// Create Collections
 	d.userCollection = d.db.Collection("users")
-	d.imageCollection = d.db.Collection("images")
-	d.imageInfoCollection = d.db.Collection("imageinfos")
+	d.inputImageCollection = d.db.Collection("inputimages")
+	d.golfKeypointCollection = d.db.Collection("golfkeypoints")
 	return nil
 }
 
-func (d *DbManager) StopMongoDBClient(ctx context.Context) error {
+func (d *DbManager) CloseMongoDBClient(ctx context.Context) error {
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
 	return d.client.Disconnect(ctx)
