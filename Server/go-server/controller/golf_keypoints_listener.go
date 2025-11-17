@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	cv "github.com/sirfrank96/go-server/computer-vision-sports-proto"
 	db "github.com/sirfrank96/go-server/db"
 	opencvclient "github.com/sirfrank96/go-server/opencv-client"
+	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 	"github.com/sirfrank96/go-server/util"
 )
 
 type GolfKeypointsListener struct {
-	cv.UnimplementedGolfKeypointsServiceServer
+	skp.UnimplementedGolfKeypointsServiceServer
 	ocvmgr *opencvclient.OpenCvClientManager
 	dbmgr  *db.DbManager
 }
@@ -23,7 +23,7 @@ func newGolfKeypointsListener(ocvmgr *opencvclient.OpenCvClientManager, dbmgr *d
 	}
 }
 
-func (g *GolfKeypointsListener) UploadInputImage(ctx context.Context, request *cv.UploadInputImageRequest) (*cv.UploadInputImageResponse, error) {
+func (g *GolfKeypointsListener) UploadInputImage(ctx context.Context, request *skp.UploadInputImageRequest) (*skp.UploadInputImageResponse, error) {
 	// make sure user exists
 	userId, ok := ctx.Value("userid").(string)
 	if !ok {
@@ -43,14 +43,14 @@ func (g *GolfKeypointsListener) UploadInputImage(ctx context.Context, request *c
 		return nil, fmt.Errorf("could not store input image: %w", err)
 	}
 	// return response
-	response := &cv.UploadInputImageResponse{
+	response := &skp.UploadInputImageResponse{
 		Success:      true,
 		InputImageId: inputImage.Id.Hex(),
 	}
 	return response, nil
 }
 
-func (g *GolfKeypointsListener) ListInputImagesForUser(ctx context.Context, request *cv.ListInputImagesForUserRequest) (*cv.ListInputImagesForUserResponse, error) {
+func (g *GolfKeypointsListener) ListInputImagesForUser(ctx context.Context, request *skp.ListInputImagesForUserRequest) (*skp.ListInputImagesForUserResponse, error) {
 	// make sure user exists
 	userId, ok := ctx.Value("userid").(string)
 	if !ok {
@@ -62,7 +62,7 @@ func (g *GolfKeypointsListener) ListInputImagesForUser(ctx context.Context, requ
 	return nil, nil
 }
 
-func (g *GolfKeypointsListener) ReadInputImage(ctx context.Context, request *cv.ReadInputImageRequest) (*cv.ReadInputImageResponse, error) {
+func (g *GolfKeypointsListener) ReadInputImage(ctx context.Context, request *skp.ReadInputImageRequest) (*skp.ReadInputImageResponse, error) {
 	// make sure user exists
 	userId, ok := ctx.Value("userid").(string)
 	if !ok {
@@ -77,14 +77,14 @@ func (g *GolfKeypointsListener) ReadInputImage(ctx context.Context, request *cv.
 		return nil, fmt.Errorf("could not read input image with id: %s: %w", request.InputImageId, err)
 	}
 	// return response
-	response := &cv.ReadInputImageResponse{
+	response := &skp.ReadInputImageResponse{
 		Success: true,
 		//InputImage: db.ConvertInputImageToCVInputImage(inputImage),
 	}
 	return response, nil
 }
 
-func (g *GolfKeypointsListener) DeleteInputImage(ctx context.Context, request *cv.DeleteInputImageRequest) (*cv.DeleteInputImageResponse, error) {
+func (g *GolfKeypointsListener) DeleteInputImage(ctx context.Context, request *skp.DeleteInputImageRequest) (*skp.DeleteInputImageResponse, error) {
 	// make sure user exists
 	userId, ok := ctx.Value("userid").(string)
 	if !ok {
@@ -99,13 +99,13 @@ func (g *GolfKeypointsListener) DeleteInputImage(ctx context.Context, request *c
 		return nil, fmt.Errorf("could not delete input image with id: %s: %w", request.InputImageId, err)
 	}
 	// return response
-	response := &cv.DeleteInputImageResponse{
+	response := &skp.DeleteInputImageResponse{
 		Success: true,
 	}
 	return response, nil
 }
 
-func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request *cv.CalibrateInputImageRequest) (*cv.CalibrateInputImageResponse, error) {
+func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request *skp.CalibrateInputImageRequest) (*skp.CalibrateInputImageResponse, error) {
 	// make sure user exists
 	userId, ok := ctx.Value("userid").(string)
 	if !ok {
@@ -126,9 +126,9 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 		FeetLineMethod:  request.FeetLineMethod,
 	}
 	// dtl calibration
-	if inputImage.ImageType == cv.ImageType_DTL {
+	if inputImage.ImageType == skp.ImageType_DTL {
 		// axes calibration
-		if calibrationInfo.CalibrationType != cv.CalibrationType_NO_CALIBRATION {
+		if calibrationInfo.CalibrationType != skp.CalibrationType_NO_CALIBRATION {
 			getOpenPoseDataResponse, err := g.ocvmgr.GetOpenPoseData(inputImage.CalibrationImgAxes)
 			if err != nil {
 				return nil, fmt.Errorf("could not get openpose data for calibration image axes %w", err)
@@ -139,7 +139,7 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 				return nil, fmt.Errorf("could not verify calibration image axes: %s", warning.Error())
 			}
 			// vanishing point calibration
-			if calibrationInfo.CalibrationType != cv.CalibrationType_AXES_CALIBRATION_ONLY {
+			if calibrationInfo.CalibrationType != skp.CalibrationType_AXES_CALIBRATION_ONLY {
 				getOpenPoseDataResponse, err := g.ocvmgr.GetOpenPoseData(inputImage.CalibrationImgVanishingPoint)
 				if err != nil {
 					return nil, fmt.Errorf("could not get openpose data for calibration image vanishingpoint %w", err)
@@ -165,7 +165,7 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 		// face on calibration
 	} else {
 		// axes calibration
-		if calibrationInfo.CalibrationType != cv.CalibrationType_NO_CALIBRATION {
+		if calibrationInfo.CalibrationType != skp.CalibrationType_NO_CALIBRATION {
 			getOpenPoseDataResponse, err := g.ocvmgr.GetOpenPoseData(inputImage.CalibrationImgAxes)
 			if err != nil {
 				return nil, fmt.Errorf("could not get openpose data for calibration image axes %w", err)
@@ -190,13 +190,13 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 		return nil, fmt.Errorf("could not update input image with id: %s with calibration info: %w", request.InputImageId, err)
 	}
 	// return response
-	response := &cv.CalibrateInputImageResponse{
+	response := &skp.CalibrateInputImageResponse{
 		Success: true,
 	}
 	return response, nil
 }
 
-func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, request *cv.CalculateGolfKeypointsRequest) (*cv.CalculateGolfKeypointsResponse, error) {
+func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, request *skp.CalculateGolfKeypointsRequest) (*skp.CalculateGolfKeypointsResponse, error) {
 	// make sure user exists
 	userId, ok := ctx.Value("userid").(string)
 	if !ok {
@@ -231,7 +231,7 @@ func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, requ
 		OutputKeypoints: *getOpenPoseDataResponse.Keypoints,
 	}
 	// dtl setup points
-	if inputImage.ImageType == cv.ImageType_DTL {
+	if inputImage.ImageType == skp.ImageType_DTL {
 		spineAngle, warning := GetSpineAngle(getOpenPoseDataResponse.Keypoints, &inputImage.CalibrationInfo)
 		var spineAngleWarning string
 		if warning != nil {
@@ -244,12 +244,12 @@ func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, requ
 			feetAlignmentWarning = warning.Error()
 		}
 		fmt.Printf("Feet alignment is %f", feetAlignment)
-		dtlGolfSetupPoints := &cv.DTLGolfSetupPoints{
-			SpineAngle: &cv.Double{
+		dtlGolfSetupPoints := &skp.DTLGolfSetupPoints{
+			SpineAngle: &skp.Double{
 				Data:    spineAngle,
 				Warning: spineAngleWarning,
 			},
-			FeetAlignment: &cv.Double{
+			FeetAlignment: &skp.Double{
 				Data:    feetAlignment,
 				Warning: feetAlignmentWarning,
 			},
@@ -275,16 +275,16 @@ func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, requ
 			rFootFlareWarning = warning.Error()
 		}
 		fmt.Printf("Right foot flare is %f", rFootFlare)
-		faceOnGolfSetupPoints := &cv.FaceOnGolfSetupPoints{
-			SideBend: &cv.Double{
+		faceOnGolfSetupPoints := &skp.FaceOnGolfSetupPoints{
+			SideBend: &skp.Double{
 				Data:    sideBend,
 				Warning: sideBendWarning,
 			},
-			LFootFlare: &cv.Double{
+			LFootFlare: &skp.Double{
 				Data:    lFootFlare,
 				Warning: lFootFlareWarning,
 			},
-			RFootFlare: &cv.Double{
+			RFootFlare: &skp.Double{
 				Data:    rFootFlare,
 				Warning: rFootFlareWarning,
 			},
@@ -299,14 +299,14 @@ func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, requ
 	}
 
 	// return response
-	response := &cv.CalculateGolfKeypointsResponse{
+	response := &skp.CalculateGolfKeypointsResponse{
 		Success:       true,
 		GolfKeypoints: db.ConvertGolfKeypointsToCVGolfKeypoints(golfKeypoints),
 	}
 	return response, nil
 }
 
-func (g *GolfKeypointsListener) ReadGolfKeypoints(ctx context.Context, request *cv.ReadGolfKeypointsRequest) (*cv.ReadGolfKeypointsResponse, error) {
+func (g *GolfKeypointsListener) ReadGolfKeypoints(ctx context.Context, request *skp.ReadGolfKeypointsRequest) (*skp.ReadGolfKeypointsResponse, error) {
 	// make sure user exists
 	userId, ok := ctx.Value("userid").(string)
 	if !ok {
@@ -320,7 +320,7 @@ func (g *GolfKeypointsListener) ReadGolfKeypoints(ctx context.Context, request *
 	return nil, nil
 }
 
-func (g *GolfKeypointsListener) DeleteGolfKeypoints(ctx context.Context, request *cv.DeleteGolfKeypointsRequest) (*cv.DeleteGolfKeypointsResponse, error) {
+func (g *GolfKeypointsListener) DeleteGolfKeypoints(ctx context.Context, request *skp.DeleteGolfKeypointsRequest) (*skp.DeleteGolfKeypointsResponse, error) {
 	// make sure user exists
 	userId, ok := ctx.Value("userid").(string)
 	if !ok {

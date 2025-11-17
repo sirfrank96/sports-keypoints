@@ -1,7 +1,7 @@
 package controller
 
 import (
-	cv "github.com/sirfrank96/go-server/computer-vision-sports-proto"
+	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 	"github.com/sirfrank96/go-server/util"
 )
 
@@ -11,7 +11,7 @@ import (
 //img 1: stand straddled, check to make sure heel horizontal and spine vertical are close to 90
 //img 2: set alignment stick not centered, point alignment stick at target, set up with heels against alignment stick feet shoulder width or wider (check that heels are not centered in image)
 // get vanishing point, intersection of vertaxis and heels axis
-func VerifyDTLCalibrationImages(axesKeypoints *cv.Body25PoseKeypoints, vanishingPointKeypoints *cv.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (*util.CalibrationInfo, util.Warning) {
+func VerifyDTLCalibrationImages(axesKeypoints *skp.Body25PoseKeypoints, vanishingPointKeypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (*util.CalibrationInfo, util.Warning) {
 	// verify axes image
 	calibrationInfo, warning := util.VerifyCalibrationImageAxes(axesKeypoints, calibrationInfo)
 	if warning != nil {
@@ -28,7 +28,7 @@ func VerifyDTLCalibrationImages(axesKeypoints *cv.Body25PoseKeypoints, vanishing
 //spine angle
 //line from midhip to neck
 //angle between that and vertical axis
-func GetSpineAngle(keypoints *cv.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
+func GetSpineAngle(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	// TODO: IF calibrationInfo.AxesWarning is not nil return that
 	var warning util.Warning
 	if w := util.VerifyKeypoint(keypoints.Midhip, "midhip", 0.5); w != nil {
@@ -56,7 +56,7 @@ func GetSpineAngle(keypoints *cv.Body25PoseKeypoints, calibrationInfo *util.Cali
 //feet alignment
 //assume feet are left of vert axis (maybe use toes? easier to see?)
 //TODO: add other edge cases for feet crossing vertaxis
-func GetFeetAlignment(keypoints *cv.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
+func GetFeetAlignment(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	// TODO: IF calibrationInfo.AxesWarning or vanishing point is not nil return that
 	var warning util.Warning
 	currFeetLine, w := util.GetFeetLine(keypoints, calibrationInfo.FeetLine.FeetLineMethod)

@@ -1,57 +1,57 @@
 package keypointsserver
 
 import (
-	cv "github.com/sirfrank96/go-server/computer-vision-sports-proto"
+	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 )
 
-func verifyCreateUserRequest(request *cv.CreateUserRequest) error {
+func verifyCreateUserRequest(request *skp.CreateUserRequest) error {
 	return nil
 }
 
-func verifyRegisterUserRequest(request *cv.RegisterUserRequest) error {
+func verifyRegisterUserRequest(request *skp.RegisterUserRequest) error {
 	return nil
 }
 
-func verifyReadUserRequest(request *cv.ReadUserRequest) error {
+func verifyReadUserRequest(request *skp.ReadUserRequest) error {
 	return nil
 }
 
-func verifyUpdateUserRequest(request *cv.UpdateUserRequest) error {
+func verifyUpdateUserRequest(request *skp.UpdateUserRequest) error {
 	return nil
 }
 
-func verifyDeleteUserRequest(request *cv.DeleteUserRequest) error {
+func verifyDeleteUserRequest(request *skp.DeleteUserRequest) error {
 	return nil
 }
 
-func verifyUploadInputImageRequest(request *cv.UploadInputImageRequest) error {
+func verifyUploadInputImageRequest(request *skp.UploadInputImageRequest) error {
 	return nil
 }
 
-func verifyListInputImagesForUserRequest(request *cv.ListInputImagesForUserRequest) error {
+func verifyListInputImagesForUserRequest(request *skp.ListInputImagesForUserRequest) error {
 	return nil
 }
 
-func verifyReadInputImageRequest(request *cv.ReadInputImageRequest) error {
+func verifyReadInputImageRequest(request *skp.ReadInputImageRequest) error {
 	return nil
 }
 
-func verifyDeleteInputImageRequest(request *cv.DeleteInputImageRequest) error {
+func verifyDeleteInputImageRequest(request *skp.DeleteInputImageRequest) error {
 	return nil
 }
 
-func verifyCalibrateInputImageRequest(request *cv.CalibrateInputImageRequest) error {
+func verifyCalibrateInputImageRequest(request *skp.CalibrateInputImageRequest) error {
 	return nil
 }
 
-func verifyCalculateGolfKeypointsRequest(request *cv.CalculateGolfKeypointsRequest) error {
+func verifyCalculateGolfKeypointsRequest(request *skp.CalculateGolfKeypointsRequest) error {
 	return nil
 }
 
-func verifyReadGolfKeypointsRequest(request *cv.ReadGolfKeypointsRequest) error {
+func verifyReadGolfKeypointsRequest(request *skp.ReadGolfKeypointsRequest) error {
 	return nil
 }
 
-func verifyDeleteGolfKeypointsRequest(request *cv.DeleteGolfKeypointsRequest) error {
+func verifyDeleteGolfKeypointsRequest(request *skp.DeleteGolfKeypointsRequest) error {
 	return nil
 }

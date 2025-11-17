@@ -3,7 +3,7 @@ package util
 import (
 	"math"
 
-	cv "github.com/sirfrank96/go-server/computer-vision-sports-proto"
+	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 )
 
 //assuming right handed golfer
@@ -119,10 +119,10 @@ func GetDegreesOfLineAlwaysPositive(deg float64) float64 {
 	}
 }
 
-func ConvertCvKeypointToPoint(cvKeypoint *cv.Keypoint) *Point {
+func ConvertCvKeypointToPoint(cvKeypoint *skp.Keypoint) *Point {
 	return &Point{XPos: cvKeypoint.X, YPos: cvKeypoint.Y}
 }
 
-func ConvertPointToCvKeypoint(point *Point) *cv.Keypoint {
-	return &cv.Keypoint{X: point.XPos, Y: point.YPos}
+func ConvertPointToCvKeypoint(point *Point) *skp.Keypoint {
+	return &skp.Keypoint{X: point.XPos, Y: point.YPos}
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	cv "github.com/sirfrank96/go-server/computer-vision-sports-proto"
+	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 	testutil "github.com/sirfrank96/go-server/test/test-util"
 
 	"google.golang.org/grpc"
@@ -14,18 +14,18 @@ import (
 //TODO: RETURN ERRORS INSTEAD OF LOG.FATALF
 
 // Middle arg is a close function, should be called by calling function
-func InitGolfKeypointsServiceGrpcClient(serveraddr string) (cv.GolfKeypointsServiceClient, func() error, error) {
+func InitGolfKeypointsServiceGrpcClient(serveraddr string) (skp.GolfKeypointsServiceClient, func() error, error) {
 	// Set up a connection to the cv_api server.
 	conn, err := grpc.NewClient(serveraddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, conn.Close, err
 	}
 	// Init ComputerVisionGolf grpc client
-	c := cv.NewGolfKeypointsServiceClient(conn)
+	c := skp.NewGolfKeypointsServiceClient(conn)
 	return c, conn.Close, nil
 }
 
-func UploadInputImage(ctx context.Context, gclient cv.GolfKeypointsServiceClient, sessionToken string, inputImgPath string, imageType cv.ImageType) (*cv.UploadInputImageResponse, error) {
+func UploadInputImage(ctx context.Context, gclient skp.GolfKeypointsServiceClient, sessionToken string, inputImgPath string, imageType skp.ImageType) (*skp.UploadInputImageResponse, error) {
 	file, closeFile, err := testutil.GetFileFromPath(inputImgPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to getFileFromPath: %w", err)
@@ -35,7 +35,7 @@ func UploadInputImage(ctx context.Context, gclient cv.GolfKeypointsServiceClient
 	if err != nil {
 		return nil, fmt.Errorf("failed to decodeAndEncodeFileAsJpg for original image: %w", err)
 	}
-	request := &cv.UploadInputImageRequest{
+	request := &skp.UploadInputImageRequest{
 		SessionToken: sessionToken,
 		ImageType:    imageType,
 		Image:        bytesEncodedAsJpg,
@@ -43,14 +43,14 @@ func UploadInputImage(ctx context.Context, gclient cv.GolfKeypointsServiceClient
 	return gclient.UploadInputImage(ctx, request)
 }
 
-func CalibrateInputImage(ctx context.Context, gclient cv.GolfKeypointsServiceClient, sessionToken string, inputImgId string, imageType cv.ImageType, calibrationType cv.CalibrationType, feetLineMethod cv.FeetLineMethod, calibrationImgAxesPath string, calibrationImgVanishingPointPath string) (*cv.CalibrateInputImageResponse, error) {
-	request := &cv.CalibrateInputImageRequest{
+func CalibrateInputImage(ctx context.Context, gclient skp.GolfKeypointsServiceClient, sessionToken string, inputImgId string, imageType skp.ImageType, calibrationType skp.CalibrationType, feetLineMethod skp.FeetLineMethod, calibrationImgAxesPath string, calibrationImgVanishingPointPath string) (*skp.CalibrateInputImageResponse, error) {
+	request := &skp.CalibrateInputImageRequest{
 		SessionToken:    sessionToken,
 		InputImageId:    inputImgId,
 		CalibrationType: calibrationType,
 		FeetLineMethod:  feetLineMethod,
 	}
-	if calibrationType != cv.CalibrationType_NO_CALIBRATION {
+	if calibrationType != skp.CalibrationType_NO_CALIBRATION {
 		calibrationFileAxes, closeFile, err := testutil.GetFileFromPath(calibrationImgAxesPath)
 		if err != nil {
 			return nil, fmt.Errorf("failed to getFileFromPath calibration file axes %w", err)
@@ -62,7 +62,7 @@ func CalibrateInputImage(ctx context.Context, gclient cv.GolfKeypointsServiceCli
 		}
 		request.CalibrationImageAxes = calibrationAxesBytesEncodedAsJpg
 
-		if imageType == cv.ImageType_DTL && calibrationType != cv.CalibrationType_AXES_CALIBRATION_ONLY {
+		if imageType == skp.ImageType_DTL && calibrationType != skp.CalibrationType_AXES_CALIBRATION_ONLY {
 			calibrationFileVanishingPoint, closeFile, err := testutil.GetFileFromPath(calibrationImgVanishingPointPath)
 			if err != nil {
 				return nil, fmt.Errorf("failed to getFileFromPath calibration file vanishing point %w", err)
@@ -78,8 +78,8 @@ func CalibrateInputImage(ctx context.Context, gclient cv.GolfKeypointsServiceCli
 	return gclient.CalibrateInputImage(ctx, request)
 }
 
-func CalculateGolfKeypoints(ctx context.Context, gclient cv.GolfKeypointsServiceClient, sessionToken string, inputImgId string, outputImgPath string) (*cv.CalculateGolfKeypointsResponse, error) {
-	request := &cv.CalculateGolfKeypointsRequest{
+func CalculateGolfKeypoints(ctx context.Context, gclient skp.GolfKeypointsServiceClient, sessionToken string, inputImgId string, outputImgPath string) (*skp.CalculateGolfKeypointsResponse, error) {
+	request := &skp.CalculateGolfKeypointsRequest{
 		SessionToken: sessionToken,
 		InputImageId: inputImgId,
 	}

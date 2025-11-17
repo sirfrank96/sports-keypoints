@@ -4,26 +4,26 @@ import (
 	"fmt"
 	"math"
 
-	cv "github.com/sirfrank96/go-server/computer-vision-sports-proto"
+	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 )
 
 // TODO: Do i need feetline in this struct?
 type CalibrationInfo struct {
-	CalibrationType                  cv.CalibrationType `bson:"calibration_type,omitempty"`
-	FeetLineMethod                   cv.FeetLineMethod  `bson:"feet_line_method,omitempty"`
-	AxesCalibrationWarning           WarningImpl        `bson:"axes_calibration_warning,omitempty"`
-	VanishingPointCalibrationWarning WarningImpl        `bson:"vanishing_point_calibration_warning,omitempty"`
-	FeetLine                         FeetLine           `bson:"feet_line,omitempty"`
-	HorAxisLine                      Line               `bson:"hor_axis_line,omitempty"`
-	VertAxisLine                     Line               `bson:"vert_axis_line,omitempty"`
-	VanishingPoint                   Point              `bson:"vanishing_point,omitempty"`
+	CalibrationType                  skp.CalibrationType `bson:"calibration_type,omitempty"`
+	FeetLineMethod                   skp.FeetLineMethod  `bson:"feet_line_method,omitempty"`
+	AxesCalibrationWarning           WarningImpl         `bson:"axes_calibration_warning,omitempty"`
+	VanishingPointCalibrationWarning WarningImpl         `bson:"vanishing_point_calibration_warning,omitempty"`
+	FeetLine                         FeetLine            `bson:"feet_line,omitempty"`
+	HorAxisLine                      Line                `bson:"hor_axis_line,omitempty"`
+	VertAxisLine                     Line                `bson:"vert_axis_line,omitempty"`
+	VanishingPoint                   Point               `bson:"vanishing_point,omitempty"`
 }
 
-func CheckIfKeypointExists(keypoint *cv.Keypoint) bool {
+func CheckIfKeypointExists(keypoint *skp.Keypoint) bool {
 	return keypoint.X != 0 || keypoint.Y != 0
 }
 
-func VerifyKeypoint(keypoint *cv.Keypoint, keypointName string, threshold float64) Warning {
+func VerifyKeypoint(keypoint *skp.Keypoint, keypointName string, threshold float64) Warning {
 	if !CheckIfKeypointExists(keypoint) {
 		return WarningImpl{
 			WarningType: SEVERE,
@@ -40,7 +40,7 @@ func VerifyKeypoint(keypoint *cv.Keypoint, keypointName string, threshold float6
 }
 
 // TODO: Configure confidence level, configure how far off 90 degrees axes can be
-func VerifyCalibrationImageAxes(keypoints *cv.Body25PoseKeypoints, calibrationInfo *CalibrationInfo) (*CalibrationInfo, Warning) {
+func VerifyCalibrationImageAxes(keypoints *skp.Body25PoseKeypoints, calibrationInfo *CalibrationInfo) (*CalibrationInfo, Warning) {
 	// Get horizontal axis
 	feetLine, warning := GetFeetLine(keypoints, calibrationInfo.FeetLineMethod)
 	if warning != nil {
@@ -72,7 +72,7 @@ func VerifyCalibrationImageAxes(keypoints *cv.Body25PoseKeypoints, calibrationIn
 	return calibrationInfo, nil
 }
 
-func VerifyCalibrationImageVanishingPoint(keypoints *cv.Body25PoseKeypoints, calibrationInfo *CalibrationInfo) (*CalibrationInfo, Warning) {
+func VerifyCalibrationImageVanishingPoint(keypoints *skp.Body25PoseKeypoints, calibrationInfo *CalibrationInfo) (*CalibrationInfo, Warning) {
 	// verify vanishing point image
 	feetLine, warning := GetFeetLine(keypoints, calibrationInfo.FeetLineMethod)
 	if warning != nil {

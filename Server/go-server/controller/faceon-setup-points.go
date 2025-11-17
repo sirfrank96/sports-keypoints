@@ -1,20 +1,20 @@
 package controller
 
 import (
-	cv "github.com/sirfrank96/go-server/computer-vision-sports-proto"
+	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 	"github.com/sirfrank96/go-server/util"
 )
 
 //assuming right handed golfer
 
-func VerifyFaceOnCalibrationImage(keypoints *cv.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (*util.CalibrationInfo, util.Warning) {
+func VerifyFaceOnCalibrationImage(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (*util.CalibrationInfo, util.Warning) {
 	return util.VerifyCalibrationImageAxes(keypoints, calibrationInfo)
 }
 
 //side bend
 //line from midhip to neck
 //angle of intersect between that and vertical axis through midhip
-func GetSideBend(keypoints *cv.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
+func GetSideBend(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	// TODO: IF calibrationInfo.AxesWarning is not nil return that
 	var warning util.Warning
 	if w := util.VerifyKeypoint(keypoints.Midhip, "midhip", 0.5); w != nil {
@@ -47,7 +47,7 @@ func GetSideBend(keypoints *cv.Body25PoseKeypoints, calibrationInfo *util.Calibr
 //foot flares
 //line from heel to big toe
 //angle of intersect vert axis through midpoint of heels
-func getFootFlare(heel *cv.Keypoint, toe *cv.Keypoint, calibrationInfo *util.CalibrationInfo, midpoint *util.Point) float64 {
+func getFootFlare(heel *skp.Keypoint, toe *skp.Keypoint, calibrationInfo *util.CalibrationInfo, midpoint *util.Point) float64 {
 	vertAxisThroughMidpoint := util.GetLineWithSlope(midpoint, calibrationInfo.VertAxisLine.Slope)
 	toeToHeelLine := util.GetLine(util.ConvertCvKeypointToPoint(toe), util.ConvertCvKeypointToPoint(heel))
 	intersection := util.GetIntersection(toeToHeelLine, vertAxisThroughMidpoint)
@@ -58,7 +58,7 @@ func getFootFlare(heel *cv.Keypoint, toe *cv.Keypoint, calibrationInfo *util.Cal
 	}
 }
 
-func GetLeftFootFlare(keypoints *cv.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
+func GetLeftFootFlare(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	// TODO: IF calibrationInfo.AxesWarning is not nil return that
 	var warning util.Warning
 	if w := util.VerifyKeypoint(keypoints.LHeel, "left heel", 0.5); w != nil {
@@ -83,7 +83,7 @@ func GetLeftFootFlare(keypoints *cv.Body25PoseKeypoints, calibrationInfo *util.C
 	return getFootFlare(keypoints.LHeel, keypoints.LBigToe, calibrationInfo, heelsMidpoint), warning
 }
 
-func GetRightFootFlare(keypoints *cv.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
+func GetRightFootFlare(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	// TODO: IF calibrationInfo.AxesWarning is not nil return that
 	var warning util.Warning
 	if w := util.VerifyKeypoint(keypoints.LHeel, "left heel", 0.5); w != nil {

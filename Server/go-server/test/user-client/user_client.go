@@ -3,7 +3,7 @@ package uclient
 import (
 	"context"
 
-	cv "github.com/sirfrank96/go-server/computer-vision-sports-proto"
+	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 	//testutil "github.com/sirfrank96/go-server/test/test-util"
 
 	"google.golang.org/grpc"
@@ -13,19 +13,19 @@ import (
 //TODO: RETURN ERRORS INSTEAD OF LOG.FATALF
 
 // Middle arg is a close function, should be called by calling function
-func InitUserServiceGrpcClient(serveraddr string) (cv.UserServiceClient, func() error, error) {
+func InitUserServiceGrpcClient(serveraddr string) (skp.UserServiceClient, func() error, error) {
 	// Set up a connection to the cv_api server.
 	conn, err := grpc.NewClient(serveraddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, conn.Close, err
 	}
 	// Init ComputerVisionGolf grpc client
-	uclient := cv.NewUserServiceClient(conn)
+	uclient := skp.NewUserServiceClient(conn)
 	return uclient, conn.Close, nil
 }
 
-func CreateUser(ctx context.Context, uclient cv.UserServiceClient, userName string, password string, email string) (*cv.CreateUserResponse, error) {
-	request := &cv.CreateUserRequest{
+func CreateUser(ctx context.Context, uclient skp.UserServiceClient, userName string, password string, email string) (*skp.CreateUserResponse, error) {
+	request := &skp.CreateUserRequest{
 		UserName: userName,
 		Password: password,
 		Email:    email,
@@ -33,8 +33,8 @@ func CreateUser(ctx context.Context, uclient cv.UserServiceClient, userName stri
 	return uclient.CreateUser(ctx, request)
 }
 
-func RegisterUser(ctx context.Context, uclient cv.UserServiceClient, userName string, password string) (*cv.RegisterUserResponse, error) {
-	request := &cv.RegisterUserRequest{
+func RegisterUser(ctx context.Context, uclient skp.UserServiceClient, userName string, password string) (*skp.RegisterUserResponse, error) {
+	request := &skp.RegisterUserRequest{
 		UserName: userName,
 		Password: password,
 	}

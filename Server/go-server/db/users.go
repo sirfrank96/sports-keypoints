@@ -10,7 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"golang.org/x/crypto/bcrypt"
-	//cv "github.com/sirfrank96/go-server/computer-vision-sports-proto"
 )
 
 type User struct {

@@ -9,21 +9,21 @@ import (
 	mongodb "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	cv "github.com/sirfrank96/go-server/computer-vision-sports-proto"
+	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 )
 
 type GolfKeypoints struct {
-	Id                    primitive.ObjectID       `bson:"_id,omitempty"`
-	UserId                string                   `bson:"user_id,omitempty"`
-	InputImageId          string                   `bson:"input_image_id,omitempty"`
-	OutputImg             []byte                   `bson:"output_img,omitempty"`
-	OutputKeypoints       cv.Body25PoseKeypoints   `bson:"output_keypoints,omitempty"`
-	DtlGolfSetupPoints    cv.DTLGolfSetupPoints    `bson:"dtl_golf_setup_points,omitempty"`
-	FaceonGolfSetupPoints cv.FaceOnGolfSetupPoints `bson:"faceon_golf_setup_points,omitempty"`
+	Id                    primitive.ObjectID        `bson:"_id,omitempty"`
+	UserId                string                    `bson:"user_id,omitempty"`
+	InputImageId          string                    `bson:"input_image_id,omitempty"`
+	OutputImg             []byte                    `bson:"output_img,omitempty"`
+	OutputKeypoints       skp.Body25PoseKeypoints   `bson:"output_keypoints,omitempty"`
+	DtlGolfSetupPoints    skp.DTLGolfSetupPoints    `bson:"dtl_golf_setup_points,omitempty"`
+	FaceonGolfSetupPoints skp.FaceOnGolfSetupPoints `bson:"faceon_golf_setup_points,omitempty"`
 }
 
-func ConvertGolfKeypointsToCVGolfKeypoints(golfKeypoints *GolfKeypoints) *cv.GolfKeypoints {
-	return &cv.GolfKeypoints{
+func ConvertGolfKeypointsToCVGolfKeypoints(golfKeypoints *GolfKeypoints) *skp.GolfKeypoints {
+	return &skp.GolfKeypoints{
 		OutputImg:             golfKeypoints.OutputImg,
 		DtlGolfSetupPoints:    &golfKeypoints.DtlGolfSetupPoints,
 		FaceonGolfSetupPoints: &golfKeypoints.FaceonGolfSetupPoints,

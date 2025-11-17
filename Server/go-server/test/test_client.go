@@ -13,7 +13,7 @@ import (
 	"path"
 	"path/filepath"
 
-	cv "github.com/sirfrank96/go-server/computer-vision-sports-proto"
+	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 	gclient "github.com/sirfrank96/go-server/test/golf-keypoints-client"
 	uclient "github.com/sirfrank96/go-server/test/user-client"
 )
@@ -289,7 +289,7 @@ func main() {
 	log.Printf("Ending go test_client")
 }*/
 
-func testMainCodeFlow(ctx context.Context, uClient cv.UserServiceClient, gClient cv.GolfKeypointsServiceClient) {
+func testMainCodeFlow(ctx context.Context, uClient skp.UserServiceClient, gClient skp.GolfKeypointsServiceClient) {
 	createUserResponse, err := uclient.CreateUser(ctx, uClient, "user_1", "password123", "user_1@gmail.com")
 	if err != nil {
 		log.Fatalf("Failed to create user: %s", err.Error())
@@ -302,7 +302,7 @@ func testMainCodeFlow(ctx context.Context, uClient cv.UserServiceClient, gClient
 	}
 	log.Printf("RegisterUserResponse: %+v", registerUserResponse)
 
-	uploadInputImageResponse, err := gclient.UploadInputImage(ctx, gClient, registerUserResponse.SessionToken, filepath.Join(currentFileDirectory, "static", "dtl-spineangle-normal.jpg"), cv.ImageType_DTL)
+	uploadInputImageResponse, err := gclient.UploadInputImage(ctx, gClient, registerUserResponse.SessionToken, filepath.Join(currentFileDirectory, "static", "dtl-spineangle-normal.jpg"), skp.ImageType_DTL)
 	if err != nil {
 		log.Fatalf("Failed to upload input image: %s", err.Error())
 	}
@@ -310,7 +310,7 @@ func testMainCodeFlow(ctx context.Context, uClient cv.UserServiceClient, gClient
 
 	calibrationImgAxesPath := `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\dtl-feetalign-axescalibration.jpg`
 	calibrationImgVanishingPath := `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\dtl-feetalign-vanishingpointcalibration.jpg`
-	calibrateInputImageResponse, err := gclient.CalibrateInputImage(ctx, gClient, registerUserResponse.SessionToken, uploadInputImageResponse.InputImageId, cv.ImageType_DTL, cv.CalibrationType_FULL_CALIBRATION, cv.FeetLineMethod_USE_TOE_LINE, calibrationImgAxesPath, calibrationImgVanishingPath)
+	calibrateInputImageResponse, err := gclient.CalibrateInputImage(ctx, gClient, registerUserResponse.SessionToken, uploadInputImageResponse.InputImageId, skp.ImageType_DTL, skp.CalibrationType_FULL_CALIBRATION, skp.FeetLineMethod_USE_TOE_LINE, calibrationImgAxesPath, calibrationImgVanishingPath)
 	if err != nil {
 		log.Fatalf("Failed to calibrate input image: %s", err.Error())
 	}

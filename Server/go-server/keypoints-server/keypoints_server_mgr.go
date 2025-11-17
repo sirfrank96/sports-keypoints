@@ -10,7 +10,7 @@ import (
 	"log"
 	"net"
 
-	cv "github.com/sirfrank96/go-server/computer-vision-sports-proto"
+	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 
 	"google.golang.org/grpc"
 	//"google.golang.org/grpc/credentials/insecure"
@@ -30,7 +30,7 @@ type KeypointsServerManager struct {
 	golfKeypointsServer *golfKeypointsServer
 }
 
-func NewKeypointsServerManager(golfKeypointsHandler cv.GolfKeypointsServiceServer, userHandler cv.UserServiceServer) *KeypointsServerManager {
+func NewKeypointsServerManager(golfKeypointsHandler skp.GolfKeypointsServiceServer, userHandler skp.UserServiceServer) *KeypointsServerManager {
 	k := &KeypointsServerManager{}
 	k.userServer = createNewUserServer(userHandler)
 	k.golfKeypointsServer = createNewGolfKeypointsServer(golfKeypointsHandler)
@@ -47,8 +47,8 @@ func (k *KeypointsServerManager) StartKeypointsServer() error {
 	}
 	//var opts []grpc.ServerOption
 	k.grpcServer = grpc.NewServer(grpc.UnaryInterceptor(sessionUnaryInterceptor))
-	cv.RegisterGolfKeypointsServiceServer(k.grpcServer, k.golfKeypointsServer)
-	cv.RegisterUserServiceServer(k.grpcServer, k.userServer)
+	skp.RegisterGolfKeypointsServiceServer(k.grpcServer, k.golfKeypointsServer)
+	skp.RegisterUserServiceServer(k.grpcServer, k.userServer)
 	k.grpcServer.Serve(lis)
 	return nil
 }
@@ -61,15 +61,15 @@ func (k *KeypointsServerManager) StopKeypointsServer() error {
 func sessionUnaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	log.Println("unary interceptor: ", info.FullMethod)
 	switch info.FullMethod {
-	case "/computer_vision_sports_proto.GolfKeypointsService/uploadInputImage":
+	case "/sports_keypoints_proto.GolfKeypointsService/uploadInputImage":
 		// TODO: pull userid out of jwt, put userid key into util
-		ctx = context.WithValue(ctx, "userid", req.(*cv.UploadInputImageRequest).SessionToken)
-	case "/computer_vision_sports_proto.GolfKeypointsService/calibrateInputImage":
+		ctx = context.WithValue(ctx, "userid", req.(*skp.UploadInputImageRequest).SessionToken)
+	case "/sports_keypoints_proto.GolfKeypointsService/calibrateInputImage":
 		// TODO: pull userid out of jwt
-		ctx = context.WithValue(ctx, "userid", req.(*cv.CalibrateInputImageRequest).SessionToken)
-	case "/computer_vision_sports_proto.GolfKeypointsService/calculateGolfKeypoints":
+		ctx = context.WithValue(ctx, "userid", req.(*skp.CalibrateInputImageRequest).SessionToken)
+	case "/sports_keypoints_proto.GolfKeypointsService/calculateGolfKeypoints":
 		// TODO: pull userid out of jwt
-		ctx = context.WithValue(ctx, "userid", req.(*cv.CalculateGolfKeypointsRequest).SessionToken)
+		ctx = context.WithValue(ctx, "userid", req.(*skp.CalculateGolfKeypointsRequest).SessionToken)
 	}
 	return handler(ctx, req)
 }

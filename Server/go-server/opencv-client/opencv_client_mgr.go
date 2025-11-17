@@ -8,7 +8,7 @@ import (
 	"log"
 	"time"
 
-	cv "github.com/sirfrank96/go-server/computer-vision-sports-proto"
+	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -23,7 +23,7 @@ var (
 
 type OpenCvClientManager struct {
 	conn *grpc.ClientConn
-	c    cv.OpenCVAndPoseServiceClient
+	c    skp.OpenCVAndPoseServiceClient
 }
 
 func NewOpenCvClientManager() *OpenCvClientManager {
@@ -42,7 +42,7 @@ func (o *OpenCvClientManager) StartOpenCvClient() error {
 		return fmt.Errorf("could not connect grpc client: %w", err)
 	}
 	// Init OpenCvAndPoseService grpc client
-	o.c = cv.NewOpenCVAndPoseServiceClient(o.conn)
+	o.c = skp.NewOpenCVAndPoseServiceClient(o.conn)
 	return nil
 }
 
@@ -52,10 +52,10 @@ func (o *OpenCvClientManager) CloseOpenCvClient() error {
 	return nil
 }
 
-func (o *OpenCvClientManager) GetOpenPoseImage(img []byte) (*cv.GetOpenPoseImageResponse, error) {
+func (o *OpenCvClientManager) GetOpenPoseImage(img []byte) (*skp.GetOpenPoseImageResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	getOpenPoseImageRequest := &cv.GetOpenPoseImageRequest{Image: img}
+	getOpenPoseImageRequest := &skp.GetOpenPoseImageRequest{Image: img}
 	getOpenPoseImageResponse, err := o.c.GetOpenPoseImage(ctx, getOpenPoseImageRequest)
 	if err != nil {
 		return nil, fmt.Errorf("opencv/openpose client GetOpenPoseImage failed: %w", err)
@@ -63,10 +63,10 @@ func (o *OpenCvClientManager) GetOpenPoseImage(img []byte) (*cv.GetOpenPoseImage
 	return getOpenPoseImageResponse, nil
 }
 
-func (o *OpenCvClientManager) GetOpenPoseData(img []byte) (*cv.GetOpenPoseDataResponse, error) {
+func (o *OpenCvClientManager) GetOpenPoseData(img []byte) (*skp.GetOpenPoseDataResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	getOpenPoseDataRequest := &cv.GetOpenPoseDataRequest{Image: img}
+	getOpenPoseDataRequest := &skp.GetOpenPoseDataRequest{Image: img}
 	getOpenPoseDataResponse, err := o.c.GetOpenPoseData(ctx, getOpenPoseDataRequest)
 	if err != nil {
 		return nil, fmt.Errorf("opencv/openpose client GetOpenPoseData failed: %w", err)
@@ -74,7 +74,7 @@ func (o *OpenCvClientManager) GetOpenPoseData(img []byte) (*cv.GetOpenPoseDataRe
 	return getOpenPoseDataResponse, nil
 }
 
-func (o *OpenCvClientManager) GetOpenPoseImagesFromFromVideo(images [][]byte) ([]*cv.GetOpenPoseImageResponse, error) {
+func (o *OpenCvClientManager) GetOpenPoseImagesFromFromVideo(images [][]byte) ([]*skp.GetOpenPoseImageResponse, error) {
 	// TODO: Get rid of timeout? // or configure stream vs nonstream timeouts
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
@@ -86,7 +86,7 @@ func (o *OpenCvClientManager) GetOpenPoseImagesFromFromVideo(images [][]byte) ([
 	// Start goroutine that waits for return images from stream
 	waitc := make(chan struct{})
 	errChan := make(chan error)
-	responses := []*cv.GetOpenPoseImageResponse{}
+	responses := []*skp.GetOpenPoseImageResponse{}
 	go func() {
 		responseIdx := 0
 		for {
@@ -108,7 +108,7 @@ func (o *OpenCvClientManager) GetOpenPoseImagesFromFromVideo(images [][]byte) ([
 
 	// Send all images via stream
 	for idx, img := range images {
-		if err := stream.Send(&cv.GetOpenPoseImageRequest{Image: img}); err != nil {
+		if err := stream.Send(&skp.GetOpenPoseImageRequest{Image: img}); err != nil {
 			log.Fatalf("getOpenPoseImagesFromVideo for img #%d stream.Send() failed: %v", idx, err)
 		}
 	}

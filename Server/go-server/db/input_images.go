@@ -9,14 +9,14 @@ import (
 	mongodb "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	cv "github.com/sirfrank96/go-server/computer-vision-sports-proto"
+	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 	"github.com/sirfrank96/go-server/util"
 )
 
 type InputImage struct {
 	Id                           primitive.ObjectID   `bson:"_id,omitempty"`
 	UserId                       string               `bson:"user_id,omitempty"`
-	ImageType                    cv.ImageType         `bson:"image_type,omitempty"`
+	ImageType                    skp.ImageType        `bson:"image_type,omitempty"`
 	InputImg                     []byte               `bson:"input_img,omitempty"`
 	CalibrationImgAxes           []byte               `bson:"calibration_img_axes,omitempty"`
 	CalibrationImgVanishingPoint []byte               `bson:"calibration_img_vanishing_point,omitempty"`

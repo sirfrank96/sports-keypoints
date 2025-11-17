@@ -3,27 +3,27 @@ package util
 import (
 	"fmt"
 
-	cv "github.com/sirfrank96/go-server/computer-vision-sports-proto"
+	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 )
 
 // TODO: Make FeetLineInfo internal struct
 type FeetLineInfo struct {
-	FeetLineMethod cv.FeetLineMethod `bson:"feet_line_method,omitempty"`
-	LKeypoint      cv.Keypoint       `bson:"l_keypoint,omitempty"`
-	RKeypoint      cv.Keypoint       `bson:"r_keypoint,omitempty"`
-	LKeypointName  string            `bson:"l_keypoint_name,omitempty"`
-	RKeypointName  string            `bson:"r_keypoint_name,omitempty"`
-	Threshold      float64           `bson:"threshold,omitempty"`
+	FeetLineMethod skp.FeetLineMethod `bson:"feet_line_method,omitempty"`
+	LKeypoint      skp.Keypoint       `bson:"l_keypoint,omitempty"`
+	RKeypoint      skp.Keypoint       `bson:"r_keypoint,omitempty"`
+	LKeypointName  string             `bson:"l_keypoint_name,omitempty"`
+	RKeypointName  string             `bson:"r_keypoint_name,omitempty"`
+	Threshold      float64            `bson:"threshold,omitempty"`
 }
 
 type FeetLine struct {
-	FeetLineMethod cv.FeetLineMethod `bson:"feet_line_method,omitempty"`
-	LPoint         Point             `bson:"l_point,omitempty"`
-	RPoint         Point             `bson:"r_point,omitempty"`
-	Line           Line              `bson:"line,omitempty"`
+	FeetLineMethod skp.FeetLineMethod `bson:"feet_line_method,omitempty"`
+	LPoint         Point              `bson:"l_point,omitempty"`
+	RPoint         Point              `bson:"r_point,omitempty"`
+	Line           Line               `bson:"line,omitempty"`
 }
 
-func GetFeetLine(keypoints *cv.Body25PoseKeypoints, feetLineMethod cv.FeetLineMethod) (*FeetLine, Warning) {
+func GetFeetLine(keypoints *skp.Body25PoseKeypoints, feetLineMethod skp.FeetLineMethod) (*FeetLine, Warning) {
 	feetLineInfo := GetFeetLineInfo(keypoints, feetLineMethod)
 	warning := VerifyFeetLineInfo(feetLineInfo)
 	if warning != nil && warning.GetWarningType() == SEVERE {
@@ -34,9 +34,9 @@ func GetFeetLine(keypoints *cv.Body25PoseKeypoints, feetLineMethod cv.FeetLineMe
 }
 
 //TODO: CONFIGURE THRESHOLD
-func GetFeetLineInfo(keypoints *cv.Body25PoseKeypoints, feetLineMethod cv.FeetLineMethod) *FeetLineInfo {
+func GetFeetLineInfo(keypoints *skp.Body25PoseKeypoints, feetLineMethod skp.FeetLineMethod) *FeetLineInfo {
 	feetLineInfo := &FeetLineInfo{FeetLineMethod: feetLineMethod, Threshold: 0.6}
-	if feetLineMethod == cv.FeetLineMethod_USE_TOE_LINE {
+	if feetLineMethod == skp.FeetLineMethod_USE_TOE_LINE {
 		feetLineInfo.LKeypoint = *keypoints.LBigToe
 		feetLineInfo.LKeypointName = "left big toe"
 		feetLineInfo.RKeypoint = *keypoints.RBigToe

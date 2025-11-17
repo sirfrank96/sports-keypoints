@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	cv "github.com/sirfrank96/go-server/computer-vision-sports-proto"
 	db "github.com/sirfrank96/go-server/db"
 	opencvclient "github.com/sirfrank96/go-server/opencv-client"
+	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 )
 
 type UserListener struct {
-	cv.UnimplementedUserServiceServer
+	skp.UnimplementedUserServiceServer
 	ocvmgr *opencvclient.OpenCvClientManager
 	dbmgr  *db.DbManager
 }
@@ -22,7 +22,7 @@ func newUserListener(ocvmgr *opencvclient.OpenCvClientManager, dbmgr *db.DbManag
 	}
 }
 
-func (u *UserListener) CreateUser(ctx context.Context, request *cv.CreateUserRequest) (*cv.CreateUserResponse, error) {
+func (u *UserListener) CreateUser(ctx context.Context, request *skp.CreateUserRequest) (*skp.CreateUserResponse, error) {
 	hashedPassword, err := db.HashPassword(request.Password)
 	if err != nil {
 		return nil, err
@@ -36,13 +36,13 @@ func (u *UserListener) CreateUser(ctx context.Context, request *cv.CreateUserReq
 	if err != nil {
 		return nil, fmt.Errorf("could not store user in db: %w", err)
 	}
-	response := &cv.CreateUserResponse{
+	response := &skp.CreateUserResponse{
 		Success: true,
 	}
 	return response, nil
 }
 
-func (u *UserListener) RegisterUser(ctx context.Context, request *cv.RegisterUserRequest) (*cv.RegisterUserResponse, error) {
+func (u *UserListener) RegisterUser(ctx context.Context, request *skp.RegisterUserRequest) (*skp.RegisterUserResponse, error) {
 	user, err := u.dbmgr.ReadUserFromUsername(ctx, request.UserName)
 	if err != nil {
 		return nil, fmt.Errorf("could not fine user with username: %s, error: %w", request.UserName, err)
@@ -51,22 +51,22 @@ func (u *UserListener) RegisterUser(ctx context.Context, request *cv.RegisterUse
 		return nil, fmt.Errorf("passwords do not match, could not register user")
 	}
 	// TODO: IMPLEMENT JWT using unique user id
-	response := &cv.RegisterUserResponse{
+	response := &skp.RegisterUserResponse{
 		Success:      true,
 		SessionToken: user.Id.Hex(),
 	}
 	return response, nil
 }
 
-func (u *UserListener) ReadUser(ctx context.Context, request *cv.ReadUserRequest) (*cv.User, error) {
+func (u *UserListener) ReadUser(ctx context.Context, request *skp.ReadUserRequest) (*skp.User, error) {
 	return nil, nil
 }
 
-func (u *UserListener) UpdateUser(ctx context.Context, request *cv.UpdateUserRequest) (*cv.User, error) {
+func (u *UserListener) UpdateUser(ctx context.Context, request *skp.UpdateUserRequest) (*skp.User, error) {
 	return nil, nil
 }
 
-func (u *UserListener) DeleteUser(ctx context.Context, request *cv.DeleteUserRequest) (*cv.DeleteUserResponse, error) {
+func (u *UserListener) DeleteUser(ctx context.Context, request *skp.DeleteUserRequest) (*skp.DeleteUserResponse, error) {
 	return nil, nil
 }
 

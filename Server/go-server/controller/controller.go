@@ -2,10 +2,8 @@ package controller
 
 import (
 	"context"
-	//"fmt"
 	"log"
 
-	//cv "github.com/sirfrank96/go-server/computer-vision-sports-proto"
 	db "github.com/sirfrank96/go-server/db"
 	kpmgr "github.com/sirfrank96/go-server/keypoints-server"
 	opencvclient "github.com/sirfrank96/go-server/opencv-client"

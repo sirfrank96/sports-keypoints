@@ -1,5 +1,5 @@
 syntax = "proto3";
-package computer_vision_sports_proto;
+package sports_keypoints_proto;
 
 message Double {
     double data = 1;
