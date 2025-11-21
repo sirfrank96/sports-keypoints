@@ -4,7 +4,6 @@
 package keypointsserver
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -56,20 +55,4 @@ func (k *KeypointsServerManager) StartKeypointsServer() error {
 func (k *KeypointsServerManager) StopKeypointsServer() error {
 	k.grpcServer.GracefulStop()
 	return nil
-}
-
-func sessionUnaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-	log.Println("unary interceptor: ", info.FullMethod)
-	switch info.FullMethod {
-	case "/sports_keypoints_proto.GolfKeypointsService/uploadInputImage":
-		// TODO: pull userid out of jwt, put userid key into util
-		ctx = context.WithValue(ctx, "userid", req.(*skp.UploadInputImageRequest).SessionToken)
-	case "/sports_keypoints_proto.GolfKeypointsService/calibrateInputImage":
-		// TODO: pull userid out of jwt
-		ctx = context.WithValue(ctx, "userid", req.(*skp.CalibrateInputImageRequest).SessionToken)
-	case "/sports_keypoints_proto.GolfKeypointsService/calculateGolfKeypoints":
-		// TODO: pull userid out of jwt
-		ctx = context.WithValue(ctx, "userid", req.(*skp.CalculateGolfKeypointsRequest).SessionToken)
-	}
-	return handler(ctx, req)
 }

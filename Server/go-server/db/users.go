@@ -84,12 +84,12 @@ func (d *DbManager) ReadUserFromUsername(ctx context.Context, userName string) (
 		}
 		return nil, fmt.Errorf("could not read user: %w", err)
 	}
-	/*objectId, err := primitive.ObjectIDFromHex(user.Id)
+	/*objectId, err := primitive.ObjectIDFromHex(user.Id.Hex())
 	if err != nil {
 		return nil, fmt.Errorf("could not convert id to object id %w", err)
 	}
 	user.Id = objectId*/
-	fmt.Printf("Read user result: %+v\n", user)
+	fmt.Printf("Read user from username result: %+v\n", user)
 	return &user, nil
 }
 

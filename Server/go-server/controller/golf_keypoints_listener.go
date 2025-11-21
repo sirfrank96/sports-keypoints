@@ -25,9 +25,9 @@ func newGolfKeypointsListener(ocvmgr *opencvclient.OpenCvClientManager, dbmgr *d
 
 func (g *GolfKeypointsListener) UploadInputImage(ctx context.Context, request *skp.UploadInputImageRequest) (*skp.UploadInputImageResponse, error) {
 	// make sure user exists
-	userId, ok := ctx.Value("userid").(string)
+	userId, ok := ctx.Value(util.UserIdKey).(string)
 	if !ok {
-		return nil, fmt.Errorf("invalid user id")
+		return nil, fmt.Errorf("unable to get userId from context")
 	}
 	if _, err := verifyUserExists(ctx, g.dbmgr, userId); err != nil {
 		return nil, fmt.Errorf("could not verify user exists")
@@ -53,7 +53,7 @@ func (g *GolfKeypointsListener) UploadInputImage(ctx context.Context, request *s
 
 func (g *GolfKeypointsListener) ListInputImagesForUser(ctx context.Context, request *skp.ListInputImagesForUserRequest) (*skp.ListInputImagesForUserResponse, error) {
 	// make sure user exists
-	userId, ok := ctx.Value("userid").(string)
+	userId, ok := ctx.Value(util.UserIdKey).(string)
 	if !ok {
 		return nil, fmt.Errorf("invalid user id")
 	}
@@ -79,7 +79,7 @@ func (g *GolfKeypointsListener) ListInputImagesForUser(ctx context.Context, requ
 
 func (g *GolfKeypointsListener) ReadInputImage(ctx context.Context, request *skp.ReadInputImageRequest) (*skp.ReadInputImageResponse, error) {
 	// make sure user exists
-	userId, ok := ctx.Value("userid").(string)
+	userId, ok := ctx.Value(util.UserIdKey).(string)
 	if !ok {
 		return nil, fmt.Errorf("invalid user id")
 	}
@@ -104,7 +104,7 @@ func (g *GolfKeypointsListener) ReadInputImage(ctx context.Context, request *skp
 
 func (g *GolfKeypointsListener) DeleteInputImage(ctx context.Context, request *skp.DeleteInputImageRequest) (*skp.DeleteInputImageResponse, error) {
 	// make sure user exists
-	userId, ok := ctx.Value("userid").(string)
+	userId, ok := ctx.Value(util.UserIdKey).(string)
 	if !ok {
 		return nil, fmt.Errorf("invalid user id")
 	}
@@ -126,7 +126,7 @@ func (g *GolfKeypointsListener) DeleteInputImage(ctx context.Context, request *s
 
 func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request *skp.CalibrateInputImageRequest) (*skp.CalibrateInputImageResponse, error) {
 	// make sure user exists
-	userId, ok := ctx.Value("userid").(string)
+	userId, ok := ctx.Value(util.UserIdKey).(string)
 	if !ok {
 		return nil, fmt.Errorf("invalid user id")
 	}
@@ -217,7 +217,7 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 
 func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, request *skp.CalculateGolfKeypointsRequest) (*skp.CalculateGolfKeypointsResponse, error) {
 	// make sure user exists
-	userId, ok := ctx.Value("userid").(string)
+	userId, ok := ctx.Value(util.UserIdKey).(string)
 	if !ok {
 		return nil, fmt.Errorf("invalid user id")
 	}
@@ -327,7 +327,7 @@ func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, requ
 
 func (g *GolfKeypointsListener) ReadGolfKeypoints(ctx context.Context, request *skp.ReadGolfKeypointsRequest) (*skp.ReadGolfKeypointsResponse, error) {
 	// make sure user exists
-	userId, ok := ctx.Value("userid").(string)
+	userId, ok := ctx.Value(util.UserIdKey).(string)
 	if !ok {
 		return nil, fmt.Errorf("invalid user id")
 	}
@@ -353,7 +353,7 @@ func (g *GolfKeypointsListener) ReadGolfKeypoints(ctx context.Context, request *
 
 func (g *GolfKeypointsListener) DeleteGolfKeypoints(ctx context.Context, request *skp.DeleteGolfKeypointsRequest) (*skp.DeleteGolfKeypointsResponse, error) {
 	// make sure user exists
-	userId, ok := ctx.Value("userid").(string)
+	userId, ok := ctx.Value(util.UserIdKey).(string)
 	if !ok {
 		return nil, fmt.Errorf("invalid user id")
 	}

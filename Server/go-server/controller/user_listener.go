@@ -7,6 +7,7 @@ import (
 	db "github.com/sirfrank96/go-server/db"
 	opencvclient "github.com/sirfrank96/go-server/opencv-client"
 	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
+	"github.com/sirfrank96/go-server/util"
 )
 
 type UserListener struct {
@@ -50,17 +51,20 @@ func (u *UserListener) RegisterUser(ctx context.Context, request *skp.RegisterUs
 	if !db.VerifyPasswordHash(user.Password, request.Password) {
 		return nil, fmt.Errorf("passwords do not match, could not register user")
 	}
-	// TODO: IMPLEMENT JWT using unique user id
+	sessionToken, err := util.CreateJWTSessionToken(user.Id.Hex())
+	if err != nil {
+		return nil, fmt.Errorf("could not create session token from id: %w", err)
+	}
 	response := &skp.RegisterUserResponse{
 		Success:      true,
-		SessionToken: user.Id.Hex(),
+		SessionToken: sessionToken,
 	}
 	return response, nil
 }
 
 func (u *UserListener) ReadUser(ctx context.Context, request *skp.ReadUserRequest) (*skp.User, error) {
 	// make sure user exists
-	userId, ok := ctx.Value("userid").(string)
+	userId, ok := ctx.Value(util.UserIdKey).(string)
 	if !ok {
 		return nil, fmt.Errorf("invalid user id")
 	}
@@ -82,7 +86,7 @@ func (u *UserListener) ReadUser(ctx context.Context, request *skp.ReadUserReques
 
 func (u *UserListener) UpdateUser(ctx context.Context, request *skp.UpdateUserRequest) (*skp.User, error) {
 	// make sure user exists
-	userId, ok := ctx.Value("userid").(string)
+	userId, ok := ctx.Value(util.UserIdKey).(string)
 	if !ok {
 		return nil, fmt.Errorf("invalid user id")
 	}
@@ -117,7 +121,7 @@ func (u *UserListener) UpdateUser(ctx context.Context, request *skp.UpdateUserRe
 
 func (u *UserListener) DeleteUser(ctx context.Context, request *skp.DeleteUserRequest) (*skp.DeleteUserResponse, error) {
 	// make sure user exists
-	userId, ok := ctx.Value("userid").(string)
+	userId, ok := ctx.Value(util.UserIdKey).(string)
 	if !ok {
 		return nil, fmt.Errorf("invalid user id")
 	}

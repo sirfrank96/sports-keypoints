@@ -402,8 +402,8 @@ func main() {
 	}
 	defer closeGolfConn()
 
-	//testMainCodeFlow(ctx, uClient, gClient)
-	testNoCalibration(ctx, uClient, gClient)
+	testMainCodeFlow(ctx, uClient, gClient)
+	//testNoCalibration(ctx, uClient, gClient)
 
 	log.Printf("Ending go test_client")
 }
