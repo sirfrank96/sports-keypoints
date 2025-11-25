@@ -14,6 +14,8 @@ service GolfKeypointsService {
 
     rpc calculateGolfKeypoints(CalculateGolfKeypointsRequest) returns (CalculateGolfKeypointsResponse) {}
     rpc readGolfKeypoints(ReadGolfKeypointsRequest) returns (ReadGolfKeypointsResponse) {}
+    // if estimated body keypoints are off or have low confidence, client can manually input where body parts are
+    rpc updateBodyKeypoints(UpdateBodyKeypointsRequest) returns (UpdateBodyKeypointsResponse) {}
     rpc deleteGolfKeypoints(DeleteGolfKeypointsRequest) returns (DeleteGolfKeypointsResponse) {}
 
     // TODO: Stream for videos
@@ -70,6 +72,14 @@ message CalibrateInputImageRequest {
     bytes calibration_image_axes = 5;
     // only required if want certain data for DTL
     bytes calibration_image_vanishing_point = 6;
+    // only required if want certain data such as distance from ball and ball position
+    Keypoint golf_ball = 7;
+    // only required if want certain data such as ulnar deviation and shaft lean (club_head is also required)
+    Keypoint club_butt = 8;
+    // only required if want certain data such as ulnar deviation and shaft lean (club_butt is also required)
+    Keypoint club_head = 9;
+    // optional: horizontal line and vertical line points for axes calibration
+    // optional: parallel line points for vanishing point
 }
 
 message CalibrateInputImageResponse {
@@ -83,7 +93,8 @@ message CalculateGolfKeypointsRequest {
 
 message CalculateGolfKeypointsResponse {
     bool success = 1;
-    GolfKeypoints golf_keypoints = 2;
+    bytes output_image = 2;
+    GolfKeypoints golf_keypoints = 3;
 }
 
 message ReadGolfKeypointsRequest {
@@ -93,7 +104,19 @@ message ReadGolfKeypointsRequest {
 
 message ReadGolfKeypointsResponse {
     bool success = 1;
-    GolfKeypoints golf_keypoints = 2;
+    bytes output_image = 2;
+    GolfKeypoints golf_keypoints = 3;
+}
+
+message UpdateBodyKeypointsRequest {
+    string session_token = 1;
+    string input_image_id = 2;
+    Body25PoseKeypoints updated_body_keypoints = 3;
+}
+
+message UpdateBodyKeypointsResponse {
+    bool success = 1;
+    GolfKeypoints updated_golf_keypoints = 2;
 }
 
 message DeleteGolfKeypointsRequest {
@@ -128,9 +151,9 @@ enum FeetLineMethod {
 }
 
 message GolfKeypoints {
-    bytes output_img = 1;
-    DTLGolfSetupPoints dtl_golf_setup_points = 2;
-    FaceOnGolfSetupPoints faceon_golf_setup_points = 3;
+    DTLGolfSetupPoints dtl_golf_setup_points = 1;
+    FaceOnGolfSetupPoints faceon_golf_setup_points = 2;
+    Body25PoseKeypoints body_keypoints = 3;
 }
 
 message DTLGolfSetupPoints {
@@ -147,8 +170,8 @@ message DTLGolfSetupPoints {
     // degrees from target (negative is open, positive is closed), requires axes and vanishing point calibration (note: shoulder alignment is very sensitive to detection, threshold should be higher for shoulder keypoint detection for accurate results)
     Double shoulder_alignment = 6;
     //waist_alignment, requires axes and vanishing point calibration
-    //distance_from_ball
-    //ulnar_deviation
+    //distance_from_ball // requires golf ball 
+    //ulnar_deviation // requires club butt and club head
     //waist_bend: (same as spine angle??)
     //neck_angle
     //spine_bend
@@ -166,8 +189,8 @@ message FaceOnGolfSetupPoints {
     // degrees offset from horizontal axis, positive is trail shoulder lower, negative is lead shoulder lower, requires axes calibration
     Double shoulder_tilt = 5; 
     //waist_angle, requires axes calibration
-    //shaft_lean
-    //ball_position (relative to feet and chest and head?)
+    //shaft_lean // requires club butt and club head
+    //ball_position (relative to feet and chest and head?) // requires golf ball
     //head_position
     //chest_position
 }

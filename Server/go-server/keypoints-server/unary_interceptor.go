@@ -78,6 +78,12 @@ func sessionUnaryInterceptor(ctx context.Context, req interface{}, info *grpc.Un
 			return nil, err
 		}
 		ctx = context.WithValue(ctx, util.UserIdKey, userId)
+	case "/sports_keypoints_proto.GolfKeypointsService/updateBodyKeypoints":
+		userId, err := getUserIdFromSessionToken(req.(*skp.UpdateBodyKeypointsRequest).SessionToken)
+		if err != nil {
+			return nil, err
+		}
+		ctx = context.WithValue(ctx, util.UserIdKey, userId)
 	case "/sports_keypoints_proto.GolfKeypointsService/deleteGolfKeypoints":
 		userId, err := getUserIdFromSessionToken(req.(*skp.DeleteGolfKeypointsRequest).SessionToken)
 		if err != nil {

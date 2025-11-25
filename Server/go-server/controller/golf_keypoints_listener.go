@@ -144,7 +144,32 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 		CalibrationType: request.CalibrationType,
 		FeetLineMethod:  request.FeetLineMethod,
 	}
-	// dtl calibration
+	// put in golf ball/golf club points and warnings
+	if request.GolfBall != nil {
+		calibrationInfo.GolfBallPoint = *util.ConvertCvKeypointToPoint(request.GolfBall)
+	} else {
+		calibrationInfo.GolfBallWarning = util.WarningImpl{
+			Severity: util.MINOR,
+			Message:  "no golf ball identified, may not be able to provide all setup points",
+		}
+	}
+	if request.ClubButt != nil {
+		calibrationInfo.ClubButtPoint = *util.ConvertCvKeypointToPoint(request.ClubButt)
+	} else {
+		calibrationInfo.GolfClubWarning = util.WarningImpl{
+			Severity: util.MINOR,
+			Message:  "no club butt identified, may not be able to provide all setup points",
+		}
+	}
+	if request.ClubHead != nil {
+		calibrationInfo.ClubHeadPoint = *util.ConvertCvKeypointToPoint(request.ClubHead)
+	} else {
+		calibrationInfo.GolfClubWarning = util.WarningImpl{
+			Severity: util.MINOR,
+			Message:  "no club head identified, may not be able to provide all setup points",
+		}
+	}
+	// dtl calibration via calibration images
 	if inputImage.ImageType == skp.ImageType_DTL {
 		// axes calibration
 		if calibrationInfo.CalibrationType != skp.CalibrationType_NO_CALIBRATION {
@@ -181,7 +206,7 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 				Message:  "no axes or vanishing point calibration, may not be able to provide all setup points",
 			}
 		}
-		// face on calibration
+		// face on calibration via calibration image
 	} else {
 		// axes calibration
 		if calibrationInfo.CalibrationType != skp.CalibrationType_NO_CALIBRATION {
@@ -251,106 +276,9 @@ func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, requ
 	}
 	// dtl setup points
 	if inputImage.ImageType == skp.ImageType_DTL {
-		spineAngle, warning := GetSpineAngle(getOpenPoseDataResponse.Keypoints, &inputImage.CalibrationInfo)
-		var spineAngleWarning string
-		if warning != nil {
-			spineAngleWarning = warning.Error()
-		}
-		fmt.Printf("Spine angle is %f", spineAngle)
-		feetAlignment, warning := GetFeetAlignment(getOpenPoseDataResponse.Keypoints, &inputImage.CalibrationInfo)
-		var feetAlignmentWarning string
-		if warning != nil {
-			feetAlignmentWarning = warning.Error()
-		}
-		fmt.Printf("Feet alignment is %f", feetAlignment)
-		// TODO: Add heel and toe alignment based on FeetLineMethod
-		kneeBend, warning := GetKneeBend(getOpenPoseDataResponse.Keypoints)
-		var kneeBendWarning string
-		if warning != nil {
-			kneeBendWarning = warning.Error()
-		}
-		fmt.Printf("Knee bend is %f", kneeBend)
-		shoulderAlignment, warning := GetShoulderAlignment(getOpenPoseDataResponse.Keypoints, &inputImage.CalibrationInfo)
-		var shoulderAlignmentWarning string
-		if warning != nil {
-			shoulderAlignmentWarning = warning.Error()
-		}
-		fmt.Printf("Shoulder alignment is %f", shoulderAlignment)
-
-		dtlGolfSetupPoints := &skp.DTLGolfSetupPoints{
-			SpineAngle: &skp.Double{
-				Data:    spineAngle,
-				Warning: spineAngleWarning,
-			},
-			FeetAlignment: &skp.Double{
-				Data:    feetAlignment,
-				Warning: feetAlignmentWarning,
-			},
-			KneeBend: &skp.Double{
-				Data:    kneeBend,
-				Warning: kneeBendWarning,
-			},
-			ShoulderAlignment: &skp.Double{
-				Data:    shoulderAlignment,
-				Warning: shoulderAlignmentWarning,
-			},
-		}
-		golfKeypoints.DtlGolfSetupPoints = *dtlGolfSetupPoints
-		// face on setup points
-	} else {
-		sideBend, warning := GetSideBend(getOpenPoseDataResponse.Keypoints, &inputImage.CalibrationInfo)
-		var sideBendWarning string
-		if warning != nil {
-			sideBendWarning = warning.Error()
-		}
-		fmt.Printf("Side bend is %f", sideBend)
-		lFootFlare, warning := GetLeftFootFlare(getOpenPoseDataResponse.Keypoints, &inputImage.CalibrationInfo)
-		var lFootFlareWarning string
-		if warning != nil {
-			lFootFlareWarning = warning.Error()
-		}
-		fmt.Printf("Left foot flare is %f", lFootFlare)
-		rFootFlare, warning := GetRightFootFlare(getOpenPoseDataResponse.Keypoints, &inputImage.CalibrationInfo)
-		var rFootFlareWarning string
-		if warning != nil {
-			rFootFlareWarning = warning.Error()
-		}
-		fmt.Printf("Right foot flare is %f", rFootFlare)
-		stanceWidth, warning := GetStanceWidth(getOpenPoseDataResponse.Keypoints)
-		var stanceWidthWarning string
-		if warning != nil {
-			stanceWidthWarning = warning.Error()
-		}
-		fmt.Printf("Stance width is %f", stanceWidth)
-		shoulderTilt, warning := GetShoulderTilt(getOpenPoseDataResponse.Keypoints, &inputImage.CalibrationInfo)
-		var shoulderTiltWarning string
-		if warning != nil {
-			shoulderTiltWarning = warning.Error()
-		}
-		fmt.Printf("Shoulder tilt is %f", shoulderTilt)
-		faceOnGolfSetupPoints := &skp.FaceOnGolfSetupPoints{
-			SideBend: &skp.Double{
-				Data:    sideBend,
-				Warning: sideBendWarning,
-			},
-			LFootFlare: &skp.Double{
-				Data:    lFootFlare,
-				Warning: lFootFlareWarning,
-			},
-			RFootFlare: &skp.Double{
-				Data:    rFootFlare,
-				Warning: rFootFlareWarning,
-			},
-			StanceWidth: &skp.Double{
-				Data:    stanceWidth,
-				Warning: stanceWidthWarning,
-			},
-			ShoulderTilt: &skp.Double{
-				Data:    shoulderTilt,
-				Warning: shoulderTiltWarning,
-			},
-		}
-		golfKeypoints.FaceonGolfSetupPoints = *faceOnGolfSetupPoints
+		golfKeypoints.DtlGolfSetupPoints = *CalculateDTLSetupPoints(ctx, getOpenPoseDataResponse.Keypoints, &inputImage.CalibrationInfo)
+	} else { // face on setup points
+		golfKeypoints.FaceonGolfSetupPoints = *CalculateFaceOnSetupPoints(ctx, getOpenPoseDataResponse.Keypoints, &inputImage.CalibrationInfo)
 	}
 
 	// store golfkeypoints in db
@@ -362,6 +290,7 @@ func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, requ
 	// return response
 	response := &skp.CalculateGolfKeypointsResponse{
 		Success:       true,
+		OutputImage:   getOpenPoseImageResponse.Image,
 		GolfKeypoints: db.ConvertGolfKeypointsToCVGolfKeypoints(golfKeypoints),
 	}
 	return response, nil
@@ -383,12 +312,49 @@ func (g *GolfKeypointsListener) ReadGolfKeypoints(ctx context.Context, request *
 	}
 	// return response
 	response := &skp.ReadGolfKeypointsResponse{
-		Success: true,
-		GolfKeypoints: &skp.GolfKeypoints{
-			OutputImg:             golfKeypoints.OutputImg,
-			DtlGolfSetupPoints:    &golfKeypoints.DtlGolfSetupPoints,
-			FaceonGolfSetupPoints: &golfKeypoints.FaceonGolfSetupPoints,
-		},
+		Success:       true,
+		OutputImage:   golfKeypoints.OutputImg,
+		GolfKeypoints: db.ConvertGolfKeypointsToCVGolfKeypoints(golfKeypoints),
+	}
+	return response, nil
+}
+
+func (g *GolfKeypointsListener) UpdateBodyKeypoints(ctx context.Context, request *skp.UpdateBodyKeypointsRequest) (*skp.UpdateBodyKeypointsResponse, error) {
+	// make sure user exists
+	userId, ok := ctx.Value(util.UserIdKey).(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid user id")
+	}
+	if _, err := verifyUserExists(ctx, g.dbmgr, userId); err != nil {
+		return nil, fmt.Errorf("could not verify user exists")
+	}
+	// get inputimage from db
+	inputImage, err := g.dbmgr.ReadInputImage(ctx, request.InputImageId)
+	if err != nil {
+		return nil, fmt.Errorf("could not get input image with id: %s, error was %w", request.InputImageId, err)
+	}
+	// get current golf keypoints for associated input image id in db
+	golfKeypoints, err := g.dbmgr.ReadGolfKeypointsForInputImage(ctx, request.InputImageId)
+	if err != nil {
+		return nil, fmt.Errorf("could not read golf keypoints from db for input image: %s, %w", request.InputImageId, err)
+	}
+	golfKeypoints.OutputKeypoints = *db.UpdateOutputKeypoints(&golfKeypoints.OutputKeypoints, request.UpdatedBodyKeypoints)
+	// recalculate golf setup points based on new keypoints
+	// dtl setup points
+	if inputImage.ImageType == skp.ImageType_DTL {
+		golfKeypoints.DtlGolfSetupPoints = *CalculateDTLSetupPoints(ctx, &golfKeypoints.OutputKeypoints, &inputImage.CalibrationInfo)
+	} else { // face on setup points
+		golfKeypoints.FaceonGolfSetupPoints = *CalculateFaceOnSetupPoints(ctx, &golfKeypoints.OutputKeypoints, &inputImage.CalibrationInfo)
+	}
+	// update new golf keypoints in db
+	updatedGolfKeypoints, err := g.dbmgr.UpdateGolfKeypointsForInputImage(ctx, request.InputImageId, golfKeypoints)
+	if err != nil {
+		return nil, fmt.Errorf("could not update golf keypoints from db for input image: %s, %w", request.InputImageId, err)
+	}
+	// return response
+	response := &skp.UpdateBodyKeypointsResponse{
+		Success:              true,
+		UpdatedGolfKeypoints: db.ConvertGolfKeypointsToCVGolfKeypoints(updatedGolfKeypoints),
 	}
 	return response, nil
 }

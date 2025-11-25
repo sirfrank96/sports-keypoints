@@ -66,6 +66,13 @@ func (g *golfKeypointsServer) ReadGolfKeypoints(ctx context.Context, request *sk
 	return g.handler.ReadGolfKeypoints(ctx, request)
 }
 
+func (g *golfKeypointsServer) UpdateBodyKeypoints(ctx context.Context, request *skp.UpdateBodyKeypointsRequest) (*skp.UpdateBodyKeypointsResponse, error) {
+	if err := verifyUpdateBodyKeypointsRequest(request); err != nil {
+		return nil, err
+	}
+	return g.handler.UpdateBodyKeypoints(ctx, request)
+}
+
 func (g *golfKeypointsServer) DeleteGolfKeypoints(ctx context.Context, request *skp.DeleteGolfKeypointsRequest) (*skp.DeleteGolfKeypointsResponse, error) {
 	if err := verifyDeleteGolfKeypointsRequest(request); err != nil {
 		return nil, err

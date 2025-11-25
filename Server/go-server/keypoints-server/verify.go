@@ -52,6 +52,10 @@ func verifyReadGolfKeypointsRequest(request *skp.ReadGolfKeypointsRequest) error
 	return nil
 }
 
+func verifyUpdateBodyKeypointsRequest(request *skp.UpdateBodyKeypointsRequest) error {
+	return nil
+}
+
 func verifyDeleteGolfKeypointsRequest(request *skp.DeleteGolfKeypointsRequest) error {
 	return nil
 }

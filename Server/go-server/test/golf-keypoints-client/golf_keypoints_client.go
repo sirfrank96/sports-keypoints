@@ -89,7 +89,7 @@ func CalculateGolfKeypoints(ctx context.Context, gclient skp.GolfKeypointsServic
 		return nil, fmt.Errorf("could not calculate golf keypoints: %w", err)
 	}
 
-	imgSliceBytes := response.GolfKeypoints.OutputImg
+	imgSliceBytes := response.OutputImage
 	jpegBytes, err := testutil.DecodeAndEncodeBytesAsJpg(imgSliceBytes)
 	if err != nil {
 		return response, fmt.Errorf("failed to decodeAndEncodeBytesAsJpg for return image: %w", err)
@@ -101,4 +101,13 @@ func CalculateGolfKeypoints(ctx context.Context, gclient skp.GolfKeypointsServic
 	defer close()
 
 	return response, nil
+}
+
+func UpdateBodyKeypoints(ctx context.Context, gclient skp.GolfKeypointsServiceClient, sessionToken string, inputImgId string, newBodyKeypoints *skp.Body25PoseKeypoints) (*skp.UpdateBodyKeypointsResponse, error) {
+	request := &skp.UpdateBodyKeypointsRequest{
+		SessionToken:         sessionToken,
+		InputImageId:         inputImgId,
+		UpdatedBodyKeypoints: newBodyKeypoints,
+	}
+	return gclient.UpdateBodyKeypoints(ctx, request)
 }

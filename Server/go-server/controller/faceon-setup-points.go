@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"fmt"
 	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 	"github.com/sirfrank96/go-server/util"
@@ -10,6 +11,62 @@ import (
 
 func VerifyFaceOnCalibrationImage(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (*util.CalibrationInfo, util.Warning) {
 	return util.VerifyCalibrationImageAxes(keypoints, calibrationInfo)
+}
+
+func CalculateFaceOnSetupPoints(ctx context.Context, keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) *skp.FaceOnGolfSetupPoints {
+	sideBend, warning := GetSideBend(keypoints, calibrationInfo)
+	var sideBendWarning string
+	if warning != nil {
+		sideBendWarning = warning.Error()
+	}
+	fmt.Printf("Side bend is %f", sideBend)
+	lFootFlare, warning := GetLeftFootFlare(keypoints, calibrationInfo)
+	var lFootFlareWarning string
+	if warning != nil {
+		lFootFlareWarning = warning.Error()
+	}
+	fmt.Printf("Left foot flare is %f", lFootFlare)
+	rFootFlare, warning := GetRightFootFlare(keypoints, calibrationInfo)
+	var rFootFlareWarning string
+	if warning != nil {
+		rFootFlareWarning = warning.Error()
+	}
+	fmt.Printf("Right foot flare is %f", rFootFlare)
+	stanceWidth, warning := GetStanceWidth(keypoints)
+	var stanceWidthWarning string
+	if warning != nil {
+		stanceWidthWarning = warning.Error()
+	}
+	fmt.Printf("Stance width is %f", stanceWidth)
+	shoulderTilt, warning := GetShoulderTilt(keypoints, calibrationInfo)
+	var shoulderTiltWarning string
+	if warning != nil {
+		shoulderTiltWarning = warning.Error()
+	}
+	fmt.Printf("Shoulder tilt is %f", shoulderTilt)
+	faceOnGolfSetupPoints := &skp.FaceOnGolfSetupPoints{
+		SideBend: &skp.Double{
+			Data:    sideBend,
+			Warning: sideBendWarning,
+		},
+		LFootFlare: &skp.Double{
+			Data:    lFootFlare,
+			Warning: lFootFlareWarning,
+		},
+		RFootFlare: &skp.Double{
+			Data:    rFootFlare,
+			Warning: rFootFlareWarning,
+		},
+		StanceWidth: &skp.Double{
+			Data:    stanceWidth,
+			Warning: stanceWidthWarning,
+		},
+		ShoulderTilt: &skp.Double{
+			Data:    shoulderTilt,
+			Warning: shoulderTiltWarning,
+		},
+	}
+	return faceOnGolfSetupPoints
 }
 
 //side bend

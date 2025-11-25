@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"fmt"
 	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 	"github.com/sirfrank96/go-server/util"
@@ -24,6 +25,54 @@ func VerifyDTLCalibrationImages(axesKeypoints *skp.Body25PoseKeypoints, vanishin
 		return nil, warning
 	}
 	return calibrationInfo, nil
+}
+
+func CalculateDTLSetupPoints(ctx context.Context, keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) *skp.DTLGolfSetupPoints {
+	spineAngle, warning := GetSpineAngle(keypoints, calibrationInfo)
+	var spineAngleWarning string
+	if warning != nil {
+		spineAngleWarning = warning.Error()
+	}
+	fmt.Printf("Spine angle is %f", spineAngle)
+	feetAlignment, warning := GetFeetAlignment(keypoints, calibrationInfo)
+	var feetAlignmentWarning string
+	if warning != nil {
+		feetAlignmentWarning = warning.Error()
+	}
+	fmt.Printf("Feet alignment is %f", feetAlignment)
+	// TODO: Add heel and toe alignment based on FeetLineMethod
+	kneeBend, warning := GetKneeBend(keypoints)
+	var kneeBendWarning string
+	if warning != nil {
+		kneeBendWarning = warning.Error()
+	}
+	fmt.Printf("Knee bend is %f", kneeBend)
+	shoulderAlignment, warning := GetShoulderAlignment(keypoints, calibrationInfo)
+	var shoulderAlignmentWarning string
+	if warning != nil {
+		shoulderAlignmentWarning = warning.Error()
+	}
+	fmt.Printf("Shoulder alignment is %f", shoulderAlignment)
+
+	dtlGolfSetupPoints := &skp.DTLGolfSetupPoints{
+		SpineAngle: &skp.Double{
+			Data:    spineAngle,
+			Warning: spineAngleWarning,
+		},
+		FeetAlignment: &skp.Double{
+			Data:    feetAlignment,
+			Warning: feetAlignmentWarning,
+		},
+		KneeBend: &skp.Double{
+			Data:    kneeBend,
+			Warning: kneeBendWarning,
+		},
+		ShoulderAlignment: &skp.Double{
+			Data:    shoulderAlignment,
+			Warning: shoulderAlignmentWarning,
+		},
+	}
+	return dtlGolfSetupPoints
 }
 
 //spine angle

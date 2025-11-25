@@ -11,7 +11,7 @@ import common_pb2_grpc
 #TODO: Implement all rpcs
 class OpenCVAndPoseServiceServicer(opencvandpose_pb2_grpc.OpenCVAndPoseServiceServicer):
 
-    body_pose_field_descriptors = opencvandpose_pb2.Body25PoseKeypoints.DESCRIPTOR.fields
+    body_pose_field_descriptors = common_pb2.Body25PoseKeypoints.DESCRIPTOR.fields
 
     def __init__(self):
         self.__init__
@@ -34,12 +34,12 @@ class OpenCVAndPoseServiceServicer(opencvandpose_pb2_grpc.OpenCVAndPoseServiceSe
         data = openpose.get_open_pose_data(image)
         print(f"Processed image. Data is {data}. Length of data is {len(data)}")
         
-        body_25_pose_keypoints = opencvandpose_pb2.Body25PoseKeypoints()
+        body_25_pose_keypoints = common_pb2.Body25PoseKeypoints()
         body_25_pose_keypoints_descriptor = body_25_pose_keypoints.DESCRIPTOR
         for field_descriptor in body_25_pose_keypoints_descriptor.fields:
             field_name = field_descriptor.name
             field_number = field_descriptor.number
-            keypoint = opencvandpose_pb2.Keypoint(
+            keypoint = common_pb2.Keypoint(
                 x=data[field_number-1][0],
                 y=data[field_number-1][1],
                 confidence=data[field_number-1][2]

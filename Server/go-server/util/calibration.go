@@ -13,10 +13,15 @@ type CalibrationInfo struct {
 	FeetLineMethod                   skp.FeetLineMethod  `bson:"feet_line_method,omitempty"`
 	AxesCalibrationWarning           WarningImpl         `bson:"axes_calibration_warning,omitempty"`
 	VanishingPointCalibrationWarning WarningImpl         `bson:"vanishing_point_calibration_warning,omitempty"`
+	GolfBallWarning                  WarningImpl         `bson:"golf_ball_warning,omitempty"`
+	GolfClubWarning                  WarningImpl         `bson:"golf_club_warning,omitempty"`
 	FeetLine                         FeetLine            `bson:"feet_line,omitempty"`
 	HorAxisLine                      Line                `bson:"hor_axis_line,omitempty"`
 	VertAxisLine                     Line                `bson:"vert_axis_line,omitempty"`
 	VanishingPoint                   Point               `bson:"vanishing_point,omitempty"`
+	GolfBallPoint                    Point               `bson:"golf_ball_point,omitempty"`
+	ClubButtPoint                    Point               `bson:"club_butt_point,omitempty"`
+	ClubHeadPoint                    Point               `bson:"club_head_point,omitempty"`
 }
 
 func GetEmptyCalibrationInfo() *CalibrationInfo {

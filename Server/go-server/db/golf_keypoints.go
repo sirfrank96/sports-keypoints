@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -24,10 +25,24 @@ type GolfKeypoints struct {
 
 func ConvertGolfKeypointsToCVGolfKeypoints(golfKeypoints *GolfKeypoints) *skp.GolfKeypoints {
 	return &skp.GolfKeypoints{
-		OutputImg:             golfKeypoints.OutputImg,
 		DtlGolfSetupPoints:    &golfKeypoints.DtlGolfSetupPoints,
 		FaceonGolfSetupPoints: &golfKeypoints.FaceonGolfSetupPoints,
+		BodyKeypoints:         &golfKeypoints.OutputKeypoints,
 	}
+}
+
+func UpdateOutputKeypoints(oldKeypoints *skp.Body25PoseKeypoints, newKeypoints *skp.Body25PoseKeypoints) *skp.Body25PoseKeypoints {
+	oldReflectVal := reflect.ValueOf(oldKeypoints).Elem()
+	newReflectVal := reflect.ValueOf(newKeypoints).Elem()
+	numFields := newReflectVal.NumField()
+	for i := 0; i < numFields; i++ {
+		newField := newReflectVal.Field(i)
+		if !newField.IsZero() {
+			oldField := oldReflectVal.Field(i)
+			oldField.Set(newField)
+		}
+	}
+	return oldKeypoints
 }
 
 func (d *DbManager) CreateGolfKeypoints(ctx context.Context, golfKeypoints *GolfKeypoints) (*GolfKeypoints, error) {
@@ -67,7 +82,7 @@ func (d *DbManager) UpdateGolfKeypointsForInputImage(ctx context.Context, inputI
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
 	fmt.Printf("Updating golfkeypoints for inputimgid: %s\n", inputImgId)
-	filter := bson.M{"input_img_id": inputImgId}
+	filter := bson.M{"input_image_id": inputImgId}
 	update := bson.M{
 		"$set": bson.M{
 			"user_id":                  newGolfKeypoints.UserId,
@@ -94,7 +109,7 @@ func (d *DbManager) DeleteGolfKeypointsForInputImage(ctx context.Context, inputI
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
 	fmt.Printf("Deleting golfkeypoints for inputimgid: %s...\n", inputImgId)
-	filter := bson.M{"input_img_id": inputImgId}
+	filter := bson.M{"input_image_id": inputImgId}
 	res, err := d.golfKeypointCollection.DeleteOne(ctx, filter)
 	if err != nil {
 		return fmt.Errorf("could not delete imageinfo %w", err)
