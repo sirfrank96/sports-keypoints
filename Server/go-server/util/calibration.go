@@ -91,7 +91,7 @@ func VerifyCalibrationImageVanishingPoint(keypoints *skp.Body25PoseKeypoints, ca
 			Message:  fmt.Sprintf("vanishing point calibration image off. feet line slope %f and vertaxis line slope %f are too close (%f). make sure feet line is off centered or make sure alignment stick is pointed at target (parallel lines converge in distance)", feetLine.Line.Slope, calibrationInfo.VertAxisLine.Slope, slopeDiff),
 		}
 	}
-	fmt.Printf("Good vanishing point calibration. heel line slope is %f, and vertaxis line slope is %f", feetLine.Line.Slope, calibrationInfo.VertAxisLine.Slope)
+	fmt.Printf("Good vanishing point calibration. feet line is %+v, and vertaxis line is %+v", feetLine.Line, calibrationInfo.VertAxisLine)
 	intersection := GetIntersection(&feetLine.Line, &calibrationInfo.VertAxisLine)
 	calibrationInfo.VanishingPoint = intersection.IntersectPoint
 	return calibrationInfo, nil

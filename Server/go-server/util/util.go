@@ -15,10 +15,12 @@ type Point struct {
 	YPos float64 `bson:"y_pos,omitempty"`
 }
 
+// TODO: Do i need lines? or just use angles somehow
 type Line struct {
 	Slope       float64 `bson:"slope,omitempty"`
 	YIntercept  float64 `bson:"y_intercept,omitempty"`
 	PointOnLine Point   `bson:"point_on_line,omitempty"`
+	// TODO: Add infinite slope/vertical line parameter
 }
 
 // Info about intersection between 2 lines
@@ -94,12 +96,12 @@ func GetIntersection(line1 *Line, line2 *Line) *Intersection {
 	return &Intersection{Line1: *line1, Line2: *line2, IntersectPoint: intersectPoint, AngleAtIntersect: angleAtIntersect}
 }
 
-// keep from 0-180
+// TODO: keep from -90 to 90 or keep from 0-180?
 func ConvertSlopeToDegrees(slope float64) float64 {
 	rad := math.Atan(slope)
 	deg := ConvertRadToDegrees(rad)
-	if deg > 180 {
-		return deg - 180
+	if deg > 180.0 {
+		return deg - float64(180)
 	} else {
 		return deg
 	}

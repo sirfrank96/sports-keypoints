@@ -35,18 +35,13 @@ func GetFeetLine(keypoints *skp.Body25PoseKeypoints, feetLineMethod skp.FeetLine
 
 //TODO: CONFIGURE THRESHOLD
 func GetFeetLineInfo(keypoints *skp.Body25PoseKeypoints, feetLineMethod skp.FeetLineMethod) *FeetLineInfo {
-	feetLineInfo := &FeetLineInfo{FeetLineMethod: feetLineMethod, Threshold: 0.6}
-	if feetLineMethod == skp.FeetLineMethod_USE_TOE_LINE {
-		feetLineInfo.LKeypoint = *keypoints.LBigToe
-		feetLineInfo.LKeypointName = "left big toe"
-		feetLineInfo.RKeypoint = *keypoints.RBigToe
-		feetLineInfo.RKeypointName = "right big toe"
-	} else { // default is USE_HEEL_LINE
-		feetLineInfo.LKeypoint = *keypoints.LHeel
-		feetLineInfo.LKeypointName = "left heel"
-		feetLineInfo.RKeypoint = *keypoints.RHeel
-		feetLineInfo.LKeypointName = "right heel"
-	}
+	feetLineInfo := &FeetLineInfo{FeetLineMethod: feetLineMethod, Threshold: 0.5}
+	lKeypoint, lKeypointName := GetLeftFootPoint(keypoints, feetLineMethod)
+	feetLineInfo.LKeypoint = *lKeypoint
+	feetLineInfo.LKeypointName = lKeypointName
+	rKeypoint, rKeypointName := GetRightFootPoint(keypoints, feetLineMethod)
+	feetLineInfo.RKeypoint = *rKeypoint
+	feetLineInfo.RKeypointName = rKeypointName
 	return feetLineInfo
 }
 
@@ -58,7 +53,7 @@ func VerifyFeetLineInfo(feetLineInfo *FeetLineInfo) Warning {
 		}
 		wStruct := WarningImpl{
 			Severity: w.GetSeverity(),
-			Message:  fmt.Sprintf("%w, please set a different FeetLineMethod", w.Error()),
+			Message:  fmt.Sprintf("%s, please set a different FeetLineMethod", w.Error()),
 		}
 		warning = AppendMinorWarnings(warning, wStruct)
 	}
@@ -68,7 +63,7 @@ func VerifyFeetLineInfo(feetLineInfo *FeetLineInfo) Warning {
 		}
 		wStruct := WarningImpl{
 			Severity: w.GetSeverity(),
-			Message:  fmt.Sprintf("%w, please set a different FeetLineMethod", w.Error()),
+			Message:  fmt.Sprintf("%s, please set a different FeetLineMethod", w.Error()),
 		}
 		warning = AppendMinorWarnings(warning, wStruct)
 	}
@@ -81,4 +76,20 @@ func GetFeetLineFromInfo(feetLineInfo *FeetLineInfo) *FeetLine {
 	feetLine.RPoint = *ConvertCvKeypointToPoint(&feetLineInfo.RKeypoint)
 	feetLine.Line = *GetLine(&feetLine.LPoint, &feetLine.RPoint)
 	return feetLine
+}
+
+func GetLeftFootPoint(keypoints *skp.Body25PoseKeypoints, feetLineMethod skp.FeetLineMethod) (*skp.Keypoint, string) {
+	if feetLineMethod == skp.FeetLineMethod_USE_TOE_LINE {
+		return keypoints.LBigToe, "left big toe"
+	} else { // default is USE_HEEL_LINE
+		return keypoints.LHeel, "left heel"
+	}
+}
+
+func GetRightFootPoint(keypoints *skp.Body25PoseKeypoints, feetLineMethod skp.FeetLineMethod) (*skp.Keypoint, string) {
+	if feetLineMethod == skp.FeetLineMethod_USE_TOE_LINE {
+		return keypoints.RBigToe, "right big toe"
+	} else { // default is USE_HEEL_LINE
+		return keypoints.RHeel, "right heel"
+	}
 }

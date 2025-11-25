@@ -154,7 +154,7 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 			}
 			var warning util.Warning
 			calibrationInfo, warning = util.VerifyCalibrationImageAxes(getOpenPoseDataResponse.Keypoints, calibrationInfo)
-			if warning != nil && warning.GetSeverity() == util.SEVERE {
+			if warning != nil {
 				return nil, fmt.Errorf("could not verify calibration image axes: %s", warning.Error())
 			}
 			// vanishing point calibration
@@ -164,7 +164,7 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 					return nil, fmt.Errorf("could not get openpose data for calibration image vanishingpoint %w", err)
 				}
 				calibrationInfo, warning = util.VerifyCalibrationImageVanishingPoint(getOpenPoseDataResponse.Keypoints, calibrationInfo)
-				if warning != nil && warning.GetSeverity() == util.SEVERE {
+				if warning != nil {
 					return nil, fmt.Errorf("could not verify calibration image axes: %s", warning.Error())
 				}
 				// no vanishing point calibration
@@ -191,7 +191,7 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 			}
 			var warning util.Warning
 			calibrationInfo, warning = util.VerifyCalibrationImageAxes(getOpenPoseDataResponse.Keypoints, calibrationInfo)
-			if warning != nil && warning.GetSeverity() == util.SEVERE {
+			if warning != nil {
 				return nil, fmt.Errorf("could not verify calibration image axes: %s", warning.Error())
 			}
 			// no axes calibration
@@ -263,6 +263,20 @@ func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, requ
 			feetAlignmentWarning = warning.Error()
 		}
 		fmt.Printf("Feet alignment is %f", feetAlignment)
+		// TODO: Add heel and toe alignment based on FeetLineMethod
+		kneeBend, warning := GetKneeBend(getOpenPoseDataResponse.Keypoints)
+		var kneeBendWarning string
+		if warning != nil {
+			kneeBendWarning = warning.Error()
+		}
+		fmt.Printf("Knee bend is %f", kneeBend)
+		shoulderAlignment, warning := GetShoulderAlignment(getOpenPoseDataResponse.Keypoints, &inputImage.CalibrationInfo)
+		var shoulderAlignmentWarning string
+		if warning != nil {
+			shoulderAlignmentWarning = warning.Error()
+		}
+		fmt.Printf("Shoulder alignment is %f", shoulderAlignment)
+
 		dtlGolfSetupPoints := &skp.DTLGolfSetupPoints{
 			SpineAngle: &skp.Double{
 				Data:    spineAngle,
@@ -271,6 +285,14 @@ func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, requ
 			FeetAlignment: &skp.Double{
 				Data:    feetAlignment,
 				Warning: feetAlignmentWarning,
+			},
+			KneeBend: &skp.Double{
+				Data:    kneeBend,
+				Warning: kneeBendWarning,
+			},
+			ShoulderAlignment: &skp.Double{
+				Data:    shoulderAlignment,
+				Warning: shoulderAlignmentWarning,
 			},
 		}
 		golfKeypoints.DtlGolfSetupPoints = *dtlGolfSetupPoints
@@ -294,6 +316,18 @@ func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, requ
 			rFootFlareWarning = warning.Error()
 		}
 		fmt.Printf("Right foot flare is %f", rFootFlare)
+		stanceWidth, warning := GetStanceWidth(getOpenPoseDataResponse.Keypoints)
+		var stanceWidthWarning string
+		if warning != nil {
+			stanceWidthWarning = warning.Error()
+		}
+		fmt.Printf("Stance width is %f", stanceWidth)
+		shoulderTilt, warning := GetShoulderTilt(getOpenPoseDataResponse.Keypoints, &inputImage.CalibrationInfo)
+		var shoulderTiltWarning string
+		if warning != nil {
+			shoulderTiltWarning = warning.Error()
+		}
+		fmt.Printf("Shoulder tilt is %f", shoulderTilt)
 		faceOnGolfSetupPoints := &skp.FaceOnGolfSetupPoints{
 			SideBend: &skp.Double{
 				Data:    sideBend,
@@ -306,6 +340,14 @@ func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, requ
 			RFootFlare: &skp.Double{
 				Data:    rFootFlare,
 				Warning: rFootFlareWarning,
+			},
+			StanceWidth: &skp.Double{
+				Data:    stanceWidth,
+				Warning: stanceWidthWarning,
+			},
+			ShoulderTilt: &skp.Double{
+				Data:    shoulderTilt,
+				Warning: shoulderTiltWarning,
 			},
 		}
 		golfKeypoints.FaceonGolfSetupPoints = *faceOnGolfSetupPoints

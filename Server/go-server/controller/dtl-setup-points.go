@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 	"github.com/sirfrank96/go-server/util"
 )
@@ -101,6 +102,29 @@ func GetFeetAlignment(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.
 //line from rhip to rknee
 //line from rknee to rankle
 //angle between those lines
+func GetKneeBend(keypoints *skp.Body25PoseKeypoints) (float64, util.Warning) {
+	var warning util.Warning
+	if w := util.VerifyKeypoint(keypoints.RHip, "right hip", 0.5); w != nil {
+		if w.GetSeverity() == util.SEVERE {
+			return 0, w
+		}
+		warning = util.AppendMinorWarnings(warning, w)
+	}
+	if w := util.VerifyKeypoint(keypoints.RKnee, "right knee", 0.5); w != nil {
+		if w.GetSeverity() == util.SEVERE {
+			return 0, w
+		}
+		warning = util.AppendMinorWarnings(warning, w)
+	}
+	if w := util.VerifyKeypoint(keypoints.RAnkle, "right ankle", 0.5); w != nil {
+		if w.GetSeverity() == util.SEVERE {
+			return 0, w
+		}
+		warning = util.AppendMinorWarnings(warning, w)
+	}
+	kneeBend := util.GetAngleAtIntersection(util.ConvertCvKeypointToPoint(keypoints.RHip), util.ConvertCvKeypointToPoint(keypoints.RKnee), util.ConvertCvKeypointToPoint(keypoints.RAnkle))
+	return kneeBend, warning
+}
 
 //waist bend
 //line between rhip to neck
@@ -112,3 +136,43 @@ func GetFeetAlignment(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.
 //any line that goes to vanishing point
 //line from rshoulder to lshoulder
 //find difference in angles
+func GetShoulderAlignment(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
+	if calibrationInfo.CalibrationType == skp.CalibrationType_NO_CALIBRATION {
+		return 0, util.WarningImpl{
+			Severity: util.MINOR,
+			Message:  "Can't calculate feet alignment without axes calibration",
+		}
+	}
+	if calibrationInfo.CalibrationType == skp.CalibrationType_AXES_CALIBRATION_ONLY {
+		return 0, util.WarningImpl{
+			Severity: util.MINOR,
+			Message:  "Can't calculate feet alignment without vanishing point calibration",
+		}
+	}
+	var warning util.Warning
+	if w := util.VerifyKeypoint(keypoints.LShoulder, "left shoulder", 0.5); w != nil {
+		if w.GetSeverity() == util.SEVERE {
+			return 0, w
+		}
+		warning = util.AppendMinorWarnings(warning, w)
+	}
+	if w := util.VerifyKeypoint(keypoints.RShoulder, "right shoulder", 0.5); w != nil {
+		if w.GetSeverity() == util.SEVERE {
+			return 0, w
+		}
+		warning = util.AppendMinorWarnings(warning, w)
+	}
+	fmt.Printf("LShoulder: %+v, RSHoulder: %+v, VanishingPoint: %+v\n", *keypoints.LShoulder, *keypoints.RShoulder, calibrationInfo.VanishingPoint)
+	currShoulderLine := util.GetLine(util.ConvertCvKeypointToPoint(keypoints.LShoulder), util.ConvertCvKeypointToPoint(keypoints.RShoulder))
+	shoulderDegrees := util.GetAngleAtIntersection(util.ConvertCvKeypointToPoint(keypoints.LShoulder), util.ConvertCvKeypointToPoint(keypoints.RShoulder), &calibrationInfo.VanishingPoint)
+	fmt.Printf("ShoulderDegrees: %f\n", shoulderDegrees)
+	realParallelLine := util.GetLine(&calibrationInfo.VanishingPoint, util.ConvertCvKeypointToPoint(keypoints.RShoulder)) // line that converges at vanishing point
+	//determine if closed or open
+	if currShoulderLine.Slope == realParallelLine.Slope { // neutral
+		return 0, warning
+	} else if currShoulderLine.Slope > realParallelLine.Slope && currShoulderLine.Slope <= 0 { // closed (will return positive number)
+		return shoulderDegrees, warning
+	} else { // open (will return negative number)
+		return float64(-1) * shoulderDegrees, warning
+	}
+}

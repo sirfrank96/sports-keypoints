@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 	"github.com/sirfrank96/go-server/util"
 )
@@ -126,4 +127,66 @@ func GetRightFootFlare(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util
 //stance width
 //relative to hip to neck length
 //line from left heel to right heel
-//ratio of that line to hip to neck length
+//ratio of that line to left shoulder to right shoulder line
+//greater than 1 is wider than shoulder width, less than 1 is less wide than shoulder width
+func GetStanceWidth(keypoints *skp.Body25PoseKeypoints) (float64, util.Warning) {
+	var warning util.Warning
+	if w := util.VerifyKeypoint(keypoints.LHeel, "left heel", 0.5); w != nil {
+		if w.GetSeverity() == util.SEVERE {
+			return 0, w
+		}
+		warning = util.AppendMinorWarnings(warning, w)
+	}
+	if w := util.VerifyKeypoint(keypoints.RHeel, "right heel", 0.5); w != nil {
+		if w.GetSeverity() == util.SEVERE {
+			return 0, w
+		}
+		warning = util.AppendMinorWarnings(warning, w)
+	}
+	if w := util.VerifyKeypoint(keypoints.LShoulder, "left shoulder", 0.5); w != nil {
+		if w.GetSeverity() == util.SEVERE {
+			return 0, w
+		}
+		warning = util.AppendMinorWarnings(warning, w)
+	}
+	if w := util.VerifyKeypoint(keypoints.RShoulder, "right shoulder", 0.5); w != nil {
+		if w.GetSeverity() == util.SEVERE {
+			return 0, w
+		}
+		warning = util.AppendMinorWarnings(warning, w)
+	}
+	shoulderWidth := util.GetLengthBetweenTwoPoints(util.ConvertCvKeypointToPoint(keypoints.LShoulder), util.ConvertCvKeypointToPoint(keypoints.RShoulder))
+	stanceWidth := util.GetLengthBetweenTwoPoints(util.ConvertCvKeypointToPoint(keypoints.LHeel), util.ConvertCvKeypointToPoint(keypoints.RHeel))
+	return stanceWidth / shoulderWidth, warning
+}
+
+//shoulder tilt
+//relative to horizontal axes slope
+//positive angle for right shoulder lower than left, negative angle if right shoulder is higher than left
+func GetShoulderTilt(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
+	if calibrationInfo.CalibrationType == skp.CalibrationType_NO_CALIBRATION {
+		return 0, util.WarningImpl{
+			Severity: util.MINOR,
+			Message:  "Can't calculate shoulder tilt without axes calibration",
+		}
+	}
+	var warning util.Warning
+	if w := util.VerifyKeypoint(keypoints.LShoulder, "left shoulder", 0.5); w != nil {
+		if w.GetSeverity() == util.SEVERE {
+			return 0, w
+		}
+		warning = util.AppendMinorWarnings(warning, w)
+	}
+	if w := util.VerifyKeypoint(keypoints.RShoulder, "right shoulder", 0.5); w != nil {
+		if w.GetSeverity() == util.SEVERE {
+			return 0, w
+		}
+		warning = util.AppendMinorWarnings(warning, w)
+	}
+	shoulderLineSlope := util.GetSlope(util.ConvertCvKeypointToPoint(keypoints.RShoulder), util.ConvertCvKeypointToPoint(keypoints.LShoulder))
+	shoulderLineDegrees := util.ConvertSlopeToDegrees(shoulderLineSlope)
+	horAxisLineDegrees := util.ConvertSlopeToDegrees(calibrationInfo.HorAxisLine.Slope)
+	fmt.Printf("horAxisLineDegrees: %f, shoulderLineDegrees: %f", horAxisLineDegrees, shoulderLineDegrees)
+	diff := horAxisLineDegrees - shoulderLineDegrees
+	return diff, warning
+}

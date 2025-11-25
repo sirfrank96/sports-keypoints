@@ -142,12 +142,14 @@ message DTLGolfSetupPoints {
     Double heel_alignment = 3;
     // degrees from target (negative is open, positive is closed), requires axes and vanishing point calibration
     Double toe_alignment = 4;
-    //shoulder_alignment, requires axes and vanishing point calibration
+    // degrees between line from hip to knee and line from knee to ankle, for best results wear shorts/tighter pants
+    Double knee_bend = 5;
+    // degrees from target (negative is open, positive is closed), requires axes and vanishing point calibration (note: shoulder alignment is very sensitive to detection, threshold should be higher for shoulder keypoint detection for accurate results)
+    Double shoulder_alignment = 6;
     //waist_alignment, requires axes and vanishing point calibration
     //distance_from_ball
     //ulnar_deviation
-    //knee_bend
-    //waist_bend
+    //waist_bend: (same as spine angle??)
     //neck_angle
     //spine_bend
 }
@@ -159,8 +161,10 @@ message FaceOnGolfSetupPoints {
     Double l_foot_flare = 2;
     // degrees from line running through midpoint of heels, perpendicular to target line (positive external feet, negative is internal feet), requires axes calibration
     Double r_foot_flare = 3;
-    //stance_width
-    //shoulder_angle, requires axes calibration
+    // ratio of stance width to shoulder width, greater than 1 is wider than shoulders, less than 1 is less wide than shoulders
+    Double stance_width = 4;
+    // degrees offset from horizontal axis, positive is trail shoulder lower, negative is lead shoulder lower, requires axes calibration
+    Double shoulder_tilt = 5; 
     //waist_angle, requires axes calibration
     //shaft_lean
     //ball_position (relative to feet and chest and head?)
