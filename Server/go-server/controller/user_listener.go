@@ -142,8 +142,5 @@ func (u *UserListener) DeleteUser(ctx context.Context, request *skp.DeleteUserRe
 	response := &skp.DeleteUserResponse{
 		Success: true,
 	}
-	// TODO: Delete all input images and golf keypoints associated with user
 	return response, nil
 }
-
-// implements cv.UnimplementedUserServiceServer

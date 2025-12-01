@@ -24,13 +24,10 @@ class InitialPage(tk.Frame):
     def go_to_create_user_page(self):
         create_user_page = CreateUserPage(self.parent, self.controller, self.user_client, self.golfkeypoints_client)
         self.controller.show_frame(create_user_page)
-        #create_user_page.tkraise()
     
     def go_to_login_page(self):
         login_page = LoginPage(self.parent, self.controller, self.user_client, self.golfkeypoints_client)
-        self.controller.show_frame(login_page)
-        #login_page.tkraise()
-        
+        self.controller.show_frame(login_page)        
 
 class CreateUserPage(tk.Frame):
     def __init__(self, parent, controller, user_client, golfkeypoints_client):
@@ -55,7 +52,7 @@ class CreateUserPage(tk.Frame):
         self.password_entry.grid(row=1, column=1, padx=5, pady=5)
 
         # Create User Button
-        self.login_button = tk.Button(self, text="Create New User", command=partial(self.create_user))
+        self.login_button = tk.Button(self, text="Create New User", command=self.create_user)
         self.login_button.grid(row=2, column=0, columnspan=2, pady=10)
     
     def create_user(self):
@@ -71,7 +68,6 @@ class CreateUserPage(tk.Frame):
                 messagebox.showinfo("Create User Successful", "Welcome!")
                 login_page = LoginPage(self.parent, self.controller, user_client=self.user_client, golfkeypoints_client=self.golfkeypoints_client)
                 self.controller.show_frame(login_page)
-                #login_page.tkraise()
             except grpc.RpcError as e:
                 messagebox.showerror("Create User Failed", f"Invalid username: {e.code()}: {e.details()}")
         else:
@@ -100,7 +96,7 @@ class LoginPage(tk.Frame):
         self.password_entry.grid(row=1, column=1, padx=5, pady=5)
 
         # Login Button
-        self.login_button = tk.Button(self, text="Login", command=partial(self.login))
+        self.login_button = tk.Button(self, text="Login", command=self.login)
         self.login_button.grid(row=2, column=0, columnspan=2, pady=10)
     
     def login(self):
@@ -115,9 +111,8 @@ class LoginPage(tk.Frame):
                 session_token = response.session_token
                 messagebox.showinfo("Login User Response", f"Response: {response}")
                 messagebox.showinfo("Login Successful", "Welcome!")
-                main_app_page = main_page.MainAppPage(self.parent, self.controller, golfkeypoints_client=self.golfkeypoints_client, session_token=session_token)
+                main_app_page = main_page.MainAppPage(self.parent, self.controller, user_client=self.user_client, golfkeypoints_client=self.golfkeypoints_client, session_token=session_token)
                 self.controller.show_frame(main_app_page)
-                #main_app_page.tkraise()
             except grpc.RpcError as e:
                 messagebox.showerror("Login User Failed", f"{e.code()}: {e.details()}")
         else:

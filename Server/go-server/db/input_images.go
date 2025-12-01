@@ -43,6 +43,10 @@ func (d *DbManager) CreateInputImage(ctx context.Context, inputImg *InputImage) 
 func (d *DbManager) ReadInputImagesForUser(ctx context.Context, userId string) ([]*InputImage, error) {
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
+	return d.readInputImagesForUserHelper(ctx, userId)
+}
+
+func (d *DbManager) readInputImagesForUserHelper(ctx context.Context, userId string) ([]*InputImage, error) {
 	fmt.Printf("Reading input images for user...\n")
 	filter := bson.M{"user_id": userId}
 	cursor, err := d.inputImageCollection.Find(ctx, filter)
@@ -119,7 +123,22 @@ func (d *DbManager) UpdateInputImage(ctx context.Context, inputImgId string, new
 func (d *DbManager) DeleteInputImage(ctx context.Context, inputImgId string) error {
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
+	return d.deleteInputImageHelper(ctx, inputImgId)
+}
+
+// Deletes golfkeypoints associated with input image, then delete input image
+func (d *DbManager) deleteInputImageHelper(ctx context.Context, inputImgId string) error {
 	fmt.Printf("Deleting input image id: %s...\n", inputImgId)
+	// first delete keypoints associated with input image
+	warning := d.deleteGolfKeypointsForInputImageHelper(ctx, inputImgId)
+	if warning != nil {
+		if warning.GetSeverity() == util.SEVERE {
+			return fmt.Errorf("could not delete keypoints associated with input img %s: %w", inputImgId, warning.Error())
+		} else {
+			fmt.Printf("Minor warning: %s", warning.Error())
+		}
+	}
+	// delete input image
 	objectId, err := primitive.ObjectIDFromHex(inputImgId)
 	if err != nil {
 		return fmt.Errorf("could not convert id to object id %w", err)
@@ -134,10 +153,4 @@ func (d *DbManager) DeleteInputImage(ctx context.Context, inputImgId string) err
 	}
 	fmt.Printf("Delete input image result: imgId: %s\n", inputImgId)
 	return nil
-}
-
-// TODO: If delete image, delete all associated ImageInfos
-// for a user, delete all input images associated with it
-func (d *DbManager) DeleteInputImagesForUser() {
-
 }

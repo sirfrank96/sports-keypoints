@@ -11,6 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
+	"github.com/sirfrank96/go-server/util"
 )
 
 type GolfKeypoints struct {
@@ -104,24 +105,32 @@ func (d *DbManager) UpdateGolfKeypointsForInputImage(ctx context.Context, inputI
 	return &updatedGolfKeypoints, nil
 }
 
-// TODO: If delete image, delete all associated ImageInfos
 func (d *DbManager) DeleteGolfKeypointsForInputImage(ctx context.Context, inputImgId string) error {
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
+	warning := d.deleteGolfKeypointsForInputImageHelper(ctx, inputImgId)
+	if warning != nil {
+		return warning
+	}
+	return nil
+}
+
+func (d *DbManager) deleteGolfKeypointsForInputImageHelper(ctx context.Context, inputImgId string) util.Warning {
 	fmt.Printf("Deleting golfkeypoints for inputimgid: %s...\n", inputImgId)
 	filter := bson.M{"input_image_id": inputImgId}
 	res, err := d.golfKeypointCollection.DeleteOne(ctx, filter)
 	if err != nil {
-		return fmt.Errorf("could not delete imageinfo %w", err)
+		return util.WarningImpl{
+			Severity: util.SEVERE,
+			Message:  fmt.Sprintf("could not delete imageinfo %w", err),
+		}
 	}
 	if res.DeletedCount == 0 {
-		return fmt.Errorf("did not delete any golfkeypoints, inputimgid %s may not exist", inputImgId)
+		return util.WarningImpl{
+			Severity: util.MINOR,
+			Message:  fmt.Sprintf("did not delete any golfkeypoints, inputimgid %s may not exist", inputImgId),
+		}
 	}
 	fmt.Printf("Delete golfkeypoints result: inputimgid: %s\n", inputImgId)
 	return nil
-}
-
-// for a user, delete all keypoints associated with it
-func (d *DbManager) DeleteGolfKeypointsForUser() {
-
 }

@@ -19,8 +19,8 @@ class GolfKeypointsClient():
         return self.stub.readInputImage(request)
     
     def delete_input_image(self, session_token, input_image_id):
-        request = golfkeypoints_pb2.DeleteGolfKeypointsRequest(session_token=session_token, input_image_id=input_image_id)
-        return self.stub.deleteGolfKeypoints(request)
+        request = golfkeypoints_pb2.DeleteInputImageRequest(session_token=session_token, input_image_id=input_image_id)
+        return self.stub.deleteInputImage(request)
     
     def calibrate_input_image(self, session_token, input_image_id, calibration_type, feet_line_method, calibration_image_axes, calibration_image_vanishing_point, golf_ball, club_butt, club_head):
         request = golfkeypoints_pb2.CalibrateInputImageRequest(session_token=session_token, input_image_id=input_image_id, calibration_type=calibration_type, feet_line_method=feet_line_method, calibration_image_axes=calibration_image_axes, calibration_image_vanishing_point=calibration_image_vanishing_point, golf_ball=golf_ball, club_butt=club_butt, club_head=club_head)

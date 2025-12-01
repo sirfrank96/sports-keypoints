@@ -120,11 +120,25 @@ func (d *DbManager) UpdateUser(ctx context.Context, userId string, user *User) (
 	return &updatedUser, nil
 }
 
-// TODO: If delete user, delete associated images and image infos
+// Deletes all input images associated with user (deleteInputImageHelper will also delete golf keypoint associated with each input image)
+// Then deletes the user
 func (d *DbManager) DeleteUser(ctx context.Context, userId string) error {
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
 	fmt.Printf("Deleting user id: %s...\n", userId)
+	// read input img ids associated with user
+	inputImages, err := d.readInputImagesForUserHelper(ctx, userId)
+	if err != nil {
+		return fmt.Errorf("could not read input images associated with user %s: %w", userId, err)
+	}
+	// delete input imgs associated with user
+	for _, inputImg := range inputImages {
+		err = d.deleteInputImageHelper(ctx, inputImg.Id.Hex())
+		if err != nil {
+			return fmt.Errorf("could not delete input image %s associated with user %s: %w", inputImg.Id.Hex(), userId, err)
+		}
+	}
+	// delete user
 	objectId, err := primitive.ObjectIDFromHex(userId)
 	if err != nil {
 		return fmt.Errorf("could not convert id to object id %w", err)
