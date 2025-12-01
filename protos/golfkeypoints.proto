@@ -21,6 +21,7 @@ service GolfKeypointsService {
     // TODO: Stream for videos
 }
 
+// TODO: Add name and desc tags for input image (ie. june-24th, 2020, lift left foot in backswing)
 message UploadInputImageRequest {
     string session_token = 1;
     ImageType image_type = 2;

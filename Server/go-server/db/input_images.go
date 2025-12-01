@@ -45,7 +45,7 @@ func (d *DbManager) ReadInputImagesForUser(ctx context.Context, userId string) (
 	defer d.mutex.Unlock()
 	fmt.Printf("Reading input images for user...\n")
 	filter := bson.M{"user_id": userId}
-	cursor, err := d.userCollection.Find(ctx, filter)
+	cursor, err := d.inputImageCollection.Find(ctx, filter)
 	if err != nil {
 		if err == mongodb.ErrNoDocuments {
 			return nil, fmt.Errorf("no input images for user")

@@ -24,11 +24,16 @@ func newUserListener(ocvmgr *opencvclient.OpenCvClientManager, dbmgr *db.DbManag
 }
 
 func (u *UserListener) CreateUser(ctx context.Context, request *skp.CreateUserRequest) (*skp.CreateUserResponse, error) {
+	// check if user exists already
+	user, err := u.dbmgr.ReadUserFromUsername(ctx, request.UserName)
+	if user != nil && err == nil {
+		return nil, fmt.Errorf("user with username: %s already exists", request.UserName)
+	}
 	hashedPassword, err := db.HashPassword(request.Password)
 	if err != nil {
 		return nil, err
 	}
-	user := &db.User{
+	user = &db.User{
 		Username: request.UserName,
 		Password: hashedPassword,
 		Email:    request.Email,
