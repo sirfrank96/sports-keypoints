@@ -99,20 +99,21 @@ func (u *UserListener) UpdateUser(ctx context.Context, request *skp.UpdateUserRe
 		return nil, fmt.Errorf("could not verify user exists")
 	}
 	// find user with associated user id in db
-	user, err := u.dbmgr.ReadUser(ctx, userId)
+	currUser, err := u.dbmgr.ReadUser(ctx, userId)
 	if err != nil {
 		return nil, fmt.Errorf("could not find user: %w", err)
 	}
 	// update user with new fields
-	user.Username = request.UserName
-	user.Email = request.Email
+	newPassword := ""
 	if request.Password != "" {
-		user.Password, err = db.HashPassword(request.Password)
+		newPassword, err = db.HashPassword(request.Password)
 		if err != nil {
 			return nil, fmt.Errorf("could not hash new password")
 		}
 	}
-	updatedUser, err := u.dbmgr.UpdateUser(ctx, userId, user)
+	newUser := &db.User{Username: request.UserName, Password: newPassword, Email: request.Email}
+	updatedFieldsUser := db.UpdateUserFields(currUser, newUser)
+	updatedUser, err := u.dbmgr.UpdateUser(ctx, userId, updatedFieldsUser)
 	if err != nil {
 		return nil, fmt.Errorf("could not update user in db: %w", err)
 	}

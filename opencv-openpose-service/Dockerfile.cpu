@@ -1,0 +1,63 @@
+FROM ubuntu:20.04
+RUN echo "Building for openpose that will only use cpu"
+
+WORKDIR /app
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV OPENPOSE_ROOT=/app/3rdparty/openpose
+
+# openpose dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        python3.8 \
+        python3.8-dev \
+        python3-pip \
+        python3-setuptools \
+        build-essential \
+        cmake \
+        make \
+        git \
+        g++ \
+        libgoogle-glog-dev \
+        libatlas-base-dev \
+        libopencv-dev \
+        libgflags-dev \
+        libhdf5-dev \
+        libleveldb-dev \
+        liblmdb-dev \
+        libsnappy-dev \
+        libprotobuf-dev \
+        libboost-all-dev \
+        libeigen3-dev \
+        protobuf-compiler \
+        wget \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install --upgrade setuptools
+
+COPY requirements.txt .
+RUN python3 -m pip install -r requirements.txt
+
+COPY . .
+
+
+RUN mkdir $OPENPOSE_ROOT/build
+WORKDIR $OPENPOSE_ROOT/build
+RUN cmake .. -DBUILD_PYTHON=ON \
+             -DGPU_MODE=CPU_ONLY \
+    && make -j `nproc` \
+    && make install
+
+#intall python api dependencies
+WORKDIR $OPENPOSE_ROOT/build/python
+RUN make install
+
+WORKDIR /app
+
+#Make sure openpose dlls and dependencies are in python path
+ENV PYTHONPATH="/usr/local/python/openpose"
+
+EXPOSE 50051
+
+CMD ["python3", "src/opencvandpose_server.py"]

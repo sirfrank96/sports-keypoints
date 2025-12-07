@@ -51,19 +51,26 @@ class CreateUserPage(tk.Frame):
         self.password_entry = tk.Entry(self, show="*") # Mask the password
         self.password_entry.grid(row=1, column=1, padx=5, pady=5)
 
+        # Email Label and Entry
+        self.email_label = tk.Label(self, text="Email:")
+        self.email_label.grid(row=2, column=0, padx=5, pady=5, sticky="w")
+        self.email_entry = tk.Entry(self)
+        self.email_entry.grid(row=2, column=1, padx=5, pady=5)
+
         # Create User Button
         self.login_button = tk.Button(self, text="Create New User", command=self.create_user)
-        self.login_button.grid(row=2, column=0, columnspan=2, pady=10)
+        self.login_button.grid(row=3, column=0, columnspan=2, pady=10)
     
     def create_user(self):
         username = self.username_entry.get()
         password = self.password_entry.get()
+        email = self.email_entry.get()
 
         # Replace with your actual login logic (e.g., database check)
-        if username != "" and password != "":
+        if username != "" and password != "" and email != "":
             #API: CreateUser
             try:
-                response = self.user_client.create_user(username, password)
+                response = self.user_client.create_user(username, password, email)
                 messagebox.showinfo("CreateUser Response", f"Response: {response}")
                 messagebox.showinfo("Create User Successful", "Welcome!")
                 login_page = LoginPage(self.parent, self.controller, user_client=self.user_client, golfkeypoints_client=self.golfkeypoints_client)
@@ -71,7 +78,7 @@ class CreateUserPage(tk.Frame):
             except grpc.RpcError as e:
                 messagebox.showerror("Create User Failed", f"Invalid username: {e.code()}: {e.details()}")
         else:
-            messagebox.showerror("Create User Failed", "Must input something for username and password")
+            messagebox.showerror("Create User Failed", "Must input something for username, password, and email")
 
             
 

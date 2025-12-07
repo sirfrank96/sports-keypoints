@@ -166,16 +166,22 @@ message DTLGolfSetupPoints {
     Double heel_alignment = 3;
     // degrees from target (negative is open, positive is closed), requires axes and vanishing point calibration
     Double toe_alignment = 4;
-    // degrees between line from hip to knee and line from knee to ankle, for best results wear shorts/tighter pants
-    Double knee_bend = 5;
-    // degrees from target (negative is open, positive is closed), requires axes and vanishing point calibration (note: shoulder alignment is very sensitive to detection, threshold should be higher for shoulder keypoint detection for accurate results)
-    Double shoulder_alignment = 6;
-    //waist_alignment, requires axes and vanishing point calibration
-    //distance_from_ball // requires golf ball 
-    //ulnar_deviation // requires club butt and club head
+    // degrees from target (negative is open, positive is closed), requires axes and vanishing point calibration (note: shoulder alignment is very sensitive to detection)
+    Double shoulder_alignment = 5;
+    // degrees from target (negative is open, positive is closed), requires axes and vanishing point calibration (note: waist alignment is very sensitive to detection)
+    Double waist_alignment = 6; 
+    // degrees off from straight legs, the line from hip to knee and line from knee to ankle, for best results wear shorts/tighter pants
+    Double knee_bend = 7;
+    // ratio of distance from toe line to ball and line from midhip to neck, the larger the number the farther from the ball, requires golf ball calibration
+    Double distance_from_ball = 8;
+    // degrees from line running through right elbow to right wrist and the line from right wrist to club head, the bigger the angle the more ulnar deviation (ie. higher hands), requires club head calibration
+    Double ulnar_deviation = 9; 
     //waist_bend: (same as spine angle??)
     //neck_angle
-    //spine_bend
+    //chin_position/eye_gaze_position
+    //spine_bend (requires a mid spine point)
+    //elbow_bend
+    //arm stuff
 }
 
 message FaceOnGolfSetupPoints {
@@ -185,13 +191,21 @@ message FaceOnGolfSetupPoints {
     Double l_foot_flare = 2;
     // degrees from line running through midpoint of heels, perpendicular to target line (positive external feet, negative is internal feet), requires axes calibration
     Double r_foot_flare = 3;
-    // ratio of stance width to shoulder width, greater than 1 is wider than shoulders, less than 1 is less wide than shoulders
+    // ratio of stance width to line from midhip to neck, the larger the number the wider the stance
     Double stance_width = 4;
     // degrees offset from horizontal axis, positive is trail shoulder lower, negative is lead shoulder lower, requires axes calibration
     Double shoulder_tilt = 5; 
-    //waist_angle, requires axes calibration
-    //shaft_lean // requires club butt and club head
-    //ball_position (relative to feet and chest and head?) // requires golf ball
-    //head_position
-    //chest_position
+    // degrees offset from horizontal axis, positive is trail hip lower, negative is lead hip lower, requires axes calibration
+    Double waist_tilt = 6;
+     // degrees offset from vertical axis, positive is forward shaft lean, negative is backwards shaft lean, requires axes calibration and club butt and club head calibration
+    Double shaft_lean = 7;
+    // degrees offset from line perpendicular to feet line running through midpoint of feet, positive is closer to lead side, negative is closer to trail side, requires golf ball calibration (note: ball position is sensitive to open/closed stances and camera angle)
+    Double ball_position = 8; 
+    // degrees offset from line perpendicular to feet line running through midpoint of feet, positive is closer to lead side, negative is closer to trail side (note: head position is sensitive to open/closed stances and camera angle)
+    Double head_position = 9;
+    // degrees offset from line perpendicular to feet line running through midpoint of feet, positive is closer to lead side, negative is closer to trail side (note: chest position is sensitive to open/closed stances and camera angle)
+    Double chest_position = 10;
+    // degrees offset from line perpendicular to feet line running through midpoint of feet, positive is closer to lead side, negative is closer to trail side (note: mid hip position is sensitive to open/closed stances and camera angle)
+    Double mid_hip_position = 11;
+    //arm stuff
 }

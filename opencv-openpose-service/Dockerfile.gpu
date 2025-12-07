@@ -1,0 +1,93 @@
+FROM nvidia/cuda:11.7.1-cudnn8-devel-ubuntu20.04
+RUN echo "Building for openpose that will use gpu"
+
+WORKDIR /app
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV OPENPOSE_ROOT=/app/3rdparty/openpose
+
+# openpose dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        python3.8 \
+        python3.8-dev \
+        python3-pip \
+        python3-setuptools \
+        build-essential \
+        cmake \
+        make \
+        git \
+        g++ \
+        libgoogle-glog-dev \
+        libatlas-base-dev \
+        libopencv-dev \
+        libgflags-dev \
+        libhdf5-dev \
+        libleveldb-dev \
+        liblmdb-dev \
+        libsnappy-dev \
+        libprotobuf-dev \
+        libboost-all-dev \
+        libeigen3-dev \
+        protobuf-compiler \
+        wget \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install --upgrade setuptools
+
+COPY requirements.txt .
+RUN python3 -m pip install -r requirements.txt
+
+COPY . .
+
+#replace cmake as old version has CUDA variable bugs
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.16.0/cmake-3.16.0-Linux-x86_64.tar.gz && \
+tar xzf cmake-3.16.0-Linux-x86_64.tar.gz -C /opt && \
+rm cmake-3.16.0-Linux-x86_64.tar.gz
+ENV PATH="/opt/cmake-3.16.0-Linux-x86_64/bin:${PATH}"
+
+#make sure cuda and cudnn env vars are set correctly
+ENV PATH="/usr/include:/usr/local/cuda/include:/usr/local/cuda/bin:/usr/local/cuda-11/bin:/usr/local/cuda-11.7/bin:/usr/lib/x86_64-linux-gnu:/usr/include/boost/:${PATH}"
+ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64:/usr/local/cuda-11/lib64:/usr/local/cuda-11.7/lib64:/usr/lib/x86_64-linux-gnu:/usr/include/boost/:${LD_LIBRARY_PATH}"
+ENV CUDA_HOME="/usr/local/cuda"
+
+#build openpose
+RUN mkdir $OPENPOSE_ROOT/build
+WORKDIR $OPENPOSE_ROOT/build
+RUN cmake .. -DBUILD_PYTHON=ON \
+                -DBUILD_CAFFE=ON \
+                -DGPU_MODE=CUDA \
+                -DDOWNLOAD_BODY_25_MODEL=ON \
+                -DDOWNLOAD_BODY_COCO_MODEL=OFF \
+                -DDOWNLOAD_BODY_MPI_MODEL=OFF \
+                -DDOWNLOAD_FACE_MODEL=ON \
+                -DDOWNLOAD_HAND_MODEL=ON \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DUSE_CUDNN=ON \
+                #-DUSE_MKL=ON \
+                -DDL_FRAMEWORK=CAFFE \
+                -DCUDA_TOOLKIT_ROOT_DIR="/usr/local/cuda" \
+                #-DBOOST_ROOT="/usr/lib/x86_64-linux-gnu" \
+                #-DBOOST_DEBUG=ON > blah_log.txt 2>&1 \
+                #-DBOOST_INCLUDE_DIR="/usr/include/boost" \
+                #-DBOOST_LIBRARYDIR="/usr/lib/x86_64-linux-gnu" \
+                -DWITH_EIGEN=FIND \
+    && make -j `nproc` \
+    && make install
+
+
+#intall python api dependencies
+WORKDIR $OPENPOSE_ROOT/build/python
+RUN make install
+
+WORKDIR /app
+
+#Make sure openpose dlls and dependencies are in python path
+ENV PYTHONPATH="/usr/local/python/openpose"
+
+EXPOSE 50051
+
+CMD ["python3", "src/opencvandpose_server.py"]
+
+

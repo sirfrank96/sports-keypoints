@@ -32,7 +32,7 @@ func ConvertGolfKeypointsToCVGolfKeypoints(golfKeypoints *GolfKeypoints) *skp.Go
 	}
 }
 
-func UpdateOutputKeypoints(oldKeypoints *skp.Body25PoseKeypoints, newKeypoints *skp.Body25PoseKeypoints) *skp.Body25PoseKeypoints {
+func UpdateOutputKeypointsFields(oldKeypoints *skp.Body25PoseKeypoints, newKeypoints *skp.Body25PoseKeypoints) *skp.Body25PoseKeypoints {
 	oldReflectVal := reflect.ValueOf(oldKeypoints).Elem()
 	newReflectVal := reflect.ValueOf(newKeypoints).Elem()
 	numFields := newReflectVal.NumField()

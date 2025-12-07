@@ -177,6 +177,7 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 			if err != nil {
 				return nil, fmt.Errorf("could not get openpose data for calibration image axes %w", err)
 			}
+			fmt.Printf("Axes calibration image processed\n")
 			var warning util.Warning
 			calibrationInfo, warning = util.VerifyCalibrationImageAxes(getOpenPoseDataResponse.Keypoints, calibrationInfo)
 			if warning != nil {
@@ -188,6 +189,7 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 				if err != nil {
 					return nil, fmt.Errorf("could not get openpose data for calibration image vanishingpoint %w", err)
 				}
+				fmt.Printf("Vanishing point calibration image processed\n")
 				calibrationInfo, warning = util.VerifyCalibrationImageVanishingPoint(getOpenPoseDataResponse.Keypoints, calibrationInfo)
 				if warning != nil {
 					return nil, fmt.Errorf("could not verify calibration image axes: %s", warning.Error())
@@ -214,6 +216,7 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 			if err != nil {
 				return nil, fmt.Errorf("could not get openpose data for calibration image axes %w", err)
 			}
+			fmt.Printf("Axes calibration image processed\n")
 			var warning util.Warning
 			calibrationInfo, warning = util.VerifyCalibrationImageAxes(getOpenPoseDataResponse.Keypoints, calibrationInfo)
 			if warning != nil {
@@ -254,31 +257,23 @@ func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, requ
 	if err != nil {
 		return nil, fmt.Errorf("could not get input image with id: %s, error was %w", request.InputImageId, err)
 	}
-
-	// TODO: Use GETOPENPOSEALL
-	// get openpose image for input img
-	getOpenPoseImageResponse, err := g.ocvmgr.GetOpenPoseImage(inputImage.InputImg)
+	// get openpose image and data for input img
+	getOpenPoseAllResponse, err := g.ocvmgr.GetOpenPoseAll(inputImage.InputImg)
 	if err != nil {
-		return nil, fmt.Errorf("could not get open pose image for image: %w", err)
+		return nil, fmt.Errorf("could not get open pose all for image: %w", err)
 	}
-	// get openpose data for input img
-	getOpenPoseDataResponse, err := g.ocvmgr.GetOpenPoseData(inputImage.InputImg)
-	if err != nil {
-		return nil, fmt.Errorf("could not get open pose data for image: %w", err)
-	}
-
 	// calculate golf setup points
 	golfKeypoints := &db.GolfKeypoints{
 		UserId:          userId,
 		InputImageId:    request.InputImageId,
-		OutputImg:       getOpenPoseImageResponse.Image,
-		OutputKeypoints: *getOpenPoseDataResponse.Keypoints,
+		OutputImg:       getOpenPoseAllResponse.Image,
+		OutputKeypoints: *getOpenPoseAllResponse.PoseKeypoints,
 	}
 	// dtl setup points
 	if inputImage.ImageType == skp.ImageType_DTL {
-		golfKeypoints.DtlGolfSetupPoints = *CalculateDTLSetupPoints(ctx, getOpenPoseDataResponse.Keypoints, &inputImage.CalibrationInfo)
+		golfKeypoints.DtlGolfSetupPoints = *CalculateDTLSetupPoints(ctx, getOpenPoseAllResponse.PoseKeypoints, &inputImage.CalibrationInfo)
 	} else { // face on setup points
-		golfKeypoints.FaceonGolfSetupPoints = *CalculateFaceOnSetupPoints(ctx, getOpenPoseDataResponse.Keypoints, &inputImage.CalibrationInfo)
+		golfKeypoints.FaceonGolfSetupPoints = *CalculateFaceOnSetupPoints(ctx, getOpenPoseAllResponse.PoseKeypoints, &inputImage.CalibrationInfo)
 	}
 
 	// store golfkeypoints in db
@@ -290,7 +285,7 @@ func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, requ
 	// return response
 	response := &skp.CalculateGolfKeypointsResponse{
 		Success:       true,
-		OutputImage:   getOpenPoseImageResponse.Image,
+		OutputImage:   getOpenPoseAllResponse.Image,
 		GolfKeypoints: db.ConvertGolfKeypointsToCVGolfKeypoints(golfKeypoints),
 	}
 	return response, nil
@@ -338,7 +333,7 @@ func (g *GolfKeypointsListener) UpdateBodyKeypoints(ctx context.Context, request
 	if err != nil {
 		return nil, fmt.Errorf("could not read golf keypoints from db for input image: %s, %w", request.InputImageId, err)
 	}
-	golfKeypoints.OutputKeypoints = *db.UpdateOutputKeypoints(&golfKeypoints.OutputKeypoints, request.UpdatedBodyKeypoints)
+	golfKeypoints.OutputKeypoints = *db.UpdateOutputKeypointsFields(&golfKeypoints.OutputKeypoints, request.UpdatedBodyKeypoints)
 	// recalculate golf setup points based on new keypoints
 	// dtl setup points
 	if inputImage.ImageType == skp.ImageType_DTL {

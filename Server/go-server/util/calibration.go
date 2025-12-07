@@ -7,7 +7,6 @@ import (
 	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 )
 
-// TODO: Do i need feetline in this struct?
 type CalibrationInfo struct {
 	CalibrationType                  skp.CalibrationType `bson:"calibration_type,omitempty"`
 	FeetLineMethod                   skp.FeetLineMethod  `bson:"feet_line_method,omitempty"`
@@ -31,6 +30,9 @@ func GetEmptyCalibrationInfo() *CalibrationInfo {
 }
 
 func CheckIfKeypointExists(keypoint *skp.Keypoint) bool {
+	if keypoint == nil {
+		return false
+	}
 	return keypoint.X != 0 || keypoint.Y != 0
 }
 

@@ -53,7 +53,7 @@ func (o *OpenCvClientManager) CloseOpenCvClient() error {
 }
 
 func (o *OpenCvClientManager) GetOpenPoseImage(img []byte) (*skp.GetOpenPoseImageResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	getOpenPoseImageRequest := &skp.GetOpenPoseImageRequest{Image: img}
 	getOpenPoseImageResponse, err := o.c.GetOpenPoseImage(ctx, getOpenPoseImageRequest)
@@ -64,7 +64,7 @@ func (o *OpenCvClientManager) GetOpenPoseImage(img []byte) (*skp.GetOpenPoseImag
 }
 
 func (o *OpenCvClientManager) GetOpenPoseData(img []byte) (*skp.GetOpenPoseDataResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	getOpenPoseDataRequest := &skp.GetOpenPoseDataRequest{Image: img}
 	getOpenPoseDataResponse, err := o.c.GetOpenPoseData(ctx, getOpenPoseDataRequest)
@@ -72,6 +72,17 @@ func (o *OpenCvClientManager) GetOpenPoseData(img []byte) (*skp.GetOpenPoseDataR
 		return nil, fmt.Errorf("opencv/openpose client GetOpenPoseData failed: %w", err)
 	}
 	return getOpenPoseDataResponse, nil
+}
+
+func (o *OpenCvClientManager) GetOpenPoseAll(img []byte) (*skp.GetOpenPoseAllResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+	getOpenPoseAllRequest := &skp.GetOpenPoseAllRequest{Image: img}
+	getOpenPoseAllResponse, err := o.c.GetOpenPoseAll(ctx, getOpenPoseAllRequest)
+	if err != nil {
+		return nil, fmt.Errorf("opencv/openpose client GetOpenPoseAll failed: %w", err)
+	}
+	return getOpenPoseAllResponse, nil
 }
 
 func (o *OpenCvClientManager) GetOpenPoseImagesFromFromVideo(images [][]byte) ([]*skp.GetOpenPoseImageResponse, error) {

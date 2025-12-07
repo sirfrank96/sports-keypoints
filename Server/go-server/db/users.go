@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -32,6 +33,20 @@ func VerifyPasswordHash(hash string, password string) bool {
 		return false
 	}
 	return true
+}
+
+func UpdateUserFields(oldUser *User, newUser *User) *User {
+	oldReflectVal := reflect.ValueOf(oldUser).Elem()
+	newReflectVal := reflect.ValueOf(newUser).Elem()
+	numFields := newReflectVal.NumField()
+	for i := 0; i < numFields; i++ {
+		newField := newReflectVal.Field(i)
+		if !newField.IsZero() {
+			oldField := oldReflectVal.Field(i)
+			oldField.Set(newField)
+		}
+	}
+	return oldUser
 }
 
 func (d *DbManager) CreateUser(ctx context.Context, user *User) (*User, error) {
@@ -105,6 +120,7 @@ func (d *DbManager) UpdateUser(ctx context.Context, userId string, user *User) (
 	update := bson.M{
 		"$set": bson.M{
 			"username": user.Username,
+			"password": user.Password,
 			"email":    user.Email,
 		},
 	}

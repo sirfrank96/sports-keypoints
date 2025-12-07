@@ -31,6 +31,13 @@ type Intersection struct {
 	AngleAtIntersect float64 `bson:"angle_at_intersect,omitempty"`
 }
 
+type Projection struct {
+	IntersectPoint Point
+	ProjectionLine Line
+	OriginalPoint  Point
+	OriginalLine   Line
+}
+
 //util
 func GetLengthBetweenTwoPoints(point1 *Point, point2 *Point) float64 {
 	term1 := math.Pow(point2.XPos-point1.XPos, 2)
@@ -45,6 +52,10 @@ func GetSlope(point1 *Point, point2 *Point) float64 {
 	// TODO: handle 0 on denominator
 
 	return rise / run
+}
+
+func GetRecipricol(fraction float64) float64 {
+	return float64(-1) * (1 / fraction)
 }
 
 func GetSlopeRecipricol(point1 *Point, point2 *Point) float64 {
@@ -77,6 +88,16 @@ func GetLineWithSlope(point1 *Point, slope float64) *Line {
 	return &Line{Slope: slope, YIntercept: yIntercept, PointOnLine: *point1}
 }
 
+func GetPointOnLineWithX(x float64, line *Line) *Point {
+	yOnLine := (line.Slope * x) + line.YIntercept
+	return &Point{XPos: x, YPos: yOnLine}
+}
+
+func GetPointOnLineWithY(y float64, line *Line) *Point {
+	xOnLine := (y - line.YIntercept) / line.Slope
+	return &Point{XPos: xOnLine, YPos: y}
+}
+
 // law of cosines
 func GetAngleAtIntersection(point1 *Point, intersectPoint *Point, point2 *Point) float64 {
 	lenLineOppIntersect := GetLengthBetweenTwoPoints(point1, point2)
@@ -94,6 +115,13 @@ func GetIntersection(line1 *Line, line2 *Line) *Intersection {
 	intersectPoint := Point{XPos: xIntersect, YPos: yIntersect}
 	angleAtIntersect := GetAngleAtIntersection(&line1.PointOnLine, &intersectPoint, &line2.PointOnLine)
 	return &Intersection{Line1: *line1, Line2: *line2, IntersectPoint: intersectPoint, AngleAtIntersect: angleAtIntersect}
+}
+
+func GetProjectionOntoLine(line *Line, point *Point) *Projection {
+	slopeOfProjection := GetRecipricol(line.Slope)
+	projectionLine := GetLineWithSlope(point, slopeOfProjection)
+	intersection := GetIntersection(line, projectionLine)
+	return &Projection{IntersectPoint: intersection.IntersectPoint, ProjectionLine: *projectionLine, OriginalPoint: *point, OriginalLine: *line}
 }
 
 // TODO: keep from -90 to 90 or keep from 0-180?
@@ -121,10 +149,17 @@ func GetDegreesOfLineAlwaysPositive(deg float64) float64 {
 	}
 }
 
+//TODO: RENAME (NOT CV)
 func ConvertCvKeypointToPoint(cvKeypoint *skp.Keypoint) *Point {
+	if cvKeypoint == nil {
+		return nil
+	}
 	return &Point{XPos: cvKeypoint.X, YPos: cvKeypoint.Y}
 }
 
 func ConvertPointToCvKeypoint(point *Point) *skp.Keypoint {
+	if point == nil {
+		return nil
+	}
 	return &skp.Keypoint{X: point.XPos, Y: point.YPos}
 }

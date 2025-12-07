@@ -42,8 +42,10 @@ class GolfKeypointsClientApp(tk.Tk):
 session_token = ""
 
 def serve():
-    channel = grpc.insecure_channel('localhost:50052')
     #options=[('grpc.max_send_message_length', 10000000), ('grpc.max_receive_message_length', 10000000)]
+    setting_timeout_ms = 1000 * 60 * 3
+    options = [('grpc.http2.settings_timeout', setting_timeout_ms)]
+    channel = grpc.insecure_channel('localhost:50052', options=options)
     user_client = uc.UserClient(channel)
     golfkeypoints_client = gc.GolfKeypointsClient(channel)
     app = GolfKeypointsClientApp(user_client, golfkeypoints_client)
