@@ -24,11 +24,7 @@ class GolfKeypointsClientApp(tk.Tk):
         container.pack(side = "top", fill = "both", expand = True) 
         container.grid_rowconfigure(0, weight = 1)
         container.grid_columnconfigure(0, weight = 1)
-        #self.frames = {}  
-        #for F in (login.InitialPage, login.LoginPage, login.CreateUserPage, main_page.MainAppPage):
-            #frame = F(container, self)
-            #self.frames[F] = frame 
-            #frame.grid(row = 0, column = 0, sticky ="nsew")
+        
         initial_page = login.InitialPage(container, self, user_client=user_client, golfkeypoints_client=golfkeypoints_client)
         self.show_frame(initial_page)
         #initial_page.tkraise()

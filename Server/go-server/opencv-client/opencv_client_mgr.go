@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
 	"time"
 
 	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
@@ -15,7 +16,7 @@ import (
 )
 
 var (
-	opencvaddr = flag.String("opencvaddr", "localhost:50051", "the address to connect to")
+	openposeaddr = flag.String("openposeaddr", "localhost:50051", "the address to connect to")
 )
 
 // TODO: Return errors for all functions instead of log.fatalf
@@ -35,9 +36,13 @@ func NewOpenCvClientManager() *OpenCvClientManager {
 func (o *OpenCvClientManager) StartOpenCvClient() error {
 	log.Printf("Starting OpenCvClient")
 	flag.Parse()
+	openposeURI := os.Getenv("OPENPOSE_URI")
+	if openposeURI == "" {
+		openposeURI = *openposeaddr
+	}
 	// Set up a connection to the opencvandpose server.
 	var err error
-	o.conn, err = grpc.NewClient(*opencvaddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	o.conn, err = grpc.NewClient(openposeURI, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return fmt.Errorf("could not connect grpc client: %w", err)
 	}

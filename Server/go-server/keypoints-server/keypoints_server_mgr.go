@@ -40,7 +40,8 @@ func NewKeypointsServerManager(golfKeypointsHandler skp.GolfKeypointsServiceServ
 func (k *KeypointsServerManager) StartKeypointsServer() error {
 	log.Printf("Starting keypoints and user servers")
 	flag.Parse()
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
+	//lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
+	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", *port))
 	if err != nil {
 		return fmt.Errorf("failed to listen: %w", err)
 	}

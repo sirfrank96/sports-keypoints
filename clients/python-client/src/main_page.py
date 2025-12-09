@@ -41,7 +41,7 @@ class MainAppPage(tk.Frame):
 
         #1/4 size of image
         self.canvas = tk.Canvas(self, width=270, height=600, bg='white')
-        self.canvas.grid(row=4, column=1, padx=5, pady=5, sticky="w")
+        self.canvas.grid(row=8, column=1, padx=5, pady=5, sticky="w")
 
         self.curr_input_image_id = ""
         self.identify_mode = self.IdentifyMode.NONE

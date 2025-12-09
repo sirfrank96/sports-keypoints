@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"sync"
 
 	mongodb "go.mongodb.org/mongo-driver/mongo"
@@ -34,8 +35,12 @@ func NewDbManager() *DbManager {
 func (d *DbManager) StartMongoDBClient(ctx context.Context) error {
 	log.Printf("Starting MongoDB Client")
 	flag.Parse()
+	mongoURI := os.Getenv("MONGO_URI")
+	if mongoURI == "" {
+		mongoURI = *dbaddr
+	}
 	// Set client options
-	d.clientOptions = mongoopts.Client().ApplyURI(*dbaddr)
+	d.clientOptions = mongoopts.Client().ApplyURI(mongoURI)
 	// Connect to MongoDB
 	var err error
 	d.client, err = mongodb.Connect(ctx, d.clientOptions)
@@ -45,7 +50,6 @@ func (d *DbManager) StartMongoDBClient(ctx context.Context) error {
 	// Check the connection
 	err = d.client.Ping(ctx, nil)
 	if err != nil {
-		log.Printf("1.5\n")
 		return fmt.Errorf("could not ping mongodb %w", err)
 	}
 	// Create Database

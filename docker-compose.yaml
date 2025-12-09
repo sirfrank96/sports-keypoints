@@ -1,0 +1,47 @@
+#include:
+#- server/go-server/docker-compose.yml
+#TODO: ENV VARS TO SHOW RUNNING FROM DOCKER
+services:
+  openpose-service:
+    build:
+      context: opencv-openpose-service
+      dockerfile: Dockerfile.cpu
+    ports:
+      - "50051:50051"
+    networks:
+      - backend-network
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    networks:
+      - backend-network
+    command: mongod --bind_ip_all
+    volumes:
+      - mongo-data:/data/db
+  go-server:
+    build:
+      context: server/go-server
+      dockerfile: Dockerfile
+    ports:
+      - "50052:50052"
+    environment:
+      MONGO_URI: "mongodb://mongodb:27017"
+      OPENPOSE_URI: "openpose-service:50051"
+    networks:
+      - backend-network
+      - frontend-network
+    depends_on:
+      mongodb:
+        condition: service_started
+      openpose-service:
+        condition: service_started
+
+volumes:
+  mongo-data:
+
+networks:
+  backend-network:
+    driver: bridge
+  frontend-network:
+    driver: bridge
