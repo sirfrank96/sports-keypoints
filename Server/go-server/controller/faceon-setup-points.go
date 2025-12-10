@@ -44,6 +44,43 @@ func CalculateFaceOnSetupPoints(ctx context.Context, keypoints *skp.Body25PoseKe
 		shoulderTiltWarning = warning.Error()
 	}
 	fmt.Printf("Shoulder tilt is %f", shoulderTilt)
+	waistTilt, warning := GetWaistTilt(keypoints, calibrationInfo)
+	var waistTiltWarning string
+	if warning != nil {
+		waistTiltWarning = warning.Error()
+	}
+	fmt.Printf("Waist tilt is %f", waistTilt)
+	shaftLean, warning := GetShaftLean(calibrationInfo)
+	var shaftLeanWarning string
+	if warning != nil {
+		shaftLeanWarning = warning.Error()
+	}
+	fmt.Printf("Shaft lean is %f", shaftLean)
+	ballPosition, warning := GetBallPosition(calibrationInfo)
+	var ballPositionWarning string
+	if warning != nil {
+		ballPositionWarning = warning.Error()
+	}
+	fmt.Printf("Ball position is %f", ballPosition)
+	headPosition, warning := GetHeadPosition(keypoints, calibrationInfo)
+	var headPositionWarning string
+	if warning != nil {
+		headPositionWarning = warning.Error()
+	}
+	fmt.Printf("Head position is %f", headPosition)
+	chestPosition, warning := GetChestPosition(keypoints, calibrationInfo)
+	var chestPositionWarning string
+	if warning != nil {
+		chestPositionWarning = warning.Error()
+	}
+	fmt.Printf("Chest position is %f", chestPosition)
+	midHipPosition, warning := GetMidhipPosition(keypoints, calibrationInfo)
+	var midHipPositionWarning string
+	if warning != nil {
+		midHipPositionWarning = warning.Error()
+	}
+	fmt.Printf("Mid hip position is %f", midHipPosition)
+
 	faceOnGolfSetupPoints := &skp.FaceOnGolfSetupPoints{
 		SideBend: &skp.Double{
 			Data:    sideBend,
@@ -64,6 +101,30 @@ func CalculateFaceOnSetupPoints(ctx context.Context, keypoints *skp.Body25PoseKe
 		ShoulderTilt: &skp.Double{
 			Data:    shoulderTilt,
 			Warning: shoulderTiltWarning,
+		},
+		WaistTilt: &skp.Double{
+			Data:    waistTilt,
+			Warning: waistTiltWarning,
+		},
+		ShaftLean: &skp.Double{
+			Data:    shaftLean,
+			Warning: shaftLeanWarning,
+		},
+		BallPosition: &skp.Double{
+			Data:    ballPosition,
+			Warning: ballPositionWarning,
+		},
+		HeadPosition: &skp.Double{
+			Data:    headPosition,
+			Warning: headPositionWarning,
+		},
+		ChestPosition: &skp.Double{
+			Data:    chestPosition,
+			Warning: chestPositionWarning,
+		},
+		MidHipPosition: &skp.Double{
+			Data:    midHipPosition,
+			Warning: midHipPositionWarning,
 		},
 	}
 	return faceOnGolfSetupPoints
@@ -291,19 +352,19 @@ func GetShaftLean(calibrationInfo *util.CalibrationInfo) (float64, util.Warning)
 		}
 	}
 	var warning util.Warning
-	if w := util.VerifyKeypoint(util.ConvertPointToCvKeypoint(&calibrationInfo.ClubButtPoint), "club butt", 0.5); w != nil {
+	if w := util.VerifyKeypoint(&calibrationInfo.ClubButtPoint, "club butt", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	if w := util.VerifyKeypoint(util.ConvertPointToCvKeypoint(&calibrationInfo.ClubHeadPoint), "club head", 0.5); w != nil {
+	if w := util.VerifyKeypoint(&calibrationInfo.ClubHeadPoint, "club head", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	shaftSlope := util.GetSlope(&calibrationInfo.ClubButtPoint, &calibrationInfo.ClubHeadPoint)
+	shaftSlope := util.GetSlope(util.ConvertCvKeypointToPoint(&calibrationInfo.ClubButtPoint), util.ConvertCvKeypointToPoint(&calibrationInfo.ClubHeadPoint))
 	shaftDegrees := util.ConvertSlopeToDegrees(shaftSlope)
 	vertAxisLineDegrees := util.ConvertSlopeToDegrees(calibrationInfo.VertAxisLine.Slope)
 	fmt.Printf("vertAxisLineDegrees: %f, shaftDegrees: %f", vertAxisLineDegrees, shaftDegrees)
@@ -318,7 +379,7 @@ func GetShaftLean(calibrationInfo *util.CalibrationInfo) (float64, util.Warning)
 //positive angle means ball closer to lead side, negative angle means ball closer to trail side
 func GetBallPosition(calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	var warning util.Warning
-	if w := util.VerifyKeypoint(util.ConvertPointToCvKeypoint(&calibrationInfo.GolfBallPoint), "golf ball", 0.5); w != nil {
+	if w := util.VerifyKeypoint(&calibrationInfo.GolfBallPoint, "golf ball", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
@@ -328,8 +389,8 @@ func GetBallPosition(calibrationInfo *util.CalibrationInfo) (float64, util.Warni
 	feetLineMidpoint := util.GetMidpoint(&feetLine.LPoint, &feetLine.RPoint)
 	feetLineSlopeRecipricol := util.GetRecipricol(feetLine.Line.Slope)
 	linePerpendicularToFeetLine := util.GetLineWithSlope(feetLineMidpoint, feetLineSlopeRecipricol)
-	pointOnPerpendicularLine := util.GetPointOnLineWithX(calibrationInfo.GolfBallPoint.XPos, linePerpendicularToFeetLine)
-	angle := util.GetAngleAtIntersection(&calibrationInfo.GolfBallPoint, feetLineMidpoint, pointOnPerpendicularLine)
+	pointOnPerpendicularLine := util.GetPointOnLineWithX(calibrationInfo.GolfBallPoint.X, linePerpendicularToFeetLine)
+	angle := util.GetAngleAtIntersection(util.ConvertCvKeypointToPoint(&calibrationInfo.GolfBallPoint), feetLineMidpoint, pointOnPerpendicularLine)
 	return angle, warning
 }
 
@@ -350,7 +411,7 @@ func GetHeadPosition(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.C
 	feetLineMidpoint := util.GetMidpoint(&feetLine.LPoint, &feetLine.RPoint)
 	feetLineSlopeRecipricol := util.GetRecipricol(feetLine.Line.Slope)
 	linePerpendicularToFeetLine := util.GetLineWithSlope(feetLineMidpoint, feetLineSlopeRecipricol)
-	pointOnPerpendicularLine := util.GetPointOnLineWithX(calibrationInfo.GolfBallPoint.XPos, linePerpendicularToFeetLine)
+	pointOnPerpendicularLine := util.GetPointOnLineWithX(calibrationInfo.GolfBallPoint.X, linePerpendicularToFeetLine)
 	angle := util.GetAngleAtIntersection(util.ConvertCvKeypointToPoint(keypoints.Nose), feetLineMidpoint, pointOnPerpendicularLine)
 	return angle, warning
 }
@@ -372,7 +433,7 @@ func GetChestPosition(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.
 	feetLineMidpoint := util.GetMidpoint(&feetLine.LPoint, &feetLine.RPoint)
 	feetLineSlopeRecipricol := util.GetRecipricol(feetLine.Line.Slope)
 	linePerpendicularToFeetLine := util.GetLineWithSlope(feetLineMidpoint, feetLineSlopeRecipricol)
-	pointOnPerpendicularLine := util.GetPointOnLineWithX(calibrationInfo.GolfBallPoint.XPos, linePerpendicularToFeetLine)
+	pointOnPerpendicularLine := util.GetPointOnLineWithX(calibrationInfo.GolfBallPoint.X, linePerpendicularToFeetLine)
 	angle := util.GetAngleAtIntersection(util.ConvertCvKeypointToPoint(keypoints.Neck), feetLineMidpoint, pointOnPerpendicularLine)
 	return angle, warning
 }
@@ -394,7 +455,7 @@ func GetMidhipPosition(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util
 	feetLineMidpoint := util.GetMidpoint(&feetLine.LPoint, &feetLine.RPoint)
 	feetLineSlopeRecipricol := util.GetRecipricol(feetLine.Line.Slope)
 	linePerpendicularToFeetLine := util.GetLineWithSlope(feetLineMidpoint, feetLineSlopeRecipricol)
-	pointOnPerpendicularLine := util.GetPointOnLineWithX(calibrationInfo.GolfBallPoint.XPos, linePerpendicularToFeetLine)
+	pointOnPerpendicularLine := util.GetPointOnLineWithX(calibrationInfo.GolfBallPoint.X, linePerpendicularToFeetLine)
 	angle := util.GetAngleAtIntersection(util.ConvertCvKeypointToPoint(keypoints.Midhip), feetLineMidpoint, pointOnPerpendicularLine)
 	return angle, warning
 }

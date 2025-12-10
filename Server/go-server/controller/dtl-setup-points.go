@@ -52,18 +52,36 @@ func CalculateDTLSetupPoints(ctx context.Context, keypoints *skp.Body25PoseKeypo
 		toeAlignmentWarning = warning.Error()
 	}
 	fmt.Printf("Toe alignment is %f", toeAlignment)
-	kneeBend, warning := GetKneeBend(keypoints)
-	var kneeBendWarning string
-	if warning != nil {
-		kneeBendWarning = warning.Error()
-	}
-	fmt.Printf("Knee bend is %f", kneeBend)
 	shoulderAlignment, warning := GetShoulderAlignment(keypoints, calibrationInfo)
 	var shoulderAlignmentWarning string
 	if warning != nil {
 		shoulderAlignmentWarning = warning.Error()
 	}
 	fmt.Printf("Shoulder alignment is %f", shoulderAlignment)
+	waistAlignment, warning := GetWaistAlignment(keypoints, calibrationInfo)
+	var waistAlignmentWarning string
+	if warning != nil {
+		waistAlignmentWarning = warning.Error()
+	}
+	fmt.Printf("Waist alignment is %f", waistAlignment)
+	kneeBend, warning := GetKneeBend(keypoints)
+	var kneeBendWarning string
+	if warning != nil {
+		kneeBendWarning = warning.Error()
+	}
+	fmt.Printf("Knee bend is %f", kneeBend)
+	distanceFromBall, warning := GetDistanceFromBall(keypoints, calibrationInfo)
+	var distanceFromBallWarning string
+	if warning != nil {
+		distanceFromBallWarning = warning.Error()
+	}
+	fmt.Printf("Distance from ball is %f", distanceFromBall)
+	ulnarDeviation, warning := GetUlnarDeviation(keypoints, calibrationInfo)
+	var ulnarDeviationWarning string
+	if warning != nil {
+		ulnarDeviationWarning = warning.Error()
+	}
+	fmt.Printf("Ulnar deviation is %f", ulnarDeviation)
 
 	dtlGolfSetupPoints := &skp.DTLGolfSetupPoints{
 		SpineAngle: &skp.Double{
@@ -89,6 +107,18 @@ func CalculateDTLSetupPoints(ctx context.Context, keypoints *skp.Body25PoseKeypo
 		ShoulderAlignment: &skp.Double{
 			Data:    shoulderAlignment,
 			Warning: shoulderAlignmentWarning,
+		},
+		WaistAlignment: &skp.Double{
+			Data:    waistAlignment,
+			Warning: waistAlignmentWarning,
+		},
+		DistanceFromBall: &skp.Double{
+			Data:    distanceFromBall,
+			Warning: distanceFromBallWarning,
+		},
+		UlnarDeviation: &skp.Double{
+			Data:    ulnarDeviation,
+			Warning: ulnarDeviationWarning,
 		},
 	}
 	return dtlGolfSetupPoints
@@ -344,7 +374,7 @@ func GetDistanceFromBall(keypoints *skp.Body25PoseKeypoints, calibrationInfo *ut
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	if w := util.VerifyKeypoint(util.ConvertPointToCvKeypoint(&calibrationInfo.GolfBallPoint), "golf ball", 0.5); w != nil {
+	if w := util.VerifyKeypoint(&calibrationInfo.GolfBallPoint, "golf ball", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
@@ -357,7 +387,7 @@ func GetDistanceFromBall(keypoints *skp.Body25PoseKeypoints, calibrationInfo *ut
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	projection := util.GetProjectionOntoLine(&toeLine.Line, &calibrationInfo.GolfBallPoint)
+	projection := util.GetProjectionOntoLine(&toeLine.Line, util.ConvertCvKeypointToPoint(&calibrationInfo.GolfBallPoint))
 	lengthFromBall := util.GetLengthBetweenTwoPoints(&projection.IntersectPoint, &projection.OriginalPoint)
 	lengthOfSpine := util.GetLengthBetweenTwoPoints(util.ConvertCvKeypointToPoint(keypoints.Midhip), util.ConvertCvKeypointToPoint(keypoints.Neck))
 	return lengthFromBall / lengthOfSpine, warning
@@ -382,12 +412,12 @@ func GetUlnarDeviation(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	if w := util.VerifyKeypoint(util.ConvertPointToCvKeypoint(&calibrationInfo.ClubHeadPoint), "club head", 0.5); w != nil {
+	if w := util.VerifyKeypoint(&calibrationInfo.ClubHeadPoint, "club head", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	angle := util.GetAngleAtIntersection(util.ConvertCvKeypointToPoint(keypoints.RElbow), util.ConvertCvKeypointToPoint(keypoints.RWrist), &calibrationInfo.ClubHeadPoint)
+	angle := util.GetAngleAtIntersection(util.ConvertCvKeypointToPoint(keypoints.RElbow), util.ConvertCvKeypointToPoint(keypoints.RWrist), util.ConvertCvKeypointToPoint(&calibrationInfo.ClubHeadPoint))
 	return angle, warning
 }

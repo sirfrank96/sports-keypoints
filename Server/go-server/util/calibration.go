@@ -18,9 +18,9 @@ type CalibrationInfo struct {
 	HorAxisLine                      Line                `bson:"hor_axis_line,omitempty"`
 	VertAxisLine                     Line                `bson:"vert_axis_line,omitempty"`
 	VanishingPoint                   Point               `bson:"vanishing_point,omitempty"`
-	GolfBallPoint                    Point               `bson:"golf_ball_point,omitempty"`
-	ClubButtPoint                    Point               `bson:"club_butt_point,omitempty"`
-	ClubHeadPoint                    Point               `bson:"club_head_point,omitempty"`
+	GolfBallPoint                    skp.Keypoint        `bson:"golf_ball_point,omitempty"`
+	ClubButtPoint                    skp.Keypoint        `bson:"club_butt_point,omitempty"`
+	ClubHeadPoint                    skp.Keypoint        `bson:"club_head_point,omitempty"`
 }
 
 func GetEmptyCalibrationInfo() *CalibrationInfo {

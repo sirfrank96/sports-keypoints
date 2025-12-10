@@ -146,7 +146,7 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 	}
 	// put in golf ball/golf club points and warnings
 	if request.GolfBall != nil {
-		calibrationInfo.GolfBallPoint = *util.ConvertCvKeypointToPoint(request.GolfBall)
+		calibrationInfo.GolfBallPoint = *request.GolfBall
 	} else {
 		calibrationInfo.GolfBallWarning = util.WarningImpl{
 			Severity: util.MINOR,
@@ -154,7 +154,7 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 		}
 	}
 	if request.ClubButt != nil {
-		calibrationInfo.ClubButtPoint = *util.ConvertCvKeypointToPoint(request.ClubButt)
+		calibrationInfo.ClubButtPoint = *request.ClubButt
 	} else {
 		calibrationInfo.GolfClubWarning = util.WarningImpl{
 			Severity: util.MINOR,
@@ -162,7 +162,7 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 		}
 	}
 	if request.ClubHead != nil {
-		calibrationInfo.ClubHeadPoint = *util.ConvertCvKeypointToPoint(request.ClubHead)
+		calibrationInfo.ClubHeadPoint = *request.ClubHead
 	} else {
 		calibrationInfo.GolfClubWarning = util.WarningImpl{
 			Severity: util.MINOR,
