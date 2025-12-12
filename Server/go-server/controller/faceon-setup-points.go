@@ -154,11 +154,11 @@ func GetSideBend(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.Calib
 		warning = util.AppendMinorWarnings(warning, w)
 	}
 	vertAxisLine := calibrationInfo.VertAxisLine
-	vertAxisThroughMidhipLine := util.GetLineWithSlope(util.ConvertCvKeypointToPoint(keypoints.Midhip), vertAxisLine.Slope)
-	neckPoint := util.ConvertCvKeypointToPoint(keypoints.Neck)
+	vertAxisThroughMidhipLine := util.GetLineWithSlope(util.ConvertKeypointToPoint(keypoints.Midhip), vertAxisLine.Slope)
+	neckPoint := util.ConvertKeypointToPoint(keypoints.Neck)
 	xOnVertAxis := (keypoints.Neck.Y - vertAxisThroughMidhipLine.YIntercept) / vertAxisThroughMidhipLine.Slope
 	pointUpVertAxisSameHeightAsNeck := &util.Point{XPos: xOnVertAxis, YPos: keypoints.Neck.Y}
-	midhipPoint := util.ConvertCvKeypointToPoint(keypoints.Midhip)
+	midhipPoint := util.ConvertKeypointToPoint(keypoints.Midhip)
 	angleAtIntersect := util.GetAngleAtIntersection(neckPoint, midhipPoint, pointUpVertAxisSameHeightAsNeck)
 	// determine if left or right side bend
 	if keypoints.Neck.X < keypoints.Midhip.X { // right
@@ -173,7 +173,7 @@ func GetSideBend(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.Calib
 //angle of intersect vert axis through midpoint of heels
 func getFootFlare(heel *skp.Keypoint, toe *skp.Keypoint, calibrationInfo *util.CalibrationInfo, midpoint *util.Point) float64 {
 	vertAxisThroughMidpoint := util.GetLineWithSlope(midpoint, calibrationInfo.VertAxisLine.Slope)
-	toeToHeelLine := util.GetLine(util.ConvertCvKeypointToPoint(toe), util.ConvertCvKeypointToPoint(heel))
+	toeToHeelLine := util.GetLine(util.ConvertKeypointToPoint(toe), util.ConvertKeypointToPoint(heel))
 	intersection := util.GetIntersection(toeToHeelLine, vertAxisThroughMidpoint)
 	if intersection.IntersectPoint.YPos > toe.Y { // internal foot
 		return float64(-1) * intersection.AngleAtIntersect
@@ -208,7 +208,7 @@ func GetLeftFootFlare(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	heelsMidpoint := util.GetMidpoint(util.ConvertCvKeypointToPoint(keypoints.LHeel), util.ConvertCvKeypointToPoint(keypoints.RHeel))
+	heelsMidpoint := util.GetMidpoint(util.ConvertKeypointToPoint(keypoints.LHeel), util.ConvertKeypointToPoint(keypoints.RHeel))
 	return getFootFlare(keypoints.LHeel, keypoints.LBigToe, calibrationInfo, heelsMidpoint), warning
 }
 
@@ -238,7 +238,7 @@ func GetRightFootFlare(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	heelsMidpoint := util.GetMidpoint(util.ConvertCvKeypointToPoint(keypoints.LHeel), util.ConvertCvKeypointToPoint(keypoints.RHeel))
+	heelsMidpoint := util.GetMidpoint(util.ConvertKeypointToPoint(keypoints.LHeel), util.ConvertKeypointToPoint(keypoints.RHeel))
 	return getFootFlare(keypoints.RHeel, keypoints.RBigToe, calibrationInfo, heelsMidpoint), warning
 }
 
@@ -273,8 +273,8 @@ func GetStanceWidth(keypoints *skp.Body25PoseKeypoints) (float64, util.Warning) 
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	lengthOfSpine := util.GetLengthBetweenTwoPoints(util.ConvertCvKeypointToPoint(keypoints.Midhip), util.ConvertCvKeypointToPoint(keypoints.Neck))
-	stanceWidth := util.GetLengthBetweenTwoPoints(util.ConvertCvKeypointToPoint(keypoints.LHeel), util.ConvertCvKeypointToPoint(keypoints.RHeel))
+	lengthOfSpine := util.GetLengthBetweenTwoPoints(util.ConvertKeypointToPoint(keypoints.Midhip), util.ConvertKeypointToPoint(keypoints.Neck))
+	stanceWidth := util.GetLengthBetweenTwoPoints(util.ConvertKeypointToPoint(keypoints.LHeel), util.ConvertKeypointToPoint(keypoints.RHeel))
 	return stanceWidth / lengthOfSpine, warning
 }
 
@@ -301,7 +301,7 @@ func GetShoulderTilt(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.C
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	shoulderLineSlope := util.GetSlope(util.ConvertCvKeypointToPoint(keypoints.RShoulder), util.ConvertCvKeypointToPoint(keypoints.LShoulder))
+	shoulderLineSlope := util.GetSlope(util.ConvertKeypointToPoint(keypoints.RShoulder), util.ConvertKeypointToPoint(keypoints.LShoulder))
 	shoulderLineDegrees := util.ConvertSlopeToDegrees(shoulderLineSlope)
 	horAxisLineDegrees := util.ConvertSlopeToDegrees(calibrationInfo.HorAxisLine.Slope)
 	fmt.Printf("horAxisLineDegrees: %f, shoulderLineDegrees: %f", horAxisLineDegrees, shoulderLineDegrees)
@@ -332,7 +332,7 @@ func GetWaistTilt(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.Cali
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	waistLineSlope := util.GetSlope(util.ConvertCvKeypointToPoint(keypoints.RHip), util.ConvertCvKeypointToPoint(keypoints.LHip))
+	waistLineSlope := util.GetSlope(util.ConvertKeypointToPoint(keypoints.RHip), util.ConvertKeypointToPoint(keypoints.LHip))
 	waistLineDegrees := util.ConvertSlopeToDegrees(waistLineSlope)
 	horAxisLineDegrees := util.ConvertSlopeToDegrees(calibrationInfo.HorAxisLine.Slope)
 	fmt.Printf("horAxisLineDegrees: %f, waistLineDegrees: %f", horAxisLineDegrees, waistLineDegrees)
@@ -364,7 +364,7 @@ func GetShaftLean(calibrationInfo *util.CalibrationInfo) (float64, util.Warning)
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	shaftSlope := util.GetSlope(util.ConvertCvKeypointToPoint(&calibrationInfo.ClubButtPoint), util.ConvertCvKeypointToPoint(&calibrationInfo.ClubHeadPoint))
+	shaftSlope := util.GetSlope(util.ConvertKeypointToPoint(&calibrationInfo.ClubButtPoint), util.ConvertKeypointToPoint(&calibrationInfo.ClubHeadPoint))
 	shaftDegrees := util.ConvertSlopeToDegrees(shaftSlope)
 	vertAxisLineDegrees := util.ConvertSlopeToDegrees(calibrationInfo.VertAxisLine.Slope)
 	fmt.Printf("vertAxisLineDegrees: %f, shaftDegrees: %f", vertAxisLineDegrees, shaftDegrees)
@@ -390,7 +390,7 @@ func GetBallPosition(calibrationInfo *util.CalibrationInfo) (float64, util.Warni
 	feetLineSlopeRecipricol := util.GetRecipricol(feetLine.Line.Slope)
 	linePerpendicularToFeetLine := util.GetLineWithSlope(feetLineMidpoint, feetLineSlopeRecipricol)
 	pointOnPerpendicularLine := util.GetPointOnLineWithX(calibrationInfo.GolfBallPoint.X, linePerpendicularToFeetLine)
-	angle := util.GetAngleAtIntersection(util.ConvertCvKeypointToPoint(&calibrationInfo.GolfBallPoint), feetLineMidpoint, pointOnPerpendicularLine)
+	angle := util.GetAngleAtIntersection(util.ConvertKeypointToPoint(&calibrationInfo.GolfBallPoint), feetLineMidpoint, pointOnPerpendicularLine)
 	return angle, warning
 }
 
@@ -412,7 +412,7 @@ func GetHeadPosition(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.C
 	feetLineSlopeRecipricol := util.GetRecipricol(feetLine.Line.Slope)
 	linePerpendicularToFeetLine := util.GetLineWithSlope(feetLineMidpoint, feetLineSlopeRecipricol)
 	pointOnPerpendicularLine := util.GetPointOnLineWithX(calibrationInfo.GolfBallPoint.X, linePerpendicularToFeetLine)
-	angle := util.GetAngleAtIntersection(util.ConvertCvKeypointToPoint(keypoints.Nose), feetLineMidpoint, pointOnPerpendicularLine)
+	angle := util.GetAngleAtIntersection(util.ConvertKeypointToPoint(keypoints.Nose), feetLineMidpoint, pointOnPerpendicularLine)
 	return angle, warning
 }
 
@@ -434,7 +434,7 @@ func GetChestPosition(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.
 	feetLineSlopeRecipricol := util.GetRecipricol(feetLine.Line.Slope)
 	linePerpendicularToFeetLine := util.GetLineWithSlope(feetLineMidpoint, feetLineSlopeRecipricol)
 	pointOnPerpendicularLine := util.GetPointOnLineWithX(calibrationInfo.GolfBallPoint.X, linePerpendicularToFeetLine)
-	angle := util.GetAngleAtIntersection(util.ConvertCvKeypointToPoint(keypoints.Neck), feetLineMidpoint, pointOnPerpendicularLine)
+	angle := util.GetAngleAtIntersection(util.ConvertKeypointToPoint(keypoints.Neck), feetLineMidpoint, pointOnPerpendicularLine)
 	return angle, warning
 }
 
@@ -456,6 +456,6 @@ func GetMidhipPosition(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util
 	feetLineSlopeRecipricol := util.GetRecipricol(feetLine.Line.Slope)
 	linePerpendicularToFeetLine := util.GetLineWithSlope(feetLineMidpoint, feetLineSlopeRecipricol)
 	pointOnPerpendicularLine := util.GetPointOnLineWithX(calibrationInfo.GolfBallPoint.X, linePerpendicularToFeetLine)
-	angle := util.GetAngleAtIntersection(util.ConvertCvKeypointToPoint(keypoints.Midhip), feetLineMidpoint, pointOnPerpendicularLine)
+	angle := util.GetAngleAtIntersection(util.ConvertKeypointToPoint(keypoints.Midhip), feetLineMidpoint, pointOnPerpendicularLine)
 	return angle, warning
 }

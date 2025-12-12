@@ -38,13 +38,14 @@ type Projection struct {
 	OriginalLine   Line
 }
 
-//util
+// Find the length between point1 and point2
 func GetLengthBetweenTwoPoints(point1 *Point, point2 *Point) float64 {
 	term1 := math.Pow(point2.XPos-point1.XPos, 2)
 	term2 := math.Pow(point2.YPos-point1.YPos, 2)
 	return math.Sqrt(term1 + term2)
 }
 
+// Get the slope of the line that passes through point1 and point2
 func GetSlope(point1 *Point, point2 *Point) float64 {
 	rise := point2.YPos - point1.YPos
 	run := point2.XPos - point1.XPos
@@ -54,10 +55,12 @@ func GetSlope(point1 *Point, point2 *Point) float64 {
 	return rise / run
 }
 
+// Find the recipricol of the given fraction
 func GetRecipricol(fraction float64) float64 {
 	return float64(-1) * (1 / fraction)
 }
 
+// Find the recipricol of the slope of the line that passes through point1 and point2
 func GetSlopeRecipricol(point1 *Point, point2 *Point) float64 {
 	rise := point2.YPos - point1.YPos
 	run := point2.XPos - point1.XPos
@@ -67,38 +70,45 @@ func GetSlopeRecipricol(point1 *Point, point2 *Point) float64 {
 	return float64(-1) * (run / rise)
 }
 
+// Find the y intercept of the line with the given point and slope
 func GetYIntercept(point *Point, slope float64) float64 {
 	return point.YPos - (slope * point.XPos)
 }
 
+// Find the midpoint between point1 and point2
 func GetMidpoint(point1 *Point, point2 *Point) *Point {
 	xMid := (point1.XPos + point2.XPos) / float64(2)
 	yMid := (point1.YPos + point2.YPos) / float64(2)
 	return &Point{XPos: xMid, YPos: yMid}
 }
 
-// point1 will be the pointOnLine
+// Return the line intersects point1 and point2
+// point1 will be the pointOnLine in the Line struct
 func GetLine(point1 *Point, point2 *Point) *Line {
 	slope := GetSlope(point1, point2)
 	return GetLineWithSlope(point1, slope)
 }
 
+// Given a point and a slope, return the line
 func GetLineWithSlope(point1 *Point, slope float64) *Line {
 	yIntercept := GetYIntercept(point1, slope)
 	return &Line{Slope: slope, YIntercept: yIntercept, PointOnLine: *point1}
 }
 
+// Find the point on the line with the given x coordinate
 func GetPointOnLineWithX(x float64, line *Line) *Point {
 	yOnLine := (line.Slope * x) + line.YIntercept
 	return &Point{XPos: x, YPos: yOnLine}
 }
 
+// Find the point on the line with the given y coordinate
 func GetPointOnLineWithY(y float64, line *Line) *Point {
 	xOnLine := (y - line.YIntercept) / line.Slope
 	return &Point{XPos: xOnLine, YPos: y}
 }
 
-// law of cosines
+// Given three points, find the angle at the intersection between the line from point1 to intersectPoint and point2 and intersectPoint
+// Uses law of cosines
 func GetAngleAtIntersection(point1 *Point, intersectPoint *Point, point2 *Point) float64 {
 	lenLineOppIntersect := GetLengthBetweenTwoPoints(point1, point2)
 	lenLineBetweenIntersectAnd1 := GetLengthBetweenTwoPoints(point1, intersectPoint)
@@ -109,6 +119,7 @@ func GetAngleAtIntersection(point1 *Point, intersectPoint *Point, point2 *Point)
 	return ConvertRadToDegrees(radAngle)
 }
 
+// Given two lines, find the intersection of the two lines
 func GetIntersection(line1 *Line, line2 *Line) *Intersection {
 	xIntersect := (line2.YIntercept - line1.YIntercept) / (line1.Slope - line2.Slope)
 	yIntersect := line1.Slope*xIntersect + line1.YIntercept
@@ -117,6 +128,8 @@ func GetIntersection(line1 *Line, line2 *Line) *Intersection {
 	return &Intersection{Line1: *line1, Line2: *line2, IntersectPoint: intersectPoint, AngleAtIntersect: angleAtIntersect}
 }
 
+// Given a line and a point, find the projection onto line from the point
+// ie. the line perpendicular to the line that runs through the point
 func GetProjectionOntoLine(line *Line, point *Point) *Projection {
 	slopeOfProjection := GetRecipricol(line.Slope)
 	projectionLine := GetLineWithSlope(point, slopeOfProjection)
@@ -149,15 +162,16 @@ func GetDegreesOfLineAlwaysPositive(deg float64) float64 {
 	}
 }
 
-//TODO: RENAME (NOT CV)
-func ConvertCvKeypointToPoint(cvKeypoint *skp.Keypoint) *Point {
+// Converts *skp.Keypoint to *Point
+func ConvertKeypointToPoint(cvKeypoint *skp.Keypoint) *Point {
 	if cvKeypoint == nil {
 		return nil
 	}
 	return &Point{XPos: cvKeypoint.X, YPos: cvKeypoint.Y}
 }
 
-func ConvertPointToCvKeypoint(point *Point) *skp.Keypoint {
+// Converts *Point to *skp.Keypoint
+func ConvertPointToKeypoint(point *Point) *skp.Keypoint {
 	if point == nil {
 		return nil
 	}

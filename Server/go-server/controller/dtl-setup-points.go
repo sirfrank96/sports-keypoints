@@ -148,10 +148,10 @@ func GetSpineAngle(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.Cal
 		warning = util.AppendMinorWarnings(warning, w)
 	}
 	vertAxisLine := calibrationInfo.VertAxisLine
-	vertAxisThroughMidhipLine := util.GetLineWithSlope(util.ConvertCvKeypointToPoint(keypoints.Midhip), vertAxisLine.Slope)
-	neckPoint := util.ConvertCvKeypointToPoint(keypoints.Neck)
+	vertAxisThroughMidhipLine := util.GetLineWithSlope(util.ConvertKeypointToPoint(keypoints.Midhip), vertAxisLine.Slope)
+	neckPoint := util.ConvertKeypointToPoint(keypoints.Neck)
 	pointUpVertAxisSameHeightAsNeck := util.GetPointOnLineWithY(neckPoint.YPos, vertAxisThroughMidhipLine)
-	midhipPoint := util.ConvertCvKeypointToPoint(keypoints.Midhip)
+	midhipPoint := util.ConvertKeypointToPoint(keypoints.Midhip)
 	angleAtIntersect := util.GetAngleAtIntersection(neckPoint, midhipPoint, pointUpVertAxisSameHeightAsNeck)
 	return angleAtIntersect, warning
 }
@@ -267,10 +267,10 @@ func GetShoulderAlignment(keypoints *skp.Body25PoseKeypoints, calibrationInfo *u
 		warning = util.AppendMinorWarnings(warning, w)
 	}
 	fmt.Printf("LShoulder: %+v, RSHoulder: %+v, VanishingPoint: %+v\n", *keypoints.LShoulder, *keypoints.RShoulder, calibrationInfo.VanishingPoint)
-	currShoulderLine := util.GetLine(util.ConvertCvKeypointToPoint(keypoints.LShoulder), util.ConvertCvKeypointToPoint(keypoints.RShoulder))
-	shoulderDegrees := util.GetAngleAtIntersection(util.ConvertCvKeypointToPoint(keypoints.LShoulder), util.ConvertCvKeypointToPoint(keypoints.RShoulder), &calibrationInfo.VanishingPoint)
+	currShoulderLine := util.GetLine(util.ConvertKeypointToPoint(keypoints.LShoulder), util.ConvertKeypointToPoint(keypoints.RShoulder))
+	shoulderDegrees := util.GetAngleAtIntersection(util.ConvertKeypointToPoint(keypoints.LShoulder), util.ConvertKeypointToPoint(keypoints.RShoulder), &calibrationInfo.VanishingPoint)
 	fmt.Printf("ShoulderDegrees: %f\n", shoulderDegrees)
-	realParallelLine := util.GetLine(&calibrationInfo.VanishingPoint, util.ConvertCvKeypointToPoint(keypoints.RShoulder)) // line that converges at vanishing point
+	realParallelLine := util.GetLine(&calibrationInfo.VanishingPoint, util.ConvertKeypointToPoint(keypoints.RShoulder)) // line that converges at vanishing point
 	//determine if closed or open
 	if currShoulderLine.Slope == realParallelLine.Slope { // neutral
 		return 0, warning
@@ -313,10 +313,10 @@ func GetWaistAlignment(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util
 		warning = util.AppendMinorWarnings(warning, w)
 	}
 	fmt.Printf("LHip: %+v, RHip: %+v, VanishingPoint: %+v\n", *keypoints.LHip, *keypoints.RHip, calibrationInfo.VanishingPoint)
-	currWaistLine := util.GetLine(util.ConvertCvKeypointToPoint(keypoints.LHip), util.ConvertCvKeypointToPoint(keypoints.RHip))
-	waistDegrees := util.GetAngleAtIntersection(util.ConvertCvKeypointToPoint(keypoints.LHip), util.ConvertCvKeypointToPoint(keypoints.RHip), &calibrationInfo.VanishingPoint)
+	currWaistLine := util.GetLine(util.ConvertKeypointToPoint(keypoints.LHip), util.ConvertKeypointToPoint(keypoints.RHip))
+	waistDegrees := util.GetAngleAtIntersection(util.ConvertKeypointToPoint(keypoints.LHip), util.ConvertKeypointToPoint(keypoints.RHip), &calibrationInfo.VanishingPoint)
 	fmt.Printf("WaistDegrees: %f\n", waistDegrees)
-	realParallelLine := util.GetLine(&calibrationInfo.VanishingPoint, util.ConvertCvKeypointToPoint(keypoints.RHip)) // line that converges at vanishing point
+	realParallelLine := util.GetLine(&calibrationInfo.VanishingPoint, util.ConvertKeypointToPoint(keypoints.RHip)) // line that converges at vanishing point
 	//determine if closed or open
 	if currWaistLine.Slope == realParallelLine.Slope { // neutral
 		return 0, warning
@@ -351,7 +351,7 @@ func GetKneeBend(keypoints *skp.Body25PoseKeypoints) (float64, util.Warning) {
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	kneeBend := util.GetAngleAtIntersection(util.ConvertCvKeypointToPoint(keypoints.RHip), util.ConvertCvKeypointToPoint(keypoints.RKnee), util.ConvertCvKeypointToPoint(keypoints.RAnkle))
+	kneeBend := util.GetAngleAtIntersection(util.ConvertKeypointToPoint(keypoints.RHip), util.ConvertKeypointToPoint(keypoints.RKnee), util.ConvertKeypointToPoint(keypoints.RAnkle))
 	return 180.0 - kneeBend, warning
 }
 
@@ -387,9 +387,9 @@ func GetDistanceFromBall(keypoints *skp.Body25PoseKeypoints, calibrationInfo *ut
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	projection := util.GetProjectionOntoLine(&toeLine.Line, util.ConvertCvKeypointToPoint(&calibrationInfo.GolfBallPoint))
+	projection := util.GetProjectionOntoLine(&toeLine.Line, util.ConvertKeypointToPoint(&calibrationInfo.GolfBallPoint))
 	lengthFromBall := util.GetLengthBetweenTwoPoints(&projection.IntersectPoint, &projection.OriginalPoint)
-	lengthOfSpine := util.GetLengthBetweenTwoPoints(util.ConvertCvKeypointToPoint(keypoints.Midhip), util.ConvertCvKeypointToPoint(keypoints.Neck))
+	lengthOfSpine := util.GetLengthBetweenTwoPoints(util.ConvertKeypointToPoint(keypoints.Midhip), util.ConvertKeypointToPoint(keypoints.Neck))
 	return lengthFromBall / lengthOfSpine, warning
 }
 
@@ -418,6 +418,6 @@ func GetUlnarDeviation(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	angle := util.GetAngleAtIntersection(util.ConvertCvKeypointToPoint(keypoints.RElbow), util.ConvertCvKeypointToPoint(keypoints.RWrist), util.ConvertCvKeypointToPoint(&calibrationInfo.ClubHeadPoint))
+	angle := util.GetAngleAtIntersection(util.ConvertKeypointToPoint(keypoints.RElbow), util.ConvertKeypointToPoint(keypoints.RWrist), util.ConvertKeypointToPoint(&calibrationInfo.ClubHeadPoint))
 	return angle, warning
 }

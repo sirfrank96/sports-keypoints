@@ -67,7 +67,7 @@ func VerifyCalibrationImageAxes(keypoints *skp.Body25PoseKeypoints, calibrationI
 	if warning := VerifyKeypoint(keypoints.Neck, "neck", 0.5); warning != nil {
 		return nil, warning
 	}
-	vertAxisLine := GetLine(ConvertCvKeypointToPoint(keypoints.Midhip), ConvertCvKeypointToPoint(keypoints.Neck))
+	vertAxisLine := GetLine(ConvertKeypointToPoint(keypoints.Midhip), ConvertKeypointToPoint(keypoints.Neck))
 	// Check if angle between axes is around 90 degrees
 	horDeg := ConvertSlopeToDegrees(horAxisLine.Slope)
 	vertDeg := ConvertSlopeToDegrees(vertAxisLine.Slope)

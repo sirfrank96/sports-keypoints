@@ -72,8 +72,8 @@ func VerifyFeetLineInfo(feetLineInfo *FeetLineInfo) Warning {
 
 func GetFeetLineFromInfo(feetLineInfo *FeetLineInfo) *FeetLine {
 	feetLine := &FeetLine{FeetLineMethod: feetLineInfo.FeetLineMethod}
-	feetLine.LPoint = *ConvertCvKeypointToPoint(&feetLineInfo.LKeypoint)
-	feetLine.RPoint = *ConvertCvKeypointToPoint(&feetLineInfo.RKeypoint)
+	feetLine.LPoint = *ConvertKeypointToPoint(&feetLineInfo.LKeypoint)
+	feetLine.RPoint = *ConvertKeypointToPoint(&feetLineInfo.RKeypoint)
 	feetLine.Line = *GetLine(&feetLine.LPoint, &feetLine.RPoint)
 	return feetLine
 }
