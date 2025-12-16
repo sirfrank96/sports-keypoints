@@ -1,3 +1,6 @@
 [submodule "opencv_processor/3rdparty/openpose"]
 	path = opencv_processor/3rdparty/openpose
 	url = https://github.com/CMU-Perceptual-Computing-Lab/openpose
+[submodule "computervision-service/src/computervision-service/3rdparty/openpose"]
+	path = computervision-service/src/computervision-service/3rdparty/openpose
+	url = https://github.com/CMU-Perceptual-Computing-Lab/openpose.git

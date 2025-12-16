@@ -74,7 +74,7 @@ func GetFeetLineFromInfo(feetLineInfo *FeetLineInfo) *FeetLine {
 	feetLine := &FeetLine{FeetLineMethod: feetLineInfo.FeetLineMethod}
 	feetLine.LPoint = *ConvertKeypointToPoint(&feetLineInfo.LKeypoint)
 	feetLine.RPoint = *ConvertKeypointToPoint(&feetLineInfo.RKeypoint)
-	feetLine.Line = *GetLine(&feetLine.LPoint, &feetLine.RPoint)
+	feetLine.Line = *GetLine(&feetLine.RPoint, &feetLine.LPoint)
 	return feetLine
 }
 

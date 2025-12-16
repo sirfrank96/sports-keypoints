@@ -1,5 +1,4 @@
 FROM ubuntu:20.04
-RUN echo "Building for openpose that will only use cpu"
 
 WORKDIR /app
 
@@ -60,4 +59,4 @@ ENV PYTHONPATH="/usr/local/python/openpose"
 
 EXPOSE 50051
 
-CMD ["python3", "src/opencvandpose_server.py"]
+CMD ["python3", "src/server.py"]

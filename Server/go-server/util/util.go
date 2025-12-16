@@ -152,14 +152,31 @@ func ConvertRadToDegrees(rad float64) float64 {
 	return rad * 180 / math.Pi
 }
 
-func GetDegreesOfLineAlwaysPositive(deg float64) float64 {
-	if deg < 0 {
-		return deg + float64(180)
-	} else if deg > 180 {
-		return deg - float64(180)
-	} else {
-		return deg
+func ConvertDegreesToRad(deg float64) float64 {
+	return deg * math.Pi / 180
+}
+
+func GetVector(point *Point, origin *Point) *Point {
+	vect := &Point{
+		XPos: point.XPos - origin.XPos,
+		YPos: point.YPos - origin.YPos,
 	}
+	return vect
+}
+
+func GetDotProduct(vect1 *Point, vect2 *Point) float64 {
+	return (vect1.XPos * vect2.XPos) + (vect1.YPos * vect2.YPos)
+}
+
+func GetCrossProduct(vect1 *Point, vect2 *Point) float64 {
+	return (vect1.XPos * vect2.YPos) - (vect1.YPos * vect2.XPos)
+}
+
+func GetSignedAngleOfRotation(vect1 *Point, vect2 *Point) float64 {
+	det := GetCrossProduct(vect1, vect2)
+	dot := GetDotProduct(vect1, vect2)
+	rad := math.Atan2(det, dot)
+	return ConvertRadToDegrees(rad)
 }
 
 // Converts *skp.Keypoint to *Point

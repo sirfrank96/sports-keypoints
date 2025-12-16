@@ -4,22 +4,22 @@ import (
 	"context"
 	"fmt"
 
+	cvclient "github.com/sirfrank96/go-server/cv-client"
 	db "github.com/sirfrank96/go-server/db"
-	opencvclient "github.com/sirfrank96/go-server/opencv-client"
 	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 	"github.com/sirfrank96/go-server/util"
 )
 
 type GolfKeypointsListener struct {
 	skp.UnimplementedGolfKeypointsServiceServer
-	ocvmgr *opencvclient.OpenCvClientManager
-	dbmgr  *db.DbManager
+	cvmgr *cvclient.CvClientManager
+	dbmgr *db.DbManager
 }
 
-func newGolfKeypointsListener(ocvmgr *opencvclient.OpenCvClientManager, dbmgr *db.DbManager) *GolfKeypointsListener {
+func newGolfKeypointsListener(cvmgr *cvclient.CvClientManager, dbmgr *db.DbManager) *GolfKeypointsListener {
 	return &GolfKeypointsListener{
-		ocvmgr: ocvmgr,
-		dbmgr:  dbmgr,
+		cvmgr: cvmgr,
+		dbmgr: dbmgr,
 	}
 }
 
@@ -147,86 +147,59 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 	// put in golf ball/golf club points and warnings
 	if request.GolfBall != nil {
 		calibrationInfo.GolfBallPoint = *request.GolfBall
-	} else {
-		calibrationInfo.GolfBallWarning = util.WarningImpl{
-			Severity: util.MINOR,
-			Message:  "no golf ball identified, may not be able to provide all setup points",
-		}
 	}
 	if request.ClubButt != nil {
 		calibrationInfo.ClubButtPoint = *request.ClubButt
-	} else {
-		calibrationInfo.GolfClubWarning = util.WarningImpl{
-			Severity: util.MINOR,
-			Message:  "no club butt identified, may not be able to provide all setup points",
-		}
 	}
 	if request.ClubHead != nil {
 		calibrationInfo.ClubHeadPoint = *request.ClubHead
-	} else {
-		calibrationInfo.GolfClubWarning = util.WarningImpl{
-			Severity: util.MINOR,
-			Message:  "no club head identified, may not be able to provide all setup points",
-		}
 	}
 	// dtl calibration via calibration images
 	if inputImage.ImageType == skp.ImageType_DTL {
 		// axes calibration
 		if calibrationInfo.CalibrationType != skp.CalibrationType_NO_CALIBRATION {
-			getOpenPoseDataResponse, err := g.ocvmgr.GetOpenPoseData(inputImage.CalibrationImgAxes)
+			getPoseDataResponse, err := g.cvmgr.GetPoseData(inputImage.CalibrationImgAxes)
 			if err != nil {
-				return nil, fmt.Errorf("could not get openpose data for calibration image axes %w", err)
+				return nil, fmt.Errorf("could not get pose data for calibration image axes %w", err)
 			}
 			fmt.Printf("Axes calibration image processed\n")
 			var warning util.Warning
-			calibrationInfo, warning = util.VerifyCalibrationImageAxes(getOpenPoseDataResponse.Keypoints, calibrationInfo)
+			calibrationInfo, warning = util.VerifyCalibrationImageAxes(getPoseDataResponse.Keypoints, calibrationInfo)
 			if warning != nil {
 				return nil, fmt.Errorf("could not verify calibration image axes: %s", warning.Error())
 			}
 			// vanishing point calibration
 			if calibrationInfo.CalibrationType != skp.CalibrationType_AXES_CALIBRATION_ONLY {
-				getOpenPoseDataResponse, err := g.ocvmgr.GetOpenPoseData(inputImage.CalibrationImgVanishingPoint)
+				// add shoulder tilt for shoulder alignment calculation if provided
+				if request.ShoulderTilt != nil {
+					calibrationInfo.ShoulderTilt = *request.ShoulderTilt
+				} else {
+					calibrationInfo.ShoulderTilt = skp.Double{Data: 0, Warning: "Shoulder tilt not provided"}
+				}
+				getPoseDataResponse, err := g.cvmgr.GetPoseData(inputImage.CalibrationImgVanishingPoint)
 				if err != nil {
-					return nil, fmt.Errorf("could not get openpose data for calibration image vanishingpoint %w", err)
+					return nil, fmt.Errorf("could not get pose data for calibration image vanishingpoint %w", err)
 				}
 				fmt.Printf("Vanishing point calibration image processed\n")
-				calibrationInfo, warning = util.VerifyCalibrationImageVanishingPoint(getOpenPoseDataResponse.Keypoints, calibrationInfo)
+				calibrationInfo, warning = util.VerifyCalibrationImageVanishingPoint(getPoseDataResponse.Keypoints, calibrationInfo)
 				if warning != nil {
 					return nil, fmt.Errorf("could not verify calibration image axes: %s", warning.Error())
 				}
-				// no vanishing point calibration
-			} else {
-				calibrationInfo.VanishingPointCalibrationWarning = util.WarningImpl{
-					Severity: util.MINOR,
-					Message:  "no vanishing point calibration, may not be able to provide all setup points",
-				}
-			}
-			// no axes or vanishing point calibration
-		} else {
-			calibrationInfo.AxesCalibrationWarning = util.WarningImpl{
-				Severity: util.MINOR,
-				Message:  "no axes or vanishing point calibration, may not be able to provide all setup points",
 			}
 		}
 		// face on calibration via calibration image
 	} else {
 		// axes calibration
 		if calibrationInfo.CalibrationType != skp.CalibrationType_NO_CALIBRATION {
-			getOpenPoseDataResponse, err := g.ocvmgr.GetOpenPoseData(inputImage.CalibrationImgAxes)
+			getPoseDataResponse, err := g.cvmgr.GetPoseData(inputImage.CalibrationImgAxes)
 			if err != nil {
-				return nil, fmt.Errorf("could not get openpose data for calibration image axes %w", err)
+				return nil, fmt.Errorf("could not get pose data for calibration image axes %w", err)
 			}
 			fmt.Printf("Axes calibration image processed\n")
 			var warning util.Warning
-			calibrationInfo, warning = util.VerifyCalibrationImageAxes(getOpenPoseDataResponse.Keypoints, calibrationInfo)
+			calibrationInfo, warning = util.VerifyCalibrationImageAxes(getPoseDataResponse.Keypoints, calibrationInfo)
 			if warning != nil {
 				return nil, fmt.Errorf("could not verify calibration image axes: %s", warning.Error())
-			}
-			// no axes calibration
-		} else {
-			calibrationInfo.AxesCalibrationWarning = util.WarningImpl{
-				Severity: util.MINOR,
-				Message:  "no axes calibration, may not be able to provide all setup points",
 			}
 		}
 	}
@@ -257,23 +230,23 @@ func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, requ
 	if err != nil {
 		return nil, fmt.Errorf("could not get input image with id: %s, error was %w", request.InputImageId, err)
 	}
-	// get openpose image and data for input img
-	getOpenPoseAllResponse, err := g.ocvmgr.GetOpenPoseAll(inputImage.InputImg)
+	// get pose image and data for input img
+	getPoseAllResponse, err := g.cvmgr.GetPoseAll(inputImage.InputImg)
 	if err != nil {
-		return nil, fmt.Errorf("could not get open pose all for image: %w", err)
+		return nil, fmt.Errorf("could not get pose all for image: %w", err)
 	}
 	// calculate golf setup points
 	golfKeypoints := &db.GolfKeypoints{
 		UserId:          userId,
 		InputImageId:    request.InputImageId,
-		OutputImg:       getOpenPoseAllResponse.Image,
-		OutputKeypoints: *getOpenPoseAllResponse.PoseKeypoints,
+		OutputImg:       getPoseAllResponse.Image,
+		OutputKeypoints: *getPoseAllResponse.PoseKeypoints,
 	}
 	// dtl setup points
 	if inputImage.ImageType == skp.ImageType_DTL {
-		golfKeypoints.DtlGolfSetupPoints = *CalculateDTLSetupPoints(ctx, getOpenPoseAllResponse.PoseKeypoints, &inputImage.CalibrationInfo)
+		golfKeypoints.DtlGolfSetupPoints = *CalculateDTLSetupPoints(ctx, getPoseAllResponse.PoseKeypoints, &inputImage.CalibrationInfo)
 	} else { // face on setup points
-		golfKeypoints.FaceonGolfSetupPoints = *CalculateFaceOnSetupPoints(ctx, getOpenPoseAllResponse.PoseKeypoints, &inputImage.CalibrationInfo)
+		golfKeypoints.FaceonGolfSetupPoints = *CalculateFaceOnSetupPoints(ctx, getPoseAllResponse.PoseKeypoints, &inputImage.CalibrationInfo)
 	}
 
 	// store golfkeypoints in db
@@ -285,7 +258,7 @@ func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, requ
 	// return response
 	response := &skp.CalculateGolfKeypointsResponse{
 		Success:       true,
-		OutputImage:   getOpenPoseAllResponse.Image,
+		OutputImage:   getPoseAllResponse.Image,
 		GolfKeypoints: db.ConvertGolfKeypointsToCVGolfKeypoints(golfKeypoints),
 	}
 	return response, nil

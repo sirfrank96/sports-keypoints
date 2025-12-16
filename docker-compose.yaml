@@ -2,9 +2,9 @@
 #- server/go-server/docker-compose.yml
 #TODO: ENV VARS TO SHOW RUNNING FROM DOCKER
 services:
-  openpose-service:
+  computervision-service:
     build:
-      context: opencv-openpose-service
+      context: computervision-service
       dockerfile: Dockerfile.cpu
     ports:
       - "50051:50051"
@@ -27,14 +27,14 @@ services:
       - "50052:50052"
     environment:
       MONGO_URI: "mongodb://mongodb:27017"
-      OPENPOSE_URI: "openpose-service:50051"
+      COMPUTER_VISION_URI: "computervision-service:50051"
     networks:
       - backend-network
       - frontend-network
     depends_on:
       mongodb:
         condition: service_started
-      openpose-service:
+      computervision-service:
         condition: service_started
 
 volumes:

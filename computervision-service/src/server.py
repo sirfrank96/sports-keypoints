@@ -3,13 +3,12 @@ import logging
 import openpose
 
 import grpc
-import opencvandpose_pb2
-import opencvandpose_pb2_grpc
+import computervision_pb2
+import computervision_pb2_grpc
 import common_pb2
-import common_pb2_grpc
 
 #TODO: Implement all rpcs
-class OpenCVAndPoseServiceServicer(opencvandpose_pb2_grpc.OpenCVAndPoseServiceServicer):
+class ComputerVisionServiceServicer(computervision_pb2_grpc.ComputerVisionServiceServicer):
 
     body_pose_field_descriptors = common_pb2.Body25PoseKeypoints.DESCRIPTOR.fields
 
@@ -17,15 +16,15 @@ class OpenCVAndPoseServiceServicer(opencvandpose_pb2_grpc.OpenCVAndPoseServiceSe
         super().__init__()
         self.open_pose_mgr = openpose.OpenPoseManager()
 
-    def GetOpenPoseImage(self, request, context):
-        print("GetOpenPoseImage grpc request")
+    def GetPoseImage(self, request, context):
+        print("GetPoseImage grpc request")
         image_bytes = request.image
         image = self.open_pose_mgr.get_image_from_bytes(image_bytes)
         datum = self.open_pose_mgr.run_open_pose(image)
         processed_img = self.open_pose_mgr.get_open_pose_image(datum, self.body_pose_field_descriptors)
         print(f"Processed image. It's size is {len(processed_img)}")
-        print("GetOpenPoseImage grpc request finished")
-        return opencvandpose_pb2.GetOpenPoseImageResponse(
+        print("GetPoseImage grpc request finished")
+        return computervision_pb2.GetPoseImageResponse(
             success=True,
             image=processed_img
         )
@@ -45,8 +44,8 @@ class OpenCVAndPoseServiceServicer(opencvandpose_pb2_grpc.OpenCVAndPoseServiceSe
             curr_field.CopyFrom(keypoint)
         return body_25_pose_keypoints
     
-    def GetOpenPoseData(self, request, context):
-        print("GetOpenPoseData grpc request")
+    def GetPoseData(self, request, context):
+        print("GetPoseData grpc request")
         image_bytes = request.image
         image = self.open_pose_mgr.get_image_from_bytes(image_bytes)
         datum = self.open_pose_mgr.run_open_pose(image)
@@ -54,20 +53,20 @@ class OpenCVAndPoseServiceServicer(opencvandpose_pb2_grpc.OpenCVAndPoseServiceSe
         print(f"Processed image. Data is {data}. Length of data is {len(data)}")
         body_25_pose_keypoints = self.processOpenPoseData(data)
         print(f"Converted data array to Keypoints {body_25_pose_keypoints}")
-        print("GetOpenPoseData grpc request finished")
-        return opencvandpose_pb2.GetOpenPoseDataResponse(
+        print("GetPoseData grpc request finished")
+        return computervision_pb2.GetPoseDataResponse(
             success=True,
             keypoints=body_25_pose_keypoints
         )
     
-    def GetOpenPoseHandImage(self, request, context):
+    def GetPoseHandImage(self, request, context):
         return super().GetOpenPoseHandImage(request, context)
     
-    def GetOpenPoseHandData(self, request, context):
+    def GetPoseHandData(self, request, context):
         return super().GetOpenPoseHandData(request, context)
     
-    def GetOpenPoseAll(self, request, context):
-        print("GetOpenPoseAll grpc request")
+    def GetPoseAll(self, request, context):
+        print("GetPoseAll grpc request")
         #run openpose
         image_bytes = request.image
         image = self.open_pose_mgr.get_image_from_bytes(image_bytes)
@@ -77,15 +76,16 @@ class OpenCVAndPoseServiceServicer(opencvandpose_pb2_grpc.OpenCVAndPoseServiceSe
         #get data
         data = self.open_pose_mgr.get_open_pose_data(datum)
         body_25_pose_keypoints = self.processOpenPoseData(data)
-        print("GetOpenPoseAll grpc request finished")
-        return opencvandpose_pb2.GetOpenPoseAllResponse(
+        print(f"GetPoseall converted data array to Keypoints {body_25_pose_keypoints}")
+        print("GetPoseAll grpc request finished")
+        return computervision_pb2.GetPoseAllResponse(
             success=True,
             image=processed_img,
             pose_keypoints=body_25_pose_keypoints
         )
     
-    def GetOpenPoseImagesFromVideo(self, request_iterator, context):
-        print("GetOpenPoseImagesFromVideo grpc request")
+    def GetPoseImagesFromVideo(self, request_iterator, context):
+        print("GetPoseImagesFromVideo grpc request")
         img_idx = 0
         for get_open_pose_image_request in request_iterator:
             img_idx += 1
@@ -93,33 +93,33 @@ class OpenCVAndPoseServiceServicer(opencvandpose_pb2_grpc.OpenCVAndPoseServiceSe
             image = self.open_pose_mgr.get_image_from_bytes(image_bytes)
             processed_img = self.open_pose_mgr.get_open_pose_image(image, self.body_pose_field_descriptors)
             print(f"Processed image #{img_idx}. It's size is {len(processed_img)}")
-            get_open_pose_image_response = opencvandpose_pb2.GetOpenPoseImageResponse(
+            get_open_pose_image_response = computervision_pb2.GetPoseImageResponse(
                 image=processed_img
             )
             yield get_open_pose_image_response
-        print("GetOpenPoseImagesFromVideo grpc request finished")
+        print("GetPoseImagesFromVideo grpc request finished")
     
-    def GetOpenPoseDataFromVideo(self, request_iterator, context):
-        return super().GetOpenPoseDataFromVideo(request_iterator, context)
+    def GetPoseDataFromVideo(self, request_iterator, context):
+        return super().GetPoseDataFromVideo(request_iterator, context)
     
-    def GetOpenPoseHandImagesFromVideo(self, request_iterator, context):
-        return super().GetOpenPoseHandImagesFromVideo(request_iterator, context)
+    def GetPoseHandImagesFromVideo(self, request_iterator, context):
+        return super().GetPoseHandImagesFromVideo(request_iterator, context)
     
-    def GetOpenPoseHandDataFromVideo(self, request_iterator, context):
-        return super().GetOpenPoseHandDataFromVideo(request_iterator, context)
+    def GetPoseHandDataFromVideo(self, request_iterator, context):
+        return super().GetPoseHandDataFromVideo(request_iterator, context)
     
-    def GetOpenPoseAllFromVideo(self, request_iterator, context):
-        return super().GetOpenPoseAllFromVideo(request_iterator, context)
+    def GetPoseAllFromVideo(self, request_iterator, context):
+        return super().GetPoseAllFromVideo(request_iterator, context)
     
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    opencvandpose_pb2_grpc.add_OpenCVAndPoseServiceServicer_to_server(
-        OpenCVAndPoseServiceServicer(), server
+    computervision_pb2_grpc.add_ComputerVisionServiceServicer_to_server(
+        ComputerVisionServiceServicer(), server
     )
     server.add_insecure_port("[::]:50051")
     server.start()
-    print("Waiting for opencv and openpose requests at port 50051")
+    print("Waiting for computervision requests at port 50051")
     print("Waiting for sigint to stop services")
     server.wait_for_termination()
 

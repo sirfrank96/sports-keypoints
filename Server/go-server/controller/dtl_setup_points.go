@@ -3,11 +3,15 @@ package controller
 import (
 	"context"
 	"fmt"
+	"math"
+
 	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 	"github.com/sirfrank96/go-server/util"
 )
 
 //assuming right handed golfer
+
+// TODO: CONVERTKEYPOINTTOPOINT right away so dont have to convert everytime pass to func
 
 //2 calibration images? 1 for perpendicular axes, 1 for vanishing points
 //img 1: stand straddled, check to make sure heel horizontal and spine vertical are close to 90
@@ -28,60 +32,61 @@ func VerifyDTLCalibrationImages(axesKeypoints *skp.Body25PoseKeypoints, vanishin
 }
 
 func CalculateDTLSetupPoints(ctx context.Context, keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) *skp.DTLGolfSetupPoints {
+	fmt.Printf("Calculating Dtl setup points. Keypoints: %+v\n CalibrationInfo: %+v\n", keypoints, calibrationInfo)
 	spineAngle, warning := GetSpineAngle(keypoints, calibrationInfo)
 	var spineAngleWarning string
 	if warning != nil {
 		spineAngleWarning = warning.Error()
 	}
-	fmt.Printf("Spine angle is %f", spineAngle)
+	fmt.Printf("Spine angle is %f\n", spineAngle)
 	feetAlignment, warning := GetFeetAlignment(keypoints, calibrationInfo)
 	var feetAlignmentWarning string
 	if warning != nil {
 		feetAlignmentWarning = warning.Error()
 	}
-	fmt.Printf("Feet alignment is %f", feetAlignment)
+	fmt.Printf("Feet alignment is %f\n", feetAlignment)
 	heelAlignment, warning := GetHeelAlignment(keypoints, calibrationInfo)
 	var heelAlignmentWarning string
 	if warning != nil {
 		heelAlignmentWarning = warning.Error()
 	}
-	fmt.Printf("Heel alignment is %f", heelAlignment)
+	fmt.Printf("Heel alignment is %f\n", heelAlignment)
 	toeAlignment, warning := GetToeAlignment(keypoints, calibrationInfo)
 	var toeAlignmentWarning string
 	if warning != nil {
 		toeAlignmentWarning = warning.Error()
 	}
-	fmt.Printf("Toe alignment is %f", toeAlignment)
+	fmt.Printf("Toe alignment is %f\n", toeAlignment)
 	shoulderAlignment, warning := GetShoulderAlignment(keypoints, calibrationInfo)
 	var shoulderAlignmentWarning string
 	if warning != nil {
 		shoulderAlignmentWarning = warning.Error()
 	}
-	fmt.Printf("Shoulder alignment is %f", shoulderAlignment)
+	fmt.Printf("Shoulder alignment is %f\n", shoulderAlignment)
 	waistAlignment, warning := GetWaistAlignment(keypoints, calibrationInfo)
 	var waistAlignmentWarning string
 	if warning != nil {
 		waistAlignmentWarning = warning.Error()
 	}
-	fmt.Printf("Waist alignment is %f", waistAlignment)
+	fmt.Printf("Waist alignment is %f\n", waistAlignment)
 	kneeBend, warning := GetKneeBend(keypoints)
 	var kneeBendWarning string
 	if warning != nil {
 		kneeBendWarning = warning.Error()
 	}
-	fmt.Printf("Knee bend is %f", kneeBend)
+	fmt.Printf("Knee bend is %f\n", kneeBend)
 	distanceFromBall, warning := GetDistanceFromBall(keypoints, calibrationInfo)
 	var distanceFromBallWarning string
 	if warning != nil {
 		distanceFromBallWarning = warning.Error()
 	}
-	fmt.Printf("Distance from ball is %f", distanceFromBall)
+	fmt.Printf("Distance from ball is %f\n", distanceFromBall)
 	ulnarDeviation, warning := GetUlnarDeviation(keypoints, calibrationInfo)
 	var ulnarDeviationWarning string
 	if warning != nil {
 		ulnarDeviationWarning = warning.Error()
 	}
-	fmt.Printf("Ulnar deviation is %f", ulnarDeviation)
+	fmt.Printf("Ulnar deviation is %f\n", ulnarDeviation)
 
 	dtlGolfSetupPoints := &skp.DTLGolfSetupPoints{
 		SpineAngle: &skp.Double{
@@ -157,16 +162,10 @@ func GetSpineAngle(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.Cal
 }
 
 func getFeetAlignmentHelper(currFeetLine *util.FeetLine, calibrationInfo *util.CalibrationInfo) float64 {
-	feetDegrees := util.GetAngleAtIntersection(&currFeetLine.LPoint, &currFeetLine.RPoint, &calibrationInfo.VanishingPoint)
-	realParallelLine := util.GetLine(&calibrationInfo.VanishingPoint, &currFeetLine.RPoint) // line that converges at vanishing point
-	//determine if closed or open TODO: Make util functions
-	if currFeetLine.Line.Slope == realParallelLine.Slope { // neutral
-		return 0
-	} else if currFeetLine.Line.Slope > realParallelLine.Slope && currFeetLine.Line.Slope <= 0 { // closed (will return positive number)
-		return feetDegrees
-	} else { // open (will return negative number)
-		return float64(-1) * feetDegrees
-	}
+	//get the signed angle of rotation from line from rpoint to vanishing point to the line from rpoint to lpoint
+	vectFromRPointToVp := util.GetVector(&calibrationInfo.VanishingPoint, &currFeetLine.RPoint)
+	vectFromRPointToLPoint := util.GetVector(&currFeetLine.LPoint, &currFeetLine.RPoint)
+	return util.GetSignedAngleOfRotation(vectFromRPointToVp, vectFromRPointToLPoint)
 }
 
 //feet alignment
@@ -185,8 +184,14 @@ func GetFeetAlignment(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.
 			Message:  "Can't calculate feet alignment without vanishing point calibration",
 		}
 	}
-	currFeetLine := calibrationInfo.FeetLine
-	return getFeetAlignmentHelper(&currFeetLine, calibrationInfo), nil
+	currFeetLine, warning := util.GetFeetLine(keypoints, calibrationInfo.FeetLineMethod)
+	if warning != nil && warning.GetSeverity() == util.SEVERE {
+		return 0, util.WarningImpl{
+			Severity: util.MINOR,
+			Message:  fmt.Sprintf("Can't calculate feet alignment: %s", warning.Error()),
+		}
+	}
+	return getFeetAlignmentHelper(currFeetLine, calibrationInfo), nil
 }
 
 func GetHeelAlignment(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
@@ -253,6 +258,9 @@ func GetShoulderAlignment(keypoints *skp.Body25PoseKeypoints, calibrationInfo *u
 			Message:  "Can't calculate shoulder alignment without vanishing point calibration",
 		}
 	}
+	if w := util.VerifyDouble(&calibrationInfo.ShoulderTilt); w != nil {
+		return 0, w
+	}
 	var warning util.Warning
 	if w := util.VerifyKeypoint(keypoints.LShoulder, "left shoulder", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
@@ -266,19 +274,23 @@ func GetShoulderAlignment(keypoints *skp.Body25PoseKeypoints, calibrationInfo *u
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	fmt.Printf("LShoulder: %+v, RSHoulder: %+v, VanishingPoint: %+v\n", *keypoints.LShoulder, *keypoints.RShoulder, calibrationInfo.VanishingPoint)
-	currShoulderLine := util.GetLine(util.ConvertKeypointToPoint(keypoints.LShoulder), util.ConvertKeypointToPoint(keypoints.RShoulder))
-	shoulderDegrees := util.GetAngleAtIntersection(util.ConvertKeypointToPoint(keypoints.LShoulder), util.ConvertKeypointToPoint(keypoints.RShoulder), &calibrationInfo.VanishingPoint)
-	fmt.Printf("ShoulderDegrees: %f\n", shoulderDegrees)
-	realParallelLine := util.GetLine(&calibrationInfo.VanishingPoint, util.ConvertKeypointToPoint(keypoints.RShoulder)) // line that converges at vanishing point
-	//determine if closed or open
-	if currShoulderLine.Slope == realParallelLine.Slope { // neutral
-		return 0, warning
-	} else if currShoulderLine.Slope > realParallelLine.Slope && currShoulderLine.Slope <= 0 { // closed (will return positive number)
-		return shoulderDegrees, warning
-	} else { // open (will return negative number)
-		return float64(-1) * shoulderDegrees, warning
-	}
+	//find auxillary vanishing point given shoulder tilt
+	//shoulder tilt will raise or lower the vanishing point of lines parallel to the shoulder line on the vertical axis
+	shoulderTiltRad := util.ConvertDegreesToRad(calibrationInfo.ShoulderTilt.Data)
+	xtemp := calibrationInfo.VanishingPoint.XPos - keypoints.RShoulder.X
+	ytemp := calibrationInfo.VanishingPoint.YPos - keypoints.RShoulder.Y
+	rotatedXTemp := (xtemp * math.Cos(shoulderTiltRad)) - (ytemp * math.Sin(shoulderTiltRad))
+	rotatedYTemp := (xtemp * math.Sin(shoulderTiltRad)) - (ytemp * math.Cos(shoulderTiltRad))
+	rotatedX := rotatedXTemp + keypoints.RShoulder.X
+	rotatedY := rotatedYTemp + keypoints.RShoulder.Y
+	rotatedPoint := &util.Point{XPos: rotatedX, YPos: rotatedY}
+	lineFromRShoulderToRotatedPoint := util.GetLine(util.ConvertKeypointToPoint(keypoints.RShoulder), rotatedPoint)
+	intersection := util.GetIntersection(lineFromRShoulderToRotatedPoint, &calibrationInfo.VertAxisLine)
+	avp := intersection.IntersectPoint
+	//get the signed angle of rotation from line from rshoulder to auxillary vanishing point to the line from rshoulder to lshoulder
+	vectFromRShoulderToAvp := util.GetVector(&avp, util.ConvertKeypointToPoint(keypoints.RShoulder))
+	vectFromRShoulderToLShoulder := util.GetVector(util.ConvertKeypointToPoint(keypoints.LShoulder), util.ConvertKeypointToPoint(keypoints.RShoulder))
+	return util.GetSignedAngleOfRotation(vectFromRShoulderToAvp, vectFromRShoulderToLShoulder), warning
 }
 
 //waist alignment
@@ -312,19 +324,10 @@ func GetWaistAlignment(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	fmt.Printf("LHip: %+v, RHip: %+v, VanishingPoint: %+v\n", *keypoints.LHip, *keypoints.RHip, calibrationInfo.VanishingPoint)
-	currWaistLine := util.GetLine(util.ConvertKeypointToPoint(keypoints.LHip), util.ConvertKeypointToPoint(keypoints.RHip))
-	waistDegrees := util.GetAngleAtIntersection(util.ConvertKeypointToPoint(keypoints.LHip), util.ConvertKeypointToPoint(keypoints.RHip), &calibrationInfo.VanishingPoint)
-	fmt.Printf("WaistDegrees: %f\n", waistDegrees)
-	realParallelLine := util.GetLine(&calibrationInfo.VanishingPoint, util.ConvertKeypointToPoint(keypoints.RHip)) // line that converges at vanishing point
-	//determine if closed or open
-	if currWaistLine.Slope == realParallelLine.Slope { // neutral
-		return 0, warning
-	} else if currWaistLine.Slope > realParallelLine.Slope && currWaistLine.Slope <= 0 { // closed (will return positive number)
-		return waistDegrees, warning
-	} else { // open (will return negative number)
-		return float64(-1) * waistDegrees, warning
-	}
+	//get the signed angle of rotation from line from rhip to vanishing point to the line from rhip to lhip
+	vectFromRHipToVp := util.GetVector(&calibrationInfo.VanishingPoint, util.ConvertKeypointToPoint(keypoints.RHip))
+	vectFromRHipToLHip := util.GetVector(util.ConvertKeypointToPoint(keypoints.LHip), util.ConvertKeypointToPoint(keypoints.RHip))
+	return util.GetSignedAngleOfRotation(vectFromRHipToVp, vectFromRHipToLHip), warning
 }
 
 //knee bend

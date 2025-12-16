@@ -4,7 +4,6 @@ import traceback
 import sys
 import numpy as np
 from pathlib import Path
-import opencvandpose_pb2
 import platform
 
 #TODO: Check platform for pyopenpose import, different for windows vs ubuntu vs osx

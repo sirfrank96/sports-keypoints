@@ -2,11 +2,11 @@ syntax = "proto3";
 package sports_keypoints_proto;
 
 service UserService {
-    rpc createUser(CreateUserRequest) returns (CreateUserResponse) {}
-    rpc registerUser(RegisterUserRequest) returns (RegisterUserResponse) {}
-    rpc readUser(ReadUserRequest) returns (User) {}
-    rpc updateUser(UpdateUserRequest) returns (User) {}
-    rpc deleteUser(DeleteUserRequest) returns (DeleteUserResponse) {}
+    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
+    rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse) {}
+    rpc ReadUser(ReadUserRequest) returns (User) {}
+    rpc UpdateUser(UpdateUserRequest) returns (User) {}
+    rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {}
 }
 
 message CreateUserRequest {

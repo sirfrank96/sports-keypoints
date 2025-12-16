@@ -1,0 +1,65 @@
+syntax = "proto3";
+package sports_keypoints_proto;
+
+import "common.proto";
+
+service ComputerVisionService {
+    rpc GetPoseImage(GetPoseImageRequest) returns (GetPoseImageResponse) {}
+    rpc GetPoseData(GetPoseDataRequest) returns (GetPoseDataResponse) {}
+    rpc GetPoseHandImage(GetPoseHandImageRequest) returns (GetPoseHandImageResponse) {}
+    rpc GetPoseHandData(GetPoseHandDataRequest) returns (GetPoseHandDataResponse) {}
+    rpc GetPoseAll(GetPoseAllRequest) returns (GetPoseAllResponse) {}
+
+    rpc GetPoseImagesFromVideo(stream GetPoseImageRequest) returns (stream GetPoseImageResponse) {}
+    rpc GetPoseDataFromVideo(stream GetPoseDataRequest) returns (stream GetPoseDataResponse) {}
+    rpc GetPoseHandImagesFromVideo(stream GetPoseHandImageRequest) returns (stream GetPoseHandImageResponse) {}
+    rpc GetPoseHandDataFromVideo(stream GetPoseHandDataRequest) returns (stream GetPoseHandDataResponse) {}
+    rpc GetPoseAllFromVideo(stream GetPoseAllRequest) returns (stream GetPoseAllResponse) {}
+}
+
+message GetPoseImageRequest {
+    bytes image = 1;
+}
+
+message GetPoseImageResponse {
+    bool success = 1;
+    bytes image = 2;
+}
+
+message GetPoseDataRequest {
+    bytes image = 1;
+}
+
+message GetPoseDataResponse {
+    bool success = 1;
+    Body25PoseKeypoints keypoints = 2;
+}
+
+message GetPoseHandImageRequest {
+    bytes image = 1;
+}
+
+message GetPoseHandImageResponse {
+    bool success = 1;
+    bytes image = 2;
+}
+
+message GetPoseHandDataRequest {
+    bytes image = 1;
+}
+
+message GetPoseHandDataResponse {
+    bool success = 1;
+    Body25HandKeypoints keypoints = 2;
+}
+
+message GetPoseAllRequest {
+    bytes image = 1;
+}
+
+message GetPoseAllResponse {
+    bool success = 1;
+    bytes image = 2;
+    Body25PoseKeypoints pose_keypoints = 3;
+    Body25HandKeypoints hand_keypoints = 4;
+}

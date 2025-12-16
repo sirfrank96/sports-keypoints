@@ -52,6 +52,7 @@ class MainAppPage(tk.Frame):
         self.axes_calibration_image = None
         self.vanishing_point_calibration_image = None
         self.feet_line_method = golfkeypoints_pb2.FeetLineMethod.USE_HEEL_LINE
+        self.shoulder_tilt = 10.0
 
     class IdentifyMode(Enum):
         NONE = 1
@@ -137,14 +138,17 @@ class MainAppPage(tk.Frame):
         self.open_button = tk.Button(self, text="Modify Feet Line Method", command=self.modify_feet_line_method)
         self.open_button.grid(row=5, column=2, padx=5, pady=5, sticky="w")
 
-        self.open_button = tk.Button(self, text="Calibrate Image", command=partial(self.calibrate_image))
+        self.open_button = tk.Button(self, text="Input Shoulder Tilt For DTL", command=self.input_shoulder_tilt)
         self.open_button.grid(row=6, column=2, padx=5, pady=5, sticky="w")
 
-        self.open_button = tk.Button(self, text="Calculate Golf Keypoints", command=partial(self.calculate_golf_keypoints))
+        self.open_button = tk.Button(self, text="Calibrate Image", command=partial(self.calibrate_image))
         self.open_button.grid(row=7, column=2, padx=5, pady=5, sticky="w")
 
-        self.open_button = tk.Button(self, text="Delete Input Image", command=partial(self.delete_input_image))
+        self.open_button = tk.Button(self, text="Calculate Golf Keypoints", command=partial(self.calculate_golf_keypoints))
         self.open_button.grid(row=8, column=2, padx=5, pady=5, sticky="w")
+
+        self.open_button = tk.Button(self, text="Delete Input Image", command=partial(self.delete_input_image))
+        self.open_button.grid(row=9, column=2, padx=5, pady=5, sticky="w")
 
     def get_axes_calibration_image(self):
         img = self.get_image_from_filesystem()
@@ -187,6 +191,9 @@ class MainAppPage(tk.Frame):
         if response == "yes":
             self.feet_line_method = golfkeypoints_pb2.FeetLineMethod.USE_TOE_LINE
 
+    def input_shoulder_tilt(self):
+        self.shoulder_tilt = simpledialog.askfloat("Shoulder Tilt", prompt="What is the shoulder tilt?")
+
     def determine_calibration_type(self):
         if self.image_type == golfkeypoints_pb2.FACE_ON:
             if self.axes_calibration_image is not None:
@@ -203,7 +210,7 @@ class MainAppPage(tk.Frame):
     
     def calibrate_image(self):
         try:
-            response = self.golfkeypoints_client.calibrate_input_image(session_token=self.session_token, input_image_id=self.curr_input_image_id, calibration_type=self.determine_calibration_type(), feet_line_method=self.feet_line_method, calibration_image_axes=self.axes_calibration_image, calibration_image_vanishing_point=self.vanishing_point_calibration_image, golf_ball=self.golf_ball, club_butt=self.club_butt, club_head=self.club_head)
+            response = self.golfkeypoints_client.calibrate_input_image(session_token=self.session_token, input_image_id=self.curr_input_image_id, calibration_type=self.determine_calibration_type(), feet_line_method=self.feet_line_method, calibration_image_axes=self.axes_calibration_image, calibration_image_vanishing_point=self.vanishing_point_calibration_image, golf_ball=self.golf_ball, club_butt=self.club_butt, club_head=self.club_head, shoulder_title=self.shoulder_tilt)
             messagebox.showinfo("Calibrate Input Image", f"Calibrate input image successful: {response}, calculate golf keypoints next")
         except grpc.RpcError as e:
             messagebox.showerror("Calibrate Input Image", f"Calibrate input image failed: {e.code()}: {e.details()}")    
@@ -217,7 +224,7 @@ class MainAppPage(tk.Frame):
                 img = Image.open(buffer)
                 self.display_image(img)
                 messagebox.showinfo("Golf Keypoints", f"{response.golf_keypoints}")
-                incorrect = messagebox.askyesno("Body Keypoints Update", "Are there body keypoints that openpose identified incorrectly?")
+                incorrect = messagebox.askyesno("Body Keypoints Update", "Are there body keypoints that computervision identified incorrectly?")
                 if incorrect:
                     self.update_body_keypoints(response.golf_keypoints.body_keypoints)
         except grpc.RpcError as e:

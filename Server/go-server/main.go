@@ -22,10 +22,10 @@ func startServices(ctx context.Context, controller *controller.Controller) error
 		return fmt.Errorf("could not start database: %w", err)
 	}
 	log.Printf("Started Database Client")
-	if err := controller.StartOpenCvClient(); err != nil {
-		return fmt.Errorf("could not start opencvclient %w", err)
+	if err := controller.StartCvClient(); err != nil {
+		return fmt.Errorf("could not start cvclient %w", err)
 	}
-	log.Printf("Started OpenCV client")
+	log.Printf("Started CV client")
 	return nil
 }
 
@@ -38,10 +38,10 @@ func stopServices(ctx context.Context, controller *controller.Controller) error 
 		return fmt.Errorf("could not stop database client %w", err)
 	}
 	log.Printf("Stopped Database Client")
-	if err := controller.CloseOpenCvClient(); err != nil {
-		return fmt.Errorf("could not close opencvclient %w", err)
+	if err := controller.CloseCvClient(); err != nil {
+		return fmt.Errorf("could not close cvclient %w", err)
 	}
-	log.Printf("Closed OpenCv client")
+	log.Printf("Closed Cv client")
 	return nil
 }
 

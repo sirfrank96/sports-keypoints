@@ -8,25 +8,37 @@ import (
 )
 
 type CalibrationInfo struct {
-	CalibrationType                  skp.CalibrationType `bson:"calibration_type,omitempty"`
-	FeetLineMethod                   skp.FeetLineMethod  `bson:"feet_line_method,omitempty"`
-	AxesCalibrationWarning           WarningImpl         `bson:"axes_calibration_warning,omitempty"`
-	VanishingPointCalibrationWarning WarningImpl         `bson:"vanishing_point_calibration_warning,omitempty"`
-	GolfBallWarning                  WarningImpl         `bson:"golf_ball_warning,omitempty"`
-	GolfClubWarning                  WarningImpl         `bson:"golf_club_warning,omitempty"`
-	FeetLine                         FeetLine            `bson:"feet_line,omitempty"`
-	HorAxisLine                      Line                `bson:"hor_axis_line,omitempty"`
-	VertAxisLine                     Line                `bson:"vert_axis_line,omitempty"`
-	VanishingPoint                   Point               `bson:"vanishing_point,omitempty"`
-	GolfBallPoint                    skp.Keypoint        `bson:"golf_ball_point,omitempty"`
-	ClubButtPoint                    skp.Keypoint        `bson:"club_butt_point,omitempty"`
-	ClubHeadPoint                    skp.Keypoint        `bson:"club_head_point,omitempty"`
+	CalibrationType skp.CalibrationType `bson:"calibration_type,omitempty"`
+	FeetLineMethod  skp.FeetLineMethod  `bson:"feet_line_method,omitempty"`
+	HorAxisLine     Line                `bson:"hor_axis_line,omitempty"`
+	VertAxisLine    Line                `bson:"vert_axis_line,omitempty"`
+	VanishingPoint  Point               `bson:"vanishing_point,omitempty"`
+	GolfBallPoint   skp.Keypoint        `bson:"golf_ball_point,omitempty"`
+	ClubButtPoint   skp.Keypoint        `bson:"club_butt_point,omitempty"`
+	ClubHeadPoint   skp.Keypoint        `bson:"club_head_point,omitempty"`
+	ShoulderTilt    skp.Double          `bson:"shoulder_tilt,omitempty"`
 }
 
 func GetEmptyCalibrationInfo() *CalibrationInfo {
 	return &CalibrationInfo{
 		CalibrationType: skp.CalibrationType_NO_CALIBRATION,
 	}
+}
+
+func VerifyDouble(double *skp.Double) Warning {
+	if double == nil {
+		return WarningImpl{
+			Severity: SEVERE,
+			Message:  "value does not exist",
+		}
+	}
+	if double.Warning != "" {
+		return WarningImpl{
+			Severity: SEVERE,
+			Message:  fmt.Sprintf("warning for value: %s", double.Warning),
+		}
+	}
+	return nil
 }
 
 func CheckIfKeypointExists(keypoint *skp.Keypoint) bool {
@@ -79,7 +91,6 @@ func VerifyCalibrationImageAxes(keypoints *skp.Body25PoseKeypoints, calibrationI
 		}
 	}
 	fmt.Printf("Good axes calibration. Horizontal axis between heels is %f degrees. vertical axis between midhip and neck is %f degrees\n", horDeg, vertDeg)
-	calibrationInfo.FeetLine = *feetLine
 	calibrationInfo.HorAxisLine = horAxisLine
 	calibrationInfo.VertAxisLine = *vertAxisLine
 	return calibrationInfo, nil

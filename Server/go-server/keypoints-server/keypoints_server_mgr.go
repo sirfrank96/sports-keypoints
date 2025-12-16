@@ -1,6 +1,6 @@
 // Receive an image/video via client rest apis
 // (CRUD REST APIs for users and also gRPC apis for images/videos and more specific bidirectional streaming client apis related to computervision (ie. identifyPoseDifferences, showPose, etc.))
-// Converts received data into objects for server_mgr to process and figure out what needs to be done and what needs opencv/openpose stuff
+// Converts received data into objects for server_mgr to process and figure out what needs to be done and what needs computervision stuff
 package keypointsserver
 
 import (

@@ -88,6 +88,6 @@ ENV PYTHONPATH="/usr/local/python/openpose"
 
 EXPOSE 50051
 
-CMD ["python3", "src/opencvandpose_server.py"]
+CMD ["python3", "src/server.py"]
 
 

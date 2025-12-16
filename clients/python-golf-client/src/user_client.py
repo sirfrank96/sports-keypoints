@@ -9,21 +9,21 @@ class UserClient():
 
     def create_user(self, username, password, email):
         request = user_pb2.CreateUserRequest(user_name=username, password=password, email=email)
-        return self.stub.createUser(request)
+        return self.stub.CreateUser(request)
     
     def register_user(self, username, password):
         request = user_pb2.RegisterUserRequest(user_name=username, password=password)
-        return self.stub.registerUser(request)
+        return self.stub.RegisterUser(request)
 
     def read_user(self, session_token):
         request = user_pb2.ReadUserRequest(session_token=session_token)
-        return self.stub.readUser(request)
+        return self.stub.ReadUser(request)
 
     def update_user(self, session_token, username, password, email):
         request = user_pb2.UpdateUserRequest(session_token=session_token, user_name=username, password=password, email=email)
-        return self.stub.updateUser(request)
+        return self.stub.UpdateUser(request)
 
     def delete_user(self, session_token):
         request = user_pb2.DeleteUserRequest(session_token=session_token)
-        return self.stub.deleteUser(request)
+        return self.stub.DeleteUser(request)
     

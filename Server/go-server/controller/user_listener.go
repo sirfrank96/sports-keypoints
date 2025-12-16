@@ -4,22 +4,22 @@ import (
 	"context"
 	"fmt"
 
+	cvclient "github.com/sirfrank96/go-server/cv-client"
 	db "github.com/sirfrank96/go-server/db"
-	opencvclient "github.com/sirfrank96/go-server/opencv-client"
 	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 	"github.com/sirfrank96/go-server/util"
 )
 
 type UserListener struct {
 	skp.UnimplementedUserServiceServer
-	ocvmgr *opencvclient.OpenCvClientManager
-	dbmgr  *db.DbManager
+	cvmgr *cvclient.CvClientManager
+	dbmgr *db.DbManager
 }
 
-func newUserListener(ocvmgr *opencvclient.OpenCvClientManager, dbmgr *db.DbManager) *UserListener {
+func newUserListener(cvmgr *cvclient.CvClientManager, dbmgr *db.DbManager) *UserListener {
 	return &UserListener{
-		ocvmgr: ocvmgr,
-		dbmgr:  dbmgr,
+		cvmgr: cvmgr,
+		dbmgr: dbmgr,
 	}
 }
 

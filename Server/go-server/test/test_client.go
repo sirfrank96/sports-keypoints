@@ -1,7 +1,7 @@
 // Acts as a test client for entire go-server
-// Simulates mobile or desktop client that sends raw images/videos to be processed by opencv/openpose
+// Simulates mobile or desktop client that sends raw images/videos to be processed by computervision
 // Pull image/video from path and send to client_api_mgr. client_api_mgr will forward to server_mgr for some processing.
-// server_mgr will send to cv_api_mgr to package and send to computervision python wrapper for opencv/openpose processing.
+// server_mgr will send to cv_api_mgr to package and send to computervision python wrapper for computervision processing.
 
 package main
 
@@ -150,8 +150,8 @@ func testGetDTLPoseSetupPoints(ctx context.Context, c cv.ComputerVisionGolfServi
 
 	// Feet align imgs
 	log.Printf("Feet align tests...\n")
-	calibrationImgAxesPath = `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\dtl-feetalign-axescalibration.jpg`
-	calibrationImgVanishingPath = `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\dtl-feetalign-vanishingpointcalibration.jpg`
+	calibrationImgAxesPath = `C:\Users\Franklin\Desktop\Sports Checkpoints\Server\go-server\test\static\dtl-feetalign-axescalibration.jpg`
+	calibrationImgVanishingPath = `C:\Users\Franklin\Desktop\Sports Checkpoints\Server\go-server\test\static\dtl-feetalign-vanishingpointcalibration.jpg`
 	_, err = cvclient.GetDTLPoseSetupPoints(ctx, c, userId, "", calibrationImgAxesPath, calibrationImgVanishingPath, cv.FeetLineMethod_USE_HEEL_LINE, filepath.Join(currentFileDirectory, "static", "dtl-feetalign-neutral.jpg"))
 	if err != nil {
 		log.Printf("Bad heel line error is %w", err)
@@ -223,8 +223,8 @@ func testDb(ctx context.Context, c cv.ComputerVisionGolfServiceClient) {
 		log.Fatalf("Dtl golf setup ponitns should not exist")
 	}
 	//getdtldata
-	calibrationImgAxesPath := `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\dtl-feetalign-axescalibration.jpg`
-	calibrationImgVanishingPath := `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\dtl-feetalign-vanishingpointcalibration.jpg`
+	calibrationImgAxesPath := `C:\Users\Franklin\Desktop\Sports Checkpoints\Server\go-server\test\static\dtl-feetalign-axescalibration.jpg`
+	calibrationImgVanishingPath := `C:\Users\Franklin\Desktop\Sports Checkpoints\Server\go-server\test\static\dtl-feetalign-vanishingpointcalibration.jpg`
 	_, err = cvclient.GetDTLPoseSetupPoints(ctx, c, userId, response.InputImgId, calibrationImgAxesPath, calibrationImgVanishingPath, cv.FeetLineMethod_USE_TOE_LINE, "")
 	if err != nil {
 		log.Fatalf("Error getting dtl setup points %w", err)
@@ -308,8 +308,8 @@ func testMainCodeFlowDtl(ctx context.Context, uClient skp.UserServiceClient, gCl
 	}
 	log.Printf("UploadInputImageResponse: %+v", uploadInputImageResponse)
 
-	calibrationImgAxesPath := `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\dtl-feetalign-axescalibration.jpg`
-	calibrationImgVanishingPath := `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\dtl-feetalign-vanishingpointcalibration.jpg`
+	calibrationImgAxesPath := `C:\Users\Franklin\Desktop\Sports Checkpoints\Server\go-server\test\static\dtl-feetalign-axescalibration.jpg`
+	calibrationImgVanishingPath := `C:\Users\Franklin\Desktop\Sports Checkpoints\Server\go-server\test\static\dtl-feetalign-vanishingpointcalibration.jpg`
 	calibrateInputImageResponse, err := gclient.CalibrateInputImage(ctx, gClient, registerUserResponse.SessionToken, uploadInputImageResponse.InputImageId, skp.ImageType_DTL, skp.CalibrationType_FULL_CALIBRATION, skp.FeetLineMethod_USE_HEEL_LINE, calibrationImgAxesPath, calibrationImgVanishingPath)
 	if err != nil {
 		log.Fatalf("Failed to calibrate input image: %s", err.Error())
@@ -408,7 +408,7 @@ func testNoCalibration(ctx context.Context, uClient skp.UserServiceClient, gClie
 	log.Printf("Calculate golf keypoints dtl: %+v", calculateGolfKeypointsResponse.GolfKeypoints.DtlGolfSetupPoints)
 
 	// calibrateInputImage AXES_CALIBRATION_ONLY
-	calibrationImgAxesPath := `C:\Users\Franklin\Desktop\Computer Vision Sports\Server\go-server\test\static\dtl-feetalign-axescalibration.jpg`
+	calibrationImgAxesPath := `C:\Users\Franklin\Desktop\Sports Checkpoints\Server\go-server\test\static\dtl-feetalign-axescalibration.jpg`
 	calibrateInputImageResponse, err = gclient.CalibrateInputImage(ctx, gClient, registerUserResponse.SessionToken, uploadInputImageResponse.InputImageId, skp.ImageType_DTL, skp.CalibrationType_AXES_CALIBRATION_ONLY, skp.FeetLineMethod_USE_TOE_LINE, calibrationImgAxesPath, "")
 	if err != nil {
 		log.Fatalf("Failed to calibrate input image: %s", err.Error())

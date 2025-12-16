@@ -4,19 +4,19 @@ package sports_keypoints_proto;
 import "common.proto";
 
 service GolfKeypointsService {
-    rpc uploadInputImage(UploadInputImageRequest) returns (UploadInputImageResponse) {}
-    rpc listInputImagesForUser(ListInputImagesForUserRequest) returns (ListInputImagesForUserResponse) {}
-    rpc readInputImage(ReadInputImageRequest) returns (ReadInputImageResponse) {}
-    rpc deleteInputImage(DeleteInputImageRequest) returns (DeleteInputImageResponse) {}
+    rpc UploadInputImage(UploadInputImageRequest) returns (UploadInputImageResponse) {}
+    rpc ListInputImagesForUser(ListInputImagesForUserRequest) returns (ListInputImagesForUserResponse) {}
+    rpc ReadInputImage(ReadInputImageRequest) returns (ReadInputImageResponse) {}
+    rpc DeleteInputImage(DeleteInputImageRequest) returns (DeleteInputImageResponse) {}
 
     // optional if want specific keypoints
-    rpc calibrateInputImage(CalibrateInputImageRequest) returns (CalibrateInputImageResponse) {}
+    rpc CalibrateInputImage(CalibrateInputImageRequest) returns (CalibrateInputImageResponse) {}
 
-    rpc calculateGolfKeypoints(CalculateGolfKeypointsRequest) returns (CalculateGolfKeypointsResponse) {}
-    rpc readGolfKeypoints(ReadGolfKeypointsRequest) returns (ReadGolfKeypointsResponse) {}
+    rpc CalculateGolfKeypoints(CalculateGolfKeypointsRequest) returns (CalculateGolfKeypointsResponse) {}
+    rpc ReadGolfKeypoints(ReadGolfKeypointsRequest) returns (ReadGolfKeypointsResponse) {}
     // if estimated body keypoints are off or have low confidence, client can manually input where body parts are
-    rpc updateBodyKeypoints(UpdateBodyKeypointsRequest) returns (UpdateBodyKeypointsResponse) {}
-    rpc deleteGolfKeypoints(DeleteGolfKeypointsRequest) returns (DeleteGolfKeypointsResponse) {}
+    rpc UpdateBodyKeypoints(UpdateBodyKeypointsRequest) returns (UpdateBodyKeypointsResponse) {}
+    rpc DeleteGolfKeypoints(DeleteGolfKeypointsRequest) returns (DeleteGolfKeypointsResponse) {}
 
     // TODO: Stream for videos
 }
@@ -79,6 +79,8 @@ message CalibrateInputImageRequest {
     Keypoint club_butt = 8;
     // only required if want certain data such as ulnar deviation and shaft lean (club_butt is also required)
     Keypoint club_head = 9;
+    // only required if want DTL shoulder alignment
+    Double shoulder_tilt = 10;
     // optional: horizontal line and vertical line points for axes calibration
     // optional: parallel line points for vanishing point
 }

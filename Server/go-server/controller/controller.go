@@ -4,28 +4,28 @@ import (
 	"context"
 	"log"
 
+	cvclient "github.com/sirfrank96/go-server/cv-client"
 	db "github.com/sirfrank96/go-server/db"
-	kpmgr "github.com/sirfrank96/go-server/keypoints-server"
-	opencvclient "github.com/sirfrank96/go-server/opencv-client"
+	kpserver "github.com/sirfrank96/go-server/keypoints-server"
 )
 
 type Controller struct {
-	ocvmgr *opencvclient.OpenCvClientManager
-	dbmgr  *db.DbManager
-	kpmgr  *kpmgr.KeypointsServerManager
+	cvmgr *cvclient.CvClientManager
+	dbmgr *db.DbManager
+	kpmgr *kpserver.KeypointsServerManager
 }
 
 func NewController() *Controller {
 	p := &Controller{}
-	p.ocvmgr = opencvclient.NewOpenCvClientManager()
+	p.cvmgr = cvclient.NewCvClientManager()
 	p.dbmgr = db.NewDbManager()
-	p.kpmgr = kpmgr.NewKeypointsServerManager(newGolfKeypointsListener(p.ocvmgr, p.dbmgr), newUserListener(p.ocvmgr, p.dbmgr))
+	p.kpmgr = kpserver.NewKeypointsServerManager(newGolfKeypointsListener(p.cvmgr, p.dbmgr), newUserListener(p.cvmgr, p.dbmgr))
 	log.Printf("New Controller")
 	return p
 }
 
-func (c *Controller) StartOpenCvClient() error {
-	return c.ocvmgr.StartOpenCvClient()
+func (c *Controller) StartCvClient() error {
+	return c.cvmgr.StartCvClient()
 }
 
 func (c *Controller) StartDatabaseClient(ctx context.Context) error {
@@ -36,8 +36,8 @@ func (c *Controller) StartKeypointsServer() error {
 	return c.kpmgr.StartKeypointsServer()
 }
 
-func (c *Controller) CloseOpenCvClient() error {
-	return c.ocvmgr.CloseOpenCvClient()
+func (c *Controller) CloseCvClient() error {
+	return c.cvmgr.CloseCvClient()
 }
 
 func (c *Controller) CloseDatabaseClient(ctx context.Context) error {
