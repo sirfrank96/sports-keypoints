@@ -7,9 +7,10 @@ import (
 	"github.com/sirfrank96/go-server/util"
 )
 
-//assuming right handed golfer
+// assuming right handed golfer
 
 // TODO: CONVERTKEYPOINTTOPOINT right away so dont have to convert everytime pass to func
+// TODO: Common utility funcs for similar funcs
 
 func VerifyFaceOnCalibrationImage(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (*util.CalibrationInfo, util.Warning) {
 	return util.VerifyCalibrationImageAxes(keypoints, calibrationInfo)
@@ -133,9 +134,9 @@ func CalculateFaceOnSetupPoints(ctx context.Context, keypoints *skp.Body25PoseKe
 	return faceOnGolfSetupPoints
 }
 
-//side bend
-//line from midhip to neck
-//angle of intersect between that and vertical axis through midhip
+// side bend
+// line from midhip to neck
+// angle of intersect between that and vertical axis through midhip
 func GetSideBend(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	if calibrationInfo.CalibrationType == skp.CalibrationType_NO_CALIBRATION {
 		return 0, util.WarningImpl{
@@ -156,32 +157,32 @@ func GetSideBend(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.Calib
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	vertAxisLine := calibrationInfo.VertAxisLine
-	vertAxisThroughMidhipLine := util.GetLineWithSlope(util.ConvertKeypointToPoint(keypoints.Midhip), vertAxisLine.Slope)
-	neckPoint := util.ConvertKeypointToPoint(keypoints.Neck)
-	xOnVertAxis := (keypoints.Neck.Y - vertAxisThroughMidhipLine.YIntercept) / vertAxisThroughMidhipLine.Slope
-	pointUpVertAxisSameHeightAsNeck := &util.Point{XPos: xOnVertAxis, YPos: keypoints.Neck.Y}
-	midhipPoint := util.ConvertKeypointToPoint(keypoints.Midhip)
-	angleAtIntersect := util.GetAngleAtIntersection(neckPoint, midhipPoint, pointUpVertAxisSameHeightAsNeck)
-	// determine if left or right side bend
-	if keypoints.Neck.X < keypoints.Midhip.X { // right
-		return angleAtIntersect, warning
-	} else { // left
-		return float64(-1) * angleAtIntersect, warning
-	}
+	lineFromMidhipWithVertAxisSlope := util.GetLineWithSlope(util.ConvertKeypointToPoint(keypoints.Midhip), calibrationInfo.VertAxisLine.Slope)
+	pointOnLine := util.GetPointOnLineWithY(keypoints.Neck.Y, lineFromMidhipWithVertAxisSlope)
+	vectFromMidhipToPointOnLine := util.GetVector(pointOnLine, util.ConvertKeypointToPoint(keypoints.Midhip))
+	spineVect := util.GetVector(util.ConvertKeypointToPoint(keypoints.Neck), util.ConvertKeypointToPoint(keypoints.Midhip))
+	return util.GetSignedAngleOfRotation(spineVect, vectFromMidhipToPointOnLine), warning
 }
 
-//foot flares
-//line from heel to big toe
-//angle of intersect vert axis through midpoint of heels
-func getFootFlare(heel *skp.Keypoint, toe *skp.Keypoint, calibrationInfo *util.CalibrationInfo, midpoint *util.Point) float64 {
-	vertAxisThroughMidpoint := util.GetLineWithSlope(midpoint, calibrationInfo.VertAxisLine.Slope)
-	toeToHeelLine := util.GetLine(util.ConvertKeypointToPoint(toe), util.ConvertKeypointToPoint(heel))
-	intersection := util.GetIntersection(toeToHeelLine, vertAxisThroughMidpoint)
-	if intersection.IntersectPoint.YPos > toe.Y { // internal foot
-		return float64(-1) * intersection.AngleAtIntersect
-	} else { // external foot
-		return intersection.AngleAtIntersect
+type Direction int
+
+const (
+	Left Direction = iota + 1
+	Right
+)
+
+// foot flares
+// line from heel to big toe
+// relative to vert axis slope
+func getFootFlare(heel *skp.Keypoint, toe *skp.Keypoint, calibrationInfo *util.CalibrationInfo, direction Direction) float64 {
+	lineFromHeelWithVertAxisSlope := util.GetLineWithSlope(util.ConvertKeypointToPoint(heel), calibrationInfo.VertAxisLine.Slope)
+	pointOnLine := util.GetPointOnLineWithY(toe.Y, lineFromHeelWithVertAxisSlope)
+	vectFromHeelToPointOnLine := util.GetVector(pointOnLine, util.ConvertKeypointToPoint(heel))
+	heelToToeVect := util.GetVector(util.ConvertKeypointToPoint(toe), util.ConvertKeypointToPoint(heel))
+	if direction == Right {
+		return util.GetSignedAngleOfRotation(vectFromHeelToPointOnLine, heelToToeVect)
+	} else {
+		return util.GetSignedAngleOfRotation(heelToToeVect, vectFromHeelToPointOnLine)
 	}
 }
 
@@ -199,20 +200,13 @@ func GetLeftFootFlare(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	if w := util.VerifyKeypoint(keypoints.RHeel, "right heel", 0.5); w != nil {
-		if w.GetSeverity() == util.SEVERE {
-			return 0, w
-		}
-		warning = util.AppendMinorWarnings(warning, w)
-	}
 	if w := util.VerifyKeypoint(keypoints.LBigToe, "left big toe", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	heelsMidpoint := util.GetMidpoint(util.ConvertKeypointToPoint(keypoints.LHeel), util.ConvertKeypointToPoint(keypoints.RHeel))
-	return getFootFlare(keypoints.LHeel, keypoints.LBigToe, calibrationInfo, heelsMidpoint), warning
+	return getFootFlare(keypoints.LHeel, keypoints.LBigToe, calibrationInfo, Left), warning
 }
 
 func GetRightFootFlare(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
@@ -223,12 +217,6 @@ func GetRightFootFlare(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util
 		}
 	}
 	var warning util.Warning
-	if w := util.VerifyKeypoint(keypoints.LHeel, "left heel", 0.5); w != nil {
-		if w.GetSeverity() == util.SEVERE {
-			return 0, w
-		}
-		warning = util.AppendMinorWarnings(warning, w)
-	}
 	if w := util.VerifyKeypoint(keypoints.RHeel, "right heel", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
@@ -241,15 +229,14 @@ func GetRightFootFlare(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	heelsMidpoint := util.GetMidpoint(util.ConvertKeypointToPoint(keypoints.LHeel), util.ConvertKeypointToPoint(keypoints.RHeel))
-	return getFootFlare(keypoints.RHeel, keypoints.RBigToe, calibrationInfo, heelsMidpoint), warning
+	return getFootFlare(keypoints.RHeel, keypoints.RBigToe, calibrationInfo, Right), warning
 }
 
-//stance width
-//line from left heel to right heel
-//line from midhip to neck
-//ratio between 2 lengths
-//the larger the number the wider the stance
+// stance width
+// line from left heel to right heel
+// line from midhip to neck
+// ratio between 2 lengths
+// the larger the number the wider the stance
 func GetStanceWidth(keypoints *skp.Body25PoseKeypoints) (float64, util.Warning) {
 	var warning util.Warning
 	if w := util.VerifyKeypoint(keypoints.LHeel, "left heel", 0.5); w != nil {
@@ -281,9 +268,9 @@ func GetStanceWidth(keypoints *skp.Body25PoseKeypoints) (float64, util.Warning) 
 	return stanceWidth / lengthOfSpine, warning
 }
 
-//shoulder tilt
-//relative to horizontal axis slope
-//positive angle for right shoulder lower than left, negative angle if right shoulder is higher than left
+// shoulder tilt
+// relative to horizontal axis slope
+// positive angle for right shoulder lower than left, negative angle if right shoulder is higher than left
 func GetShoulderTilt(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	if calibrationInfo.CalibrationType == skp.CalibrationType_NO_CALIBRATION {
 		return 0, util.WarningImpl{
@@ -304,16 +291,16 @@ func GetShoulderTilt(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.C
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	shoulderLineSlope := util.GetSlope(util.ConvertKeypointToPoint(keypoints.RShoulder), util.ConvertKeypointToPoint(keypoints.LShoulder))
-	shoulderLineDegrees := util.ConvertSlopeToDegrees(shoulderLineSlope)
-	horAxisLineDegrees := util.ConvertSlopeToDegrees(calibrationInfo.HorAxisLine.Slope)
-	diff := horAxisLineDegrees - shoulderLineDegrees
-	return diff, warning
+	lineFromRShoulderWithHorAxisSlope := util.GetLineWithSlope(util.ConvertKeypointToPoint(keypoints.RShoulder), calibrationInfo.HorAxisLine.Slope)
+	pointOnLine := util.GetPointOnLineWithX(keypoints.LShoulder.X, lineFromRShoulderWithHorAxisSlope)
+	vectFromRShoulderToPointOnLine := util.GetVector(pointOnLine, util.ConvertKeypointToPoint(keypoints.RShoulder))
+	shoulderVect := util.GetVector(util.ConvertKeypointToPoint(keypoints.LShoulder), util.ConvertKeypointToPoint(keypoints.RShoulder))
+	return util.GetSignedAngleOfRotation(shoulderVect, vectFromRShoulderToPointOnLine), warning
 }
 
-//waist tilt
-//relative to horizontal axis slope
-//positive angle for right hip lower than left, negative angle if right hip is higher than left
+// waist tilt
+// relative to horizontal axis slope
+// positive angle for right hip lower than left, negative angle if right hip is higher than left
 func GetWaistTilt(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	if calibrationInfo.CalibrationType == skp.CalibrationType_NO_CALIBRATION {
 		return 0, util.WarningImpl{
@@ -334,17 +321,17 @@ func GetWaistTilt(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.Cali
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	waistLineSlope := util.GetSlope(util.ConvertKeypointToPoint(keypoints.RHip), util.ConvertKeypointToPoint(keypoints.LHip))
-	waistLineDegrees := util.ConvertSlopeToDegrees(waistLineSlope)
-	horAxisLineDegrees := util.ConvertSlopeToDegrees(calibrationInfo.HorAxisLine.Slope)
-	diff := horAxisLineDegrees - waistLineDegrees
-	return diff, warning
+	lineFromRHipWithHorAxisSlope := util.GetLineWithSlope(util.ConvertKeypointToPoint(keypoints.RHip), calibrationInfo.HorAxisLine.Slope)
+	pointOnLine := util.GetPointOnLineWithX(keypoints.LHip.X, lineFromRHipWithHorAxisSlope)
+	vectFromRHipToPointOnLine := util.GetVector(pointOnLine, util.ConvertKeypointToPoint(keypoints.RHip))
+	waistVect := util.GetVector(util.ConvertKeypointToPoint(keypoints.LHip), util.ConvertKeypointToPoint(keypoints.RHip))
+	return util.GetSignedAngleOfRotation(waistVect, vectFromRHipToPointOnLine), warning
 }
 
-//shaft lean
-//line from club head to club butt
-//relative to vertical axis slope
-//positive angle is forward shaft lean, negative angle is backwards shaft lean
+// shaft lean
+// line from club head to club butt
+// relative to vertical axis slope
+// positive angle is forward shaft lean, negative angle is backwards shaft lean
 func GetShaftLean(calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	if calibrationInfo.CalibrationType == skp.CalibrationType_NO_CALIBRATION {
 		return 0, util.WarningImpl{
@@ -365,18 +352,18 @@ func GetShaftLean(calibrationInfo *util.CalibrationInfo) (float64, util.Warning)
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	shaftSlope := util.GetSlope(util.ConvertKeypointToPoint(&calibrationInfo.ClubButtPoint), util.ConvertKeypointToPoint(&calibrationInfo.ClubHeadPoint))
-	shaftDegrees := util.ConvertSlopeToDegrees(shaftSlope)
-	vertAxisLineDegrees := util.ConvertSlopeToDegrees(calibrationInfo.VertAxisLine.Slope)
-	diff := vertAxisLineDegrees - shaftDegrees
-	return diff, warning
+	lineFromClubheadWithVertAxisSlope := util.GetLineWithSlope(util.ConvertKeypointToPoint(&calibrationInfo.ClubHeadPoint), calibrationInfo.VertAxisLine.Slope)
+	pointOnLine := util.GetPointOnLineWithY(calibrationInfo.ClubButtPoint.Y, lineFromClubheadWithVertAxisSlope)
+	vectFromClubheadToPointOnLine := util.GetVector(pointOnLine, util.ConvertKeypointToPoint(&calibrationInfo.ClubHeadPoint))
+	shaftVect := util.GetVector(util.ConvertKeypointToPoint(&calibrationInfo.ClubButtPoint), util.ConvertKeypointToPoint(&calibrationInfo.ClubHeadPoint))
+	return util.GetSignedAngleOfRotation(vectFromClubheadToPointOnLine, shaftVect), warning
 }
 
-//ball position
-//line perpendicular to feet line that goes through midpoint of feet
-//line from midpoint of feet to ball
-//angle between these lines
-//positive angle means ball closer to lead side, negative angle means ball closer to trail side
+// ball position
+// line perpendicular to feet line that goes through midpoint of feet
+// line from midpoint of feet to ball
+// angle between these lines
+// positive angle means ball closer to lead side, negative angle means ball closer to trail side
 func GetBallPosition(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	var warning util.Warning
 	if w := util.VerifyKeypoint(&calibrationInfo.GolfBallPoint, "golf ball", 0.5); w != nil {
@@ -390,16 +377,23 @@ func GetBallPosition(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.C
 	feetLineMidpoint := util.GetMidpoint(util.ConvertKeypointToPoint(lFootPoint), util.ConvertKeypointToPoint(rFootPoint))
 	feetLineSlopeRecipricol := util.GetSlopeRecipricol(util.ConvertKeypointToPoint(lFootPoint), util.ConvertKeypointToPoint(rFootPoint))
 	linePerpendicularToFeetLine := util.GetLineWithSlope(feetLineMidpoint, feetLineSlopeRecipricol)
-	pointOnPerpendicularLine := util.GetPointOnLineWithX(calibrationInfo.GolfBallPoint.X, linePerpendicularToFeetLine)
-	angle := util.GetAngleAtIntersection(util.ConvertKeypointToPoint(&calibrationInfo.GolfBallPoint), feetLineMidpoint, pointOnPerpendicularLine)
-	return angle, warning
+	pointOnPerpendicularLine := util.GetPointOnLineWithY(calibrationInfo.GolfBallPoint.Y, linePerpendicularToFeetLine)
+	vectFromMidpointToPointOnPerpLine := util.GetVector(pointOnPerpendicularLine, feetLineMidpoint)
+	vectFromMidpointToBall := util.GetVector(util.ConvertKeypointToPoint(&calibrationInfo.GolfBallPoint), feetLineMidpoint)
+	var ballPosition float64
+	if calibrationInfo.GolfBallPoint.Y < feetLineMidpoint.YPos {
+		ballPosition = util.GetSignedAngleOfRotation(vectFromMidpointToPointOnPerpLine, vectFromMidpointToBall)
+	} else {
+		ballPosition = util.GetSignedAngleOfRotation(vectFromMidpointToBall, vectFromMidpointToPointOnPerpLine)
+	}
+	return ballPosition, warning
 }
 
-//head position
-//line perpendicular to feet line that goes through midpoint of feet
-//line from midpoint of feet to nose
-//angle between these lines
-//positive angle means head is closer to lead side, negative angle means head is closer to trail side
+// head position
+// line perpendicular to feet line that goes through midpoint of feet
+// line from midpoint of feet to nose
+// angle between these lines
+// positive angle means head is closer to lead side, negative angle means head is closer to trail side
 func GetHeadPosition(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	var warning util.Warning
 	if w := util.VerifyKeypoint(keypoints.Nose, "nose", 0.5); w != nil {
@@ -413,16 +407,23 @@ func GetHeadPosition(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.C
 	feetLineMidpoint := util.GetMidpoint(util.ConvertKeypointToPoint(lFootPoint), util.ConvertKeypointToPoint(rFootPoint))
 	feetLineSlopeRecipricol := util.GetSlopeRecipricol(util.ConvertKeypointToPoint(lFootPoint), util.ConvertKeypointToPoint(rFootPoint))
 	linePerpendicularToFeetLine := util.GetLineWithSlope(feetLineMidpoint, feetLineSlopeRecipricol)
-	pointOnPerpendicularLine := util.GetPointOnLineWithX(calibrationInfo.GolfBallPoint.X, linePerpendicularToFeetLine)
-	angle := util.GetAngleAtIntersection(util.ConvertKeypointToPoint(keypoints.Nose), feetLineMidpoint, pointOnPerpendicularLine)
-	return angle, warning
+	pointOnPerpendicularLine := util.GetPointOnLineWithY(keypoints.Nose.Y, linePerpendicularToFeetLine)
+	vectFromMidpointToPointOnPerpLine := util.GetVector(pointOnPerpendicularLine, feetLineMidpoint)
+	vectFromMidpointToHead := util.GetVector(util.ConvertKeypointToPoint(keypoints.Nose), feetLineMidpoint)
+	var headPosition float64
+	if keypoints.Nose.Y < feetLineMidpoint.YPos {
+		headPosition = util.GetSignedAngleOfRotation(vectFromMidpointToPointOnPerpLine, vectFromMidpointToHead)
+	} else {
+		headPosition = util.GetSignedAngleOfRotation(vectFromMidpointToHead, vectFromMidpointToPointOnPerpLine)
+	}
+	return headPosition, warning
 }
 
-//chest position
-//line perpendicular to feet line that goes through midpoint of feet
-//line from midpoint of feet to neck
-//angle between these lines
-//positive angle means head is closer to lead side, negative angle means head is closer to trail side
+// chest position
+// line perpendicular to feet line that goes through midpoint of feet
+// line from midpoint of feet to neck
+// angle between these lines
+// positive angle means head is closer to lead side, negative angle means head is closer to trail side
 func GetChestPosition(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	var warning util.Warning
 	if w := util.VerifyKeypoint(keypoints.Neck, "neck", 0.5); w != nil {
@@ -436,16 +437,23 @@ func GetChestPosition(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.
 	feetLineMidpoint := util.GetMidpoint(util.ConvertKeypointToPoint(lFootPoint), util.ConvertKeypointToPoint(rFootPoint))
 	feetLineSlopeRecipricol := util.GetSlopeRecipricol(util.ConvertKeypointToPoint(lFootPoint), util.ConvertKeypointToPoint(rFootPoint))
 	linePerpendicularToFeetLine := util.GetLineWithSlope(feetLineMidpoint, feetLineSlopeRecipricol)
-	pointOnPerpendicularLine := util.GetPointOnLineWithX(calibrationInfo.GolfBallPoint.X, linePerpendicularToFeetLine)
-	angle := util.GetAngleAtIntersection(util.ConvertKeypointToPoint(keypoints.Neck), feetLineMidpoint, pointOnPerpendicularLine)
-	return angle, warning
+	pointOnPerpendicularLine := util.GetPointOnLineWithY(keypoints.Neck.Y, linePerpendicularToFeetLine)
+	vectFromMidpointToPointOnPerpLine := util.GetVector(pointOnPerpendicularLine, feetLineMidpoint)
+	vectFromMidpointToChest := util.GetVector(util.ConvertKeypointToPoint(keypoints.Neck), feetLineMidpoint)
+	var chestPosition float64
+	if keypoints.Neck.Y < feetLineMidpoint.YPos {
+		chestPosition = util.GetSignedAngleOfRotation(vectFromMidpointToPointOnPerpLine, vectFromMidpointToChest)
+	} else {
+		chestPosition = util.GetSignedAngleOfRotation(vectFromMidpointToChest, vectFromMidpointToPointOnPerpLine)
+	}
+	return chestPosition, warning
 }
 
-//midhip position
-//line perpendicular to feet line that goes through midpoint of feet
-//line from midpoint of feet to neck
-//angle between these lines
-//positive angle means head is closer to lead side, negative angle means head is closer to trail side
+// midhip position
+// line perpendicular to feet line that goes through midpoint of feet
+// line from midpoint of feet to neck
+// angle between these lines
+// positive angle means head is closer to lead side, negative angle means head is closer to trail side
 func GetMidhipPosition(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	var warning util.Warning
 	if w := util.VerifyKeypoint(keypoints.Midhip, "mid hip", 0.5); w != nil {
@@ -459,7 +467,14 @@ func GetMidhipPosition(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util
 	feetLineMidpoint := util.GetMidpoint(util.ConvertKeypointToPoint(lFootPoint), util.ConvertKeypointToPoint(rFootPoint))
 	feetLineSlopeRecipricol := util.GetSlopeRecipricol(util.ConvertKeypointToPoint(lFootPoint), util.ConvertKeypointToPoint(rFootPoint))
 	linePerpendicularToFeetLine := util.GetLineWithSlope(feetLineMidpoint, feetLineSlopeRecipricol)
-	pointOnPerpendicularLine := util.GetPointOnLineWithX(calibrationInfo.GolfBallPoint.X, linePerpendicularToFeetLine)
-	angle := util.GetAngleAtIntersection(util.ConvertKeypointToPoint(keypoints.Midhip), feetLineMidpoint, pointOnPerpendicularLine)
-	return angle, warning
+	pointOnPerpendicularLine := util.GetPointOnLineWithY(keypoints.Midhip.Y, linePerpendicularToFeetLine)
+	vectFromMidpointToPointOnPerpLine := util.GetVector(pointOnPerpendicularLine, feetLineMidpoint)
+	vectFromMidpointToMidhip := util.GetVector(util.ConvertKeypointToPoint(keypoints.Midhip), feetLineMidpoint)
+	var midhipPosition float64
+	if keypoints.Midhip.Y < feetLineMidpoint.YPos {
+		midhipPosition = util.GetSignedAngleOfRotation(vectFromMidpointToPointOnPerpLine, vectFromMidpointToMidhip)
+	} else {
+		midhipPosition = util.GetSignedAngleOfRotation(vectFromMidpointToMidhip, vectFromMidpointToPointOnPerpLine)
+	}
+	return midhipPosition, warning
 }

@@ -9,13 +9,13 @@ import (
 	"github.com/sirfrank96/go-server/util"
 )
 
-//assuming right handed golfer
+// assuming right handed golfer
 
 // TODO: CONVERTKEYPOINTTOPOINT right away so dont have to convert everytime pass to func
 
-//2 calibration images? 1 for perpendicular axes, 1 for vanishing points
-//img 1: stand straddled, check to make sure heel horizontal and spine vertical are close to 90
-//img 2: set alignment stick not centered, point alignment stick at target, set up with heels against alignment stick feet shoulder width or wider (check that heels are not centered in image)
+// 2 calibration images? 1 for perpendicular axes, 1 for vanishing points
+// img 1: stand straddled, check to make sure heel horizontal and spine vertical are close to 90
+// img 2: set alignment stick not centered, point alignment stick at target, set up with heels against alignment stick feet shoulder width or wider (check that heels are not centered in image)
 // get vanishing point, intersection of vertaxis and heels axis
 func VerifyDTLCalibrationImages(axesKeypoints *skp.Body25PoseKeypoints, vanishingPointKeypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (*util.CalibrationInfo, util.Warning) {
 	// verify axes image
@@ -129,9 +129,9 @@ func CalculateDTLSetupPoints(ctx context.Context, keypoints *skp.Body25PoseKeypo
 	return dtlGolfSetupPoints
 }
 
-//spine angle
-//line from midhip to neck
-//angle between that and vertical axis
+// spine angle
+// line from midhip to neck
+// angle between that and vertical axis
 func GetSpineAngle(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	if calibrationInfo.CalibrationType == skp.CalibrationType_NO_CALIBRATION {
 		return 0, util.WarningImpl{
@@ -168,9 +168,9 @@ func getFeetAlignmentHelper(currFeetLine *util.FeetLine, calibrationInfo *util.C
 	return util.GetSignedAngleOfRotation(vectFromRPointToVp, vectFromRPointToLPoint)
 }
 
-//feet alignment
-//assume feet are left of vert axis (maybe use toes? easier to see?)
-//TODO: add other edge cases for feet crossing vertaxis
+// feet alignment
+// assume feet are left of vert axis (maybe use toes? easier to see?)
+// TODO: add other edge cases for feet crossing vertaxis
 func GetFeetAlignment(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	if calibrationInfo.CalibrationType == skp.CalibrationType_NO_CALIBRATION {
 		return 0, util.WarningImpl{
@@ -240,11 +240,11 @@ func GetToeAlignment(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.C
 	return getFeetAlignmentHelper(toeLine, calibrationInfo), nil
 }
 
-//shoulder alignment
-//find vanishing point
-//any line that goes to vanishing point
-//line from rshoulder to lshoulder
-//find difference in angles
+// shoulder alignment
+// find vanishing point
+// any line that goes to vanishing point
+// line from rshoulder to lshoulder
+// find difference in angles
 func GetShoulderAlignment(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	if calibrationInfo.CalibrationType == skp.CalibrationType_NO_CALIBRATION {
 		return 0, util.WarningImpl{
@@ -274,8 +274,8 @@ func GetShoulderAlignment(keypoints *skp.Body25PoseKeypoints, calibrationInfo *u
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	//find auxillary vanishing point given shoulder tilt
-	//shoulder tilt will raise or lower the vanishing point of lines parallel to the shoulder line on the vertical axis
+	// find auxillary vanishing point given shoulder tilt
+	// shoulder tilt will raise or lower the vanishing point of lines parallel to the shoulder line on the vertical axis
 	shoulderTiltRad := util.ConvertDegreesToRad(calibrationInfo.ShoulderTilt.Data)
 	xtemp := calibrationInfo.VanishingPoint.XPos - keypoints.RShoulder.X
 	ytemp := calibrationInfo.VanishingPoint.YPos - keypoints.RShoulder.Y
@@ -287,17 +287,17 @@ func GetShoulderAlignment(keypoints *skp.Body25PoseKeypoints, calibrationInfo *u
 	lineFromRShoulderToRotatedPoint := util.GetLine(util.ConvertKeypointToPoint(keypoints.RShoulder), rotatedPoint)
 	intersection := util.GetIntersection(lineFromRShoulderToRotatedPoint, &calibrationInfo.VertAxisLine)
 	avp := intersection.IntersectPoint
-	//get the signed angle of rotation from line from rshoulder to auxillary vanishing point to the line from rshoulder to lshoulder
+	// get the signed angle of rotation from line from rshoulder to auxillary vanishing point to the line from rshoulder to lshoulder
 	vectFromRShoulderToAvp := util.GetVector(&avp, util.ConvertKeypointToPoint(keypoints.RShoulder))
 	vectFromRShoulderToLShoulder := util.GetVector(util.ConvertKeypointToPoint(keypoints.LShoulder), util.ConvertKeypointToPoint(keypoints.RShoulder))
 	return util.GetSignedAngleOfRotation(vectFromRShoulderToAvp, vectFromRShoulderToLShoulder), warning
 }
 
-//waist alignment
-//find vanishing point
-//any line that goes to vanishing point
-//line from rhip to lhip
-//find difference in angles
+// waist alignment
+// find vanishing point
+// any line that goes to vanishing point
+// line from rhip to lhip
+// find difference in angles
 func GetWaistAlignment(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	if calibrationInfo.CalibrationType == skp.CalibrationType_NO_CALIBRATION {
 		return 0, util.WarningImpl{
@@ -330,10 +330,10 @@ func GetWaistAlignment(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util
 	return util.GetSignedAngleOfRotation(vectFromRHipToVp, vectFromRHipToLHip), warning
 }
 
-//knee bend
-//line from rhip to rknee
-//line from rknee to rankle
-//180 - angle between those lines (ie. angle away from straight legs)
+// knee bend
+// line from rhip to rknee
+// line from rknee to rankle
+// 180 - angle between those lines (ie. angle away from straight legs)
 func GetKneeBend(keypoints *skp.Body25PoseKeypoints) (float64, util.Warning) {
 	var warning util.Warning
 	if w := util.VerifyKeypoint(keypoints.RHip, "right hip", 0.5); w != nil {
@@ -358,11 +358,11 @@ func GetKneeBend(keypoints *skp.Body25PoseKeypoints) (float64, util.Warning) {
 	return 180.0 - kneeBend, warning
 }
 
-//distance from ball
-//line perpendicular to toeline that intersects ball
-//line from midhip to neck
-//ratio between two lengths
-//the larger the number the farther away from ball
+// distance from ball
+// line perpendicular to toeline that intersects ball
+// line from midhip to neck
+// ratio between two lengths
+// the larger the number the farther away from ball
 func GetDistanceFromBall(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	var warning util.Warning
 	if w := util.VerifyKeypoint(keypoints.Midhip, "midhip", 0.5); w != nil {
@@ -396,11 +396,11 @@ func GetDistanceFromBall(keypoints *skp.Body25PoseKeypoints, calibrationInfo *ut
 	return lengthFromBall / lengthOfSpine, warning
 }
 
-//ulnar deviation
-//line from right elbow to right wrist
-//line from wrist to club head
-//angle between those lines
-//the larger the number the more ulnar deviation (ie. higher hands)
+// ulnar deviation
+// line from right elbow to right wrist
+// line from wrist to club head
+// angle between those lines
+// the larger the number the more ulnar deviation (ie. higher hands)
 func GetUlnarDeviation(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	var warning util.Warning
 	if w := util.VerifyKeypoint(keypoints.RElbow, "right elbow", 0.5); w != nil {

@@ -52,7 +52,7 @@ class MainAppPage(tk.Frame):
         self.axes_calibration_image = None
         self.vanishing_point_calibration_image = None
         self.feet_line_method = golfkeypoints_pb2.FeetLineMethod.USE_HEEL_LINE
-        self.shoulder_tilt = 10.0
+        self.shoulder_tilt = common_pb2.Double(data=0, warning="no shoulder tilt")
 
     class IdentifyMode(Enum):
         NONE = 1
@@ -192,7 +192,8 @@ class MainAppPage(tk.Frame):
             self.feet_line_method = golfkeypoints_pb2.FeetLineMethod.USE_TOE_LINE
 
     def input_shoulder_tilt(self):
-        self.shoulder_tilt = simpledialog.askfloat("Shoulder Tilt", prompt="What is the shoulder tilt?")
+        self.shoulder_tilt.data = simpledialog.askfloat("Shoulder Tilt", prompt="What is the shoulder tilt?")
+        self.shoulder_tilt.warning = ""
 
     def determine_calibration_type(self):
         if self.image_type == golfkeypoints_pb2.FACE_ON:
@@ -210,7 +211,7 @@ class MainAppPage(tk.Frame):
     
     def calibrate_image(self):
         try:
-            response = self.golfkeypoints_client.calibrate_input_image(session_token=self.session_token, input_image_id=self.curr_input_image_id, calibration_type=self.determine_calibration_type(), feet_line_method=self.feet_line_method, calibration_image_axes=self.axes_calibration_image, calibration_image_vanishing_point=self.vanishing_point_calibration_image, golf_ball=self.golf_ball, club_butt=self.club_butt, club_head=self.club_head, shoulder_title=self.shoulder_tilt)
+            response = self.golfkeypoints_client.calibrate_input_image(session_token=self.session_token, input_image_id=self.curr_input_image_id, calibration_type=self.determine_calibration_type(), feet_line_method=self.feet_line_method, calibration_image_axes=self.axes_calibration_image, calibration_image_vanishing_point=self.vanishing_point_calibration_image, golf_ball=self.golf_ball, club_butt=self.club_butt, club_head=self.club_head, shoulder_tilt=self.shoulder_tilt)
             messagebox.showinfo("Calibrate Input Image", f"Calibrate input image successful: {response}, calculate golf keypoints next")
         except grpc.RpcError as e:
             messagebox.showerror("Calibrate Input Image", f"Calibrate input image failed: {e.code()}: {e.details()}")    
