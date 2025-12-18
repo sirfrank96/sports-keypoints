@@ -77,14 +77,16 @@ You will also need to follow the official openpose docs (<https://github.com/CMU
 1. Start MongoDb:
    `C:path\to\mongo\mongdb.exe` (Mine was C:\Program Files\MongoDB\Server\8.2\bin\mongodb.exe)
 2. Start computervision-service:
-   `cd computervision-service`
-   `C:path\to\python38\python.exe -m venv python38_venv`
-   `python38_venv\Scripts\activate.bat`
-   `python -m pip install --upgrade pip`
-   `python -m pip install -r requirements.txt`
-   `set PYTHONPATH=C:path\to\sports-keypoints\computervision-service\3rdparty\openpose\build_windows\python\openpose\Release`
-   `cd src`
-   `python server.py`
+   ```
+   cd computervision-service
+   C:path\to\python38\python.exe -m venv python38_venv
+   python38_venv\Scripts\activate.bat
+   python -m pip install --upgrade pip
+   python -m pip install -r requirements.txt
+   set PYTHONPATH=C:path\to\sports-keypoints\computervision-service\3rdparty\openpose\build_windows\python\openpose\Release
+   cd src
+   python server.py
+   ```
 4. Start go backend server
    `cd server\go-server`
    `go run main.go`
