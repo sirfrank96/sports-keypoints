@@ -1,15 +1,18 @@
-#include:
-#- server/go-server/docker-compose.yml
-#TODO: ENV VARS TO SHOW RUNNING FROM DOCKER
 services:
   computervision-service:
     build:
       context: computervision-service
-      dockerfile: Dockerfile.cpu
+      dockerfile: Dockerfile.${PROCESSING_TYPE}
     ports:
       - "50051:50051"
     networks:
       - backend-network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+              count: ${NUM_GPUS:-0}
   mongodb:
     image: mongo:latest
     ports:
