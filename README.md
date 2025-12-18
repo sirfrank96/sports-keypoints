@@ -13,7 +13,7 @@ estimation for 25 body parts (see protos/common.proto for a full list). The comp
 the other services pose estimation.
 
 The server/go-server is the main manager for the application. It manages access to the computervision-service to grab pose data. It manages the MongoDb client
-that stores users, images, and data about those images. It also is the server where the user will request the actual keypoints for different sports. The go-server uses gRPC (<https://grpc.io/docs/what-is-grpc/introduction/)
+that stores users, images, and data about those images. It also is the server where the user will request the actual keypoints for different sports. The go-server uses gRPC (<https://grpc.io/docs/what-is-grpc/introduction/>)
 to implement computervision APIs, user APIs, and user requests for keypoints APIs. See the protos folder for protobuf definitions and services for the listed APIs.
 
 The clients/python-golf-client is an example client that uses the Tkinter GUI library to make it easy to create a user, login, select images, calibrate images, and calculate golf keypoints.
