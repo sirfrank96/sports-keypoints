@@ -16,7 +16,7 @@ The server/go-server is the main manager for the application. It manages access 
 that stores users, images, and data about those images. It also is the server where the user will request the actual keypoints for different sports. The go-server uses gRPC (<https://grpc.io/docs/what-is-grpc/introduction/)
 to implement computervision APIs, user APIs, and user requests for keypoints APIs. See the protos folder for protobuf definitions and services for the listed APIs.
 
-The clients/python-golf-client is an example client that uses Tkinter GUI library to make it easy to create a user, login, select images, calibrate images, and calculate golf keypoints.
+The clients/python-golf-client is an example client that uses the Tkinter GUI library to make it easy to create a user, login, select images, calibrate images, and calculate golf keypoints.
 
 ## Getting Started
 
@@ -70,13 +70,17 @@ The following are instructions on how to start the sports-keypoints services and
 
 If you do no not want to run Docker (overhead too large or running too slowly), you can run sports-keypoints without docker.
 
-Prerequisites: MongoDb (<https://www.mongodb.com/docs/manual/installation/>), Python 3.8 (<https://www.python.org/downloads/release/python-380/>), go 1.25.3 (<https://go.dev/doc/install>), Python 3.10 (<https://www.python.org/downloads/release/python-3100/>)
+Prerequisites: 
+* MongoDb (<https://www.mongodb.com/docs/manual/installation/>)
+* Python 3.8 (<https://www.python.org/downloads/release/python-380/>)
+* go 1.25.3 (<https://go.dev/doc/install>)
+* Python 3.10 (<https://www.python.org/downloads/release/python-3100/>)
 
 You will also need to follow the official openpose docs (<https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/doc/installation/0_index.md>) for installation prerequisites and how to build and compile for python api usage.
 
 1. Start MongoDb:
    `C:path\to\mongo\mongdb.exe` (Mine was C:\Program Files\MongoDB\Server\8.2\bin\mongodb.exe)
-2. Start computervision-service:
+2. Start computervision service:
    ```
    cd computervision-service
    C:path\to\python38\python.exe -m venv python38_venv
@@ -88,6 +92,14 @@ You will also need to follow the official openpose docs (<https://github.com/CMU
    python server.py
    ```
 4. Start go backend server
-   `cd server\go-server`
-   `go run main.go`
+   ```
+   cd server\go-server
+   go run main.go
+   ```
 6. Start client application (see above in Usage for instructions)
+
+## Future Todos
+* Get keypoints for any point in golf swing, not just setup
+* Additional keypoints (eg. elbow bend, arm/hand positions throughout swing)
+* Allow upload video and save individual frames with processed data
+* Keypoints for other sports
