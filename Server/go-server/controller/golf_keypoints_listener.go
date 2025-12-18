@@ -120,7 +120,6 @@ func (g *GolfKeypointsListener) DeleteInputImage(ctx context.Context, request *s
 	response := &skp.DeleteInputImageResponse{
 		Success: true,
 	}
-	// TODO: Delete golf keypoint assocaited with input image
 	return response, nil
 }
 

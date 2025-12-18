@@ -4,7 +4,6 @@ import (
 	"fmt"
 )
 
-// TODO: Change to Severity
 type Severity int
 
 const (
@@ -52,20 +51,3 @@ func AppendMinorWarnings(warning1 Warning, warning2 Warning) Warning {
 		return nil
 	}
 }
-
-/*
-func convertErrorToWarning(err error, warningType WarningType) warning {
-	return Warning{warningType: warningType, message: err.Error()}
-}
-
-func appendError(err1 error, err2 error) error {
-	if err1 != nil && err2 != nil {
-		return fmt.Errorf("%w, %w", err1, err2)
-	} else if err1 == nil {
-		return err2
-	} else if err2 == nil {
-		return err1
-	} else {
-		return nil
-	}
-}*/

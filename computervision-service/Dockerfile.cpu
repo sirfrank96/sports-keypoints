@@ -48,13 +48,13 @@ RUN cmake .. -DBUILD_PYTHON=ON \
     && make -j `nproc` \
     && make install
 
-#intall python api dependencies
+# intall python api dependencies
 WORKDIR $OPENPOSE_ROOT/build/python
 RUN make install
 
 WORKDIR /app
 
-#Make sure openpose dlls and dependencies are in python path
+# Make sure openpose dlls and dependencies are in python path
 ENV PYTHONPATH="/usr/local/python/openpose"
 
 EXPOSE 50051

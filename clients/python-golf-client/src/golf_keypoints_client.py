@@ -1,7 +1,7 @@
 import golfkeypoints_pb2
 import golfkeypoints_pb2_grpc
 
-#client stub functions for golfkeypoints grpc service
+# client stub functions for golfkeypoints grpc service
 class GolfKeypointsClient():
     def __init__(self, channel):
         self.stub = golfkeypoints_pb2_grpc.GolfKeypointsServiceStub(channel)

@@ -6,7 +6,6 @@ import (
 	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 )
 
-// TODO: Make FeetLineInfo internal struct
 type FeetLineInfo struct {
 	FeetLineMethod skp.FeetLineMethod `bson:"feet_line_method,omitempty"`
 	LKeypoint      skp.Keypoint       `bson:"l_keypoint,omitempty"`
@@ -33,7 +32,7 @@ func GetFeetLine(keypoints *skp.Body25PoseKeypoints, feetLineMethod skp.FeetLine
 	return feetLine, warning
 }
 
-//TODO: CONFIGURE THRESHOLD
+// TODO: Configure threshold
 func GetFeetLineInfo(keypoints *skp.Body25PoseKeypoints, feetLineMethod skp.FeetLineMethod) *FeetLineInfo {
 	feetLineInfo := &FeetLineInfo{FeetLineMethod: feetLineMethod, Threshold: 0.5}
 	lKeypoint, lKeypointName := GetLeftFootPoint(keypoints, feetLineMethod)

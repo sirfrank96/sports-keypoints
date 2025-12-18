@@ -39,7 +39,7 @@ class MainAppPage(tk.Frame):
         self.delete_user_button = tk.Button(self, text="Delete User", command=self.delete_user)
         self.delete_user_button.grid(row=5, column=0, padx=5, pady=5, sticky="w")
 
-        #1/4 size of image
+        # 1/4 size of image
         self.canvas = tk.Canvas(self, width=270, height=600, bg='white')
         self.canvas.grid(row=8, column=1, padx=5, pady=5, sticky="w")
 
@@ -110,7 +110,7 @@ class MainAppPage(tk.Frame):
     
     def display_image(self, image):
         self.canvas.delete("all")
-        #1/4 the size to display on canvas
+        # 1/4 the size to display on canvas
         resized_img = image.resize((270, 600), Image.Resampling.LANCZOS)
         # Convert the image to a PhotoImage object
         photo = ImageTk.PhotoImage(resized_img)
@@ -232,10 +232,10 @@ class MainAppPage(tk.Frame):
             messagebox.showerror("Calculate Golf Keypoints", f"Calculate Golf Keypoints failed: {e.code()}: {e.details()}") 
 
     def update_body_keypoints(self, body_keypoints):
-        #display a button for each body keypoint
-        #user clicks on button
-        #self.canvas.bind button1
-        #add bodykeypoints identifymode
+        # TODO: display a button for each body keypoint
+        # user clicks on button
+        # self.canvas.bind button1
+        # add bodykeypoints identifymode
         return 
 
     def read_user(self):

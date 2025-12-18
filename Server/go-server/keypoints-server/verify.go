@@ -4,6 +4,8 @@ import (
 	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 )
 
+// TODO: Implement all of these verify funcs
+
 func verifyCreateUserRequest(request *skp.CreateUserRequest) error {
 	return nil
 }

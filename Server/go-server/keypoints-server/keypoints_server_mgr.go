@@ -19,7 +19,6 @@ var (
 	//tls = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
 	//certFile = flag.String("cert_file", "", "The TLS cert file")
 	//keyFile = flag.String("key_file", "", "The TLS key file")
-	//jsonDBFile = flag.String("json_db_file", "", "A json file containing a list of features")
 	port = flag.Int("port", 50052, "The server port")
 )
 
@@ -40,7 +39,6 @@ func NewKeypointsServerManager(golfKeypointsHandler skp.GolfKeypointsServiceServ
 func (k *KeypointsServerManager) StartKeypointsServer() error {
 	log.Printf("Starting keypoints and user servers")
 	flag.Parse()
-	//lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", *port))
 	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", *port))
 	if err != nil {
 		return fmt.Errorf("failed to listen: %w", err)

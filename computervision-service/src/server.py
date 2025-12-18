@@ -7,7 +7,7 @@ import computervision_pb2
 import computervision_pb2_grpc
 import common_pb2
 
-#TODO: Implement all rpcs
+# TODO: Implement all rpcs
 class ComputerVisionServiceServicer(computervision_pb2_grpc.ComputerVisionServiceServicer):
 
     body_pose_field_descriptors = common_pb2.Body25PoseKeypoints.DESCRIPTOR.fields
@@ -67,13 +67,13 @@ class ComputerVisionServiceServicer(computervision_pb2_grpc.ComputerVisionServic
     
     def GetPoseAll(self, request, context):
         print("GetPoseAll grpc request")
-        #run openpose
+        # run openpose
         image_bytes = request.image
         image = self.open_pose_mgr.get_image_from_bytes(image_bytes)
         datum = self.open_pose_mgr.run_open_pose(image)
-        #get image
+        # get image
         processed_img = self.open_pose_mgr.get_open_pose_image(datum, self.body_pose_field_descriptors)
-        #get data
+        # get data
         data = self.open_pose_mgr.get_open_pose_data(datum)
         body_25_pose_keypoints = self.processOpenPoseData(data)
         print(f"GetPoseall converted data array to Keypoints {body_25_pose_keypoints}")

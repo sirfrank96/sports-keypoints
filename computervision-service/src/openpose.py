@@ -6,7 +6,6 @@ import numpy as np
 from pathlib import Path
 import platform
 
-#TODO: Check platform for pyopenpose import, different for windows vs ubuntu vs osx
 # Import pyopenpose, make sure sys can find paths necessary dlls and binaries
 curr_dir = Path(__file__).parent.resolve()
 isWindows = False
@@ -63,7 +62,6 @@ class OpenPoseManager():
         return img
 
     def run_open_pose(self, img):
-        # Process input image to get OpenPose image with skeleton lines
         datum = op.Datum()
         datum.cvInputData = img
         self.openpose_wrapper.emplaceAndPop(op.VectorDatum([datum]))

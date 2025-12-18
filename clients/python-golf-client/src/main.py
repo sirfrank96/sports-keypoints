@@ -1,6 +1,6 @@
-#start clients to golfkeypoints and user
-#launch gui for user to create user, login, upload inputimages, mark golf ball and club,
-#   upload calibration images, display output, display data, update body keypoints
+# start clients to golfkeypoints and user
+# launch gui for user to create user, login, upload inputimages, mark golf ball and club,
+# upload calibration images, display output, display data, update body keypoints
 import tkinter as tk
 import logging
 import grpc
@@ -11,7 +11,7 @@ import login_pages as login
 import main_page
 
 
-#Images are 1080x2400
+# Images are 1080x2400
 
 class GolfKeypointsClientApp(tk.Tk):
     def __init__(self, user_client, golfkeypoints_client):
@@ -27,13 +27,10 @@ class GolfKeypointsClientApp(tk.Tk):
         
         initial_page = login.InitialPage(container, self, user_client=user_client, golfkeypoints_client=golfkeypoints_client)
         self.show_frame(initial_page)
-        #initial_page.tkraise()
     
     def show_frame(self, frame):
-        #frame = self.frames[cont]
         frame.grid(row = 0, column = 0, sticky ="nsew")
         frame.tkraise()         
-
 
 session_token = ""
 

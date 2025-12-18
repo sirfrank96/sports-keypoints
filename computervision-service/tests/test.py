@@ -57,4 +57,4 @@ print("Hand keypoints: \n" + str(datumFaceOn.handKeypoints))
 cv.imshow("OpenPose Output", datumFaceOn.cvOutputData)
 cv.waitKey(0)
 
-#TODO: 3D for multiple images (very difficult probably), update render threshold, write json?
+# TODO: 3D for multiple images (very difficult probably)

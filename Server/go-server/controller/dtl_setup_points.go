@@ -11,9 +11,7 @@ import (
 
 // assuming right handed golfer
 
-// TODO: CONVERTKEYPOINTTOPOINT right away so dont have to convert everytime pass to func
-
-// 2 calibration images? 1 for perpendicular axes, 1 for vanishing points
+// 2 calibration images - 1 for perpendicular axes, 1 for vanishing points
 // img 1: stand straddled, check to make sure heel horizontal and spine vertical are close to 90
 // img 2: set alignment stick not centered, point alignment stick at target, set up with heels against alignment stick feet shoulder width or wider (check that heels are not centered in image)
 // get vanishing point, intersection of vertaxis and heels axis
@@ -152,12 +150,13 @@ func GetSpineAngle(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.Cal
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	vertAxisLine := calibrationInfo.VertAxisLine
-	vertAxisThroughMidhipLine := util.GetLineWithSlope(util.ConvertKeypointToPoint(keypoints.Midhip), vertAxisLine.Slope)
-	neckPoint := util.ConvertKeypointToPoint(keypoints.Neck)
-	pointUpVertAxisSameHeightAsNeck := util.GetPointOnLineWithY(neckPoint.YPos, vertAxisThroughMidhipLine)
-	midhipPoint := util.ConvertKeypointToPoint(keypoints.Midhip)
-	angleAtIntersect := util.GetAngleAtIntersection(neckPoint, midhipPoint, pointUpVertAxisSameHeightAsNeck)
+	// convert keypoints to point
+	midhip := util.ConvertKeypointToPoint(keypoints.Midhip)
+	neck := util.ConvertKeypointToPoint(keypoints.Neck)
+	// calculate spine angle
+	vertAxisThroughMidhipLine := util.GetLineWithSlope(midhip, calibrationInfo.VertAxisLine.Slope)
+	pointUpVertAxisSameHeightAsNeck := util.GetPointOnLineWithY(neck.YPos, vertAxisThroughMidhipLine)
+	angleAtIntersect := util.GetAngleAtIntersection(neck, midhip, pointUpVertAxisSameHeightAsNeck)
 	return angleAtIntersect, warning
 }
 
@@ -274,22 +273,25 @@ func GetShoulderAlignment(keypoints *skp.Body25PoseKeypoints, calibrationInfo *u
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
+	// convert keypoints to point
+	lshoulder := util.ConvertKeypointToPoint(keypoints.LShoulder)
+	rshoulder := util.ConvertKeypointToPoint(keypoints.RShoulder)
 	// find auxillary vanishing point given shoulder tilt
 	// shoulder tilt will raise or lower the vanishing point of lines parallel to the shoulder line on the vertical axis
 	shoulderTiltRad := util.ConvertDegreesToRad(calibrationInfo.ShoulderTilt.Data)
-	xtemp := calibrationInfo.VanishingPoint.XPos - keypoints.RShoulder.X
-	ytemp := calibrationInfo.VanishingPoint.YPos - keypoints.RShoulder.Y
+	xtemp := calibrationInfo.VanishingPoint.XPos - rshoulder.XPos
+	ytemp := calibrationInfo.VanishingPoint.YPos - rshoulder.YPos
 	rotatedXTemp := (xtemp * math.Cos(shoulderTiltRad)) - (ytemp * math.Sin(shoulderTiltRad))
 	rotatedYTemp := (xtemp * math.Sin(shoulderTiltRad)) - (ytemp * math.Cos(shoulderTiltRad))
-	rotatedX := rotatedXTemp + keypoints.RShoulder.X
-	rotatedY := rotatedYTemp + keypoints.RShoulder.Y
+	rotatedX := rotatedXTemp + rshoulder.XPos
+	rotatedY := rotatedYTemp + rshoulder.YPos
 	rotatedPoint := &util.Point{XPos: rotatedX, YPos: rotatedY}
-	lineFromRShoulderToRotatedPoint := util.GetLine(util.ConvertKeypointToPoint(keypoints.RShoulder), rotatedPoint)
+	lineFromRShoulderToRotatedPoint := util.GetLine(rshoulder, rotatedPoint)
 	intersection := util.GetIntersection(lineFromRShoulderToRotatedPoint, &calibrationInfo.VertAxisLine)
 	avp := intersection.IntersectPoint
 	// get the signed angle of rotation from line from rshoulder to auxillary vanishing point to the line from rshoulder to lshoulder
-	vectFromRShoulderToAvp := util.GetVector(&avp, util.ConvertKeypointToPoint(keypoints.RShoulder))
-	vectFromRShoulderToLShoulder := util.GetVector(util.ConvertKeypointToPoint(keypoints.LShoulder), util.ConvertKeypointToPoint(keypoints.RShoulder))
+	vectFromRShoulderToAvp := util.GetVector(&avp, rshoulder)
+	vectFromRShoulderToLShoulder := util.GetVector(lshoulder, rshoulder)
 	return util.GetSignedAngleOfRotation(vectFromRShoulderToAvp, vectFromRShoulderToLShoulder), warning
 }
 
@@ -324,9 +326,12 @@ func GetWaistAlignment(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
+	// convert keypoints to point
+	lhip := util.ConvertKeypointToPoint(keypoints.LHip)
+	rhip := util.ConvertKeypointToPoint(keypoints.RHip)
 	//get the signed angle of rotation from line from rhip to vanishing point to the line from rhip to lhip
-	vectFromRHipToVp := util.GetVector(&calibrationInfo.VanishingPoint, util.ConvertKeypointToPoint(keypoints.RHip))
-	vectFromRHipToLHip := util.GetVector(util.ConvertKeypointToPoint(keypoints.LHip), util.ConvertKeypointToPoint(keypoints.RHip))
+	vectFromRHipToVp := util.GetVector(&calibrationInfo.VanishingPoint, rhip)
+	vectFromRHipToLHip := util.GetVector(lhip, rhip)
 	return util.GetSignedAngleOfRotation(vectFromRHipToVp, vectFromRHipToLHip), warning
 }
 
@@ -354,7 +359,12 @@ func GetKneeBend(keypoints *skp.Body25PoseKeypoints) (float64, util.Warning) {
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	kneeBend := util.GetAngleAtIntersection(util.ConvertKeypointToPoint(keypoints.RHip), util.ConvertKeypointToPoint(keypoints.RKnee), util.ConvertKeypointToPoint(keypoints.RAnkle))
+	// convert keypoints to point
+	rhip := util.ConvertKeypointToPoint(keypoints.RHip)
+	rknee := util.ConvertKeypointToPoint(keypoints.RKnee)
+	rankle := util.ConvertKeypointToPoint(keypoints.RAnkle)
+	// calculate knee bend
+	kneeBend := util.GetAngleAtIntersection(rhip, rknee, rankle)
 	return 180.0 - kneeBend, warning
 }
 
@@ -390,9 +400,14 @@ func GetDistanceFromBall(keypoints *skp.Body25PoseKeypoints, calibrationInfo *ut
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	projection := util.GetProjectionOntoLine(&toeLine.Line, util.ConvertKeypointToPoint(&calibrationInfo.GolfBallPoint))
+	// convert keypoints to point
+	midhip := util.ConvertKeypointToPoint(keypoints.Midhip)
+	neck := util.ConvertKeypointToPoint(keypoints.Neck)
+	golfball := util.ConvertKeypointToPoint(&calibrationInfo.GolfBallPoint)
+	// calculate distance from ball
+	projection := util.GetProjectionOntoLine(&toeLine.Line, golfball)
 	lengthFromBall := util.GetLengthBetweenTwoPoints(&projection.IntersectPoint, &projection.OriginalPoint)
-	lengthOfSpine := util.GetLengthBetweenTwoPoints(util.ConvertKeypointToPoint(keypoints.Midhip), util.ConvertKeypointToPoint(keypoints.Neck))
+	lengthOfSpine := util.GetLengthBetweenTwoPoints(midhip, neck)
 	return lengthFromBall / lengthOfSpine, warning
 }
 
@@ -421,6 +436,11 @@ func GetUlnarDeviation(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	angle := util.GetAngleAtIntersection(util.ConvertKeypointToPoint(keypoints.RElbow), util.ConvertKeypointToPoint(keypoints.RWrist), util.ConvertKeypointToPoint(&calibrationInfo.ClubHeadPoint))
+	// convert keypoints to point
+	relbow := util.ConvertKeypointToPoint(keypoints.RElbow)
+	rwrist := util.ConvertKeypointToPoint(keypoints.RWrist)
+	clubhead := util.ConvertKeypointToPoint(&calibrationInfo.ClubHeadPoint)
+	// calculate ulnar deviation
+	angle := util.GetAngleAtIntersection(relbow, rwrist, clubhead)
 	return angle, warning
 }

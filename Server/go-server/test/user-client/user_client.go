@@ -4,13 +4,10 @@ import (
 	"context"
 
 	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
-	//testutil "github.com/sirfrank96/go-server/test/test-util"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
-
-//TODO: RETURN ERRORS INSTEAD OF LOG.FATALF
 
 // Middle arg is a close function, should be called by calling function
 func InitUserServiceGrpcClient(serveraddr string) (skp.UserServiceClient, func() error, error) {

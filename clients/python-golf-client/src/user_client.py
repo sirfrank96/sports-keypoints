@@ -2,7 +2,6 @@ import user_pb2
 import user_pb2_grpc
 
 #client stub functions for user grpc service
-#TODO: Email
 class UserClient():
     def __init__(self, channel):
         self.stub = user_pb2_grpc.UserServiceStub(channel)

@@ -88,14 +88,13 @@ func (c *CvClientManager) GetPoseAll(img []byte) (*skp.GetPoseAllResponse, error
 }
 
 func (c *CvClientManager) GetPoseImagesFromFromVideo(images [][]byte) ([]*skp.GetPoseImageResponse, error) {
-	// TODO: Get rid of timeout? // or configure stream vs nonstream timeouts
+	// TODO: Get rid of timeout? or configure stream vs nonstream timeouts
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 	stream, err := c.client.GetPoseImagesFromVideo(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("computervision pose client GetPoseImagesFromVideo get stream failed: %w", err)
 	}
-
 	// Start goroutine that waits for return images from stream
 	waitc := make(chan struct{})
 	errChan := make(chan error)
@@ -118,7 +117,6 @@ func (c *CvClientManager) GetPoseImagesFromFromVideo(images [][]byte) ([]*skp.Ge
 			responses = append(responses, response)
 		}
 	}()
-
 	// Send all images via stream
 	for idx, img := range images {
 		if err := stream.Send(&skp.GetPoseImageRequest{Image: img}); err != nil {
@@ -127,7 +125,6 @@ func (c *CvClientManager) GetPoseImagesFromFromVideo(images [][]byte) ([]*skp.Ge
 	}
 	stream.CloseSend()
 	log.Printf("Sent all images from cv_api_mgr")
-
 	// Once receive stream is done, goroutine finishes
 	<-waitc
 	if <-errChan != nil {

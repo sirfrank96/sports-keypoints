@@ -84,7 +84,6 @@ func (d *DbManager) ReadInputImage(ctx context.Context, inputImgId string) (*Inp
 		}
 		return nil, fmt.Errorf("could not read input image: %w", err)
 	}
-	//inputImg.Id = objectId.Hex()
 	fmt.Printf("Read input image result: imgId: %s, userId: %s, imageType: %s\n", inputImg.Id, inputImg.UserId, inputImg.ImageType)
 	return &inputImg, nil
 }
@@ -115,7 +114,6 @@ func (d *DbManager) UpdateInputImage(ctx context.Context, inputImgId string, new
 		}
 		return nil, fmt.Errorf("could not update input image: %w", err)
 	}
-	//updatedInputImage.Id = objectId.Hex()
 	fmt.Printf("Update input image result: imgId: %s, userId: %s, imageType: %s\n", updatedInputImage.Id, updatedInputImage.UserId, updatedInputImage.ImageType)
 	return &updatedInputImage, nil
 }

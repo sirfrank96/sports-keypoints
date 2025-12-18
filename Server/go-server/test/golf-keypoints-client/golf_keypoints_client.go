@@ -11,8 +11,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-//TODO: RETURN ERRORS INSTEAD OF LOG.FATALF
-
 // Middle arg is a close function, should be called by calling function
 func InitGolfKeypointsServiceGrpcClient(serveraddr string) (skp.GolfKeypointsServiceClient, func() error, error) {
 	// Set up a connection to the cv_api server.

@@ -21,7 +21,7 @@ service GolfKeypointsService {
     // TODO: Stream for videos
 }
 
-// TODO: Add name and desc tags for input image (ie. june-24th, 2020, lift left foot in backswing)
+// TODO: Add name and description tags for input image (ie. june-24th, 2020, lift left foot in backswing)
 message UploadInputImageRequest {
     string session_token = 1;
     ImageType image_type = 2;
@@ -81,8 +81,8 @@ message CalibrateInputImageRequest {
     Keypoint club_head = 9;
     // only required if want DTL shoulder alignment
     Double shoulder_tilt = 10;
-    // optional: horizontal line and vertical line points for axes calibration
-    // optional: parallel line points for vanishing point
+    // TODO: optional: horizontal line and vertical line points for axes calibration
+    // TODO: optional: parallel line points for vanishing point
 }
 
 message CalibrateInputImageResponse {
@@ -178,12 +178,7 @@ message DTLGolfSetupPoints {
     Double distance_from_ball = 8;
     // degrees from line running through right elbow to right wrist and the line from right wrist to club head, the bigger the angle the more ulnar deviation (ie. higher hands), requires club head calibration
     Double ulnar_deviation = 9; 
-    //waist_bend: (same as spine angle??)
-    //neck_angle
-    //chin_position/eye_gaze_position
-    //spine_bend (requires a mid spine point)
-    //elbow_bend
-    //arm stuff
+    // TODO: waist_bend: (same as spine angle??), neck_angle, chin_position/eye_gaze_position, spine_bend (requires a mid spine point), elbow_bend, arm stuff
 }
 
 message FaceOnGolfSetupPoints {
@@ -209,5 +204,5 @@ message FaceOnGolfSetupPoints {
     Double chest_position = 10;
     // degrees offset from line perpendicular to feet line running through midpoint of feet, positive is closer to lead side, negative is closer to trail side (note: mid hip position is sensitive to open/closed stances and camera angle)
     Double mid_hip_position = 11;
-    //arm stuff
+    // TODO: arm stuff
 }

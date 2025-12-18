@@ -40,18 +40,18 @@ RUN python3 -m pip install -r requirements.txt
 
 COPY . .
 
-#replace cmake as old version has CUDA variable bugs
+# replace cmake as old version has CUDA variable bugs
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.16.0/cmake-3.16.0-Linux-x86_64.tar.gz && \
 tar xzf cmake-3.16.0-Linux-x86_64.tar.gz -C /opt && \
 rm cmake-3.16.0-Linux-x86_64.tar.gz
 ENV PATH="/opt/cmake-3.16.0-Linux-x86_64/bin:${PATH}"
 
-#make sure cuda and cudnn env vars are set correctly
+# make sure cuda and cudnn env vars are set correctly
 ENV PATH="/usr/include:/usr/local/cuda/include:/usr/local/cuda/bin:/usr/local/cuda-11/bin:/usr/local/cuda-11.7/bin:/usr/lib/x86_64-linux-gnu:/usr/include/boost/:${PATH}"
 ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64:/usr/local/cuda-11/lib64:/usr/local/cuda-11.7/lib64:/usr/lib/x86_64-linux-gnu:/usr/include/boost/:${LD_LIBRARY_PATH}"
 ENV CUDA_HOME="/usr/local/cuda"
 
-#build openpose
+# build openpose
 RUN mkdir $OPENPOSE_ROOT/build
 WORKDIR $OPENPOSE_ROOT/build
 RUN cmake .. -DBUILD_PYTHON=ON \
@@ -76,17 +76,15 @@ RUN cmake .. -DBUILD_PYTHON=ON \
     && make install
 
 
-#intall python api dependencies
+# intall python api dependencies
 WORKDIR $OPENPOSE_ROOT/build/python
 RUN make install
 
 WORKDIR /app
 
-#Make sure openpose dlls and dependencies are in python path
+# Make sure openpose dlls and dependencies are in python path
 ENV PYTHONPATH="/usr/local/python/openpose"
 
 EXPOSE 50051
 
 CMD ["python3", "src/server.py"]
-
-

@@ -2,26 +2,9 @@ package util
 
 import (
 	"math"
-
-	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 )
 
-//assuming right handed golfer
-
-//TODO: Be able to pass around Point or cv.Keypoint by using an interface
-
-type Point struct {
-	XPos float64 `bson:"x_pos,omitempty"`
-	YPos float64 `bson:"y_pos,omitempty"`
-}
-
-// TODO: Do i need lines? or just use angles somehow
-type Line struct {
-	Slope       float64 `bson:"slope,omitempty"`
-	YIntercept  float64 `bson:"y_intercept,omitempty"`
-	PointOnLine Point   `bson:"point_on_line,omitempty"`
-	// TODO: Add infinite slope/vertical line parameter
-}
+// assuming right handed golfer
 
 // Info about intersection between 2 lines
 type Intersection struct {
@@ -38,73 +21,9 @@ type Projection struct {
 	OriginalLine   Line
 }
 
-// Find the length between point1 and point2
-func GetLengthBetweenTwoPoints(point1 *Point, point2 *Point) float64 {
-	term1 := math.Pow(point2.XPos-point1.XPos, 2)
-	term2 := math.Pow(point2.YPos-point1.YPos, 2)
-	return math.Sqrt(term1 + term2)
-}
-
-// Get the slope of the line that passes through point1 and point2
-func GetSlope(point1 *Point, point2 *Point) float64 {
-	rise := point2.YPos - point1.YPos
-	run := point2.XPos - point1.XPos
-
-	// TODO: handle 0 on denominator
-
-	return rise / run
-}
-
-// Find the recipricol of the given fraction
-func GetRecipricol(fraction float64) float64 {
-	return float64(-1) * (1 / fraction)
-}
-
-// Find the recipricol of the slope of the line that passes through point1 and point2
-func GetSlopeRecipricol(point1 *Point, point2 *Point) float64 {
-	rise := point2.YPos - point1.YPos
-	run := point2.XPos - point1.XPos
-
-	// TODO: handle 0 denominator
-
-	return float64(-1) * (run / rise)
-}
-
 // Find the y intercept of the line with the given point and slope
 func GetYIntercept(point *Point, slope float64) float64 {
 	return point.YPos - (slope * point.XPos)
-}
-
-// Find the midpoint between point1 and point2
-func GetMidpoint(point1 *Point, point2 *Point) *Point {
-	xMid := (point1.XPos + point2.XPos) / float64(2)
-	yMid := (point1.YPos + point2.YPos) / float64(2)
-	return &Point{XPos: xMid, YPos: yMid}
-}
-
-// Return the line intersects point1 and point2
-// point1 will be the pointOnLine in the Line struct
-func GetLine(point1 *Point, point2 *Point) *Line {
-	slope := GetSlope(point1, point2)
-	return GetLineWithSlope(point1, slope)
-}
-
-// Given a point and a slope, return the line
-func GetLineWithSlope(point1 *Point, slope float64) *Line {
-	yIntercept := GetYIntercept(point1, slope)
-	return &Line{Slope: slope, YIntercept: yIntercept, PointOnLine: *point1}
-}
-
-// Find the point on the line with the given x coordinate
-func GetPointOnLineWithX(x float64, line *Line) *Point {
-	yOnLine := (line.Slope * x) + line.YIntercept
-	return &Point{XPos: x, YPos: yOnLine}
-}
-
-// Find the point on the line with the given y coordinate
-func GetPointOnLineWithY(y float64, line *Line) *Point {
-	xOnLine := (y - line.YIntercept) / line.Slope
-	return &Point{XPos: xOnLine, YPos: y}
 }
 
 // Given three points, find the angle at the intersection between the line from point1 to intersectPoint and point2 and intersectPoint
@@ -177,20 +96,4 @@ func GetSignedAngleOfRotation(vect1 *Point, vect2 *Point) float64 {
 	dot := GetDotProduct(vect1, vect2)
 	rad := math.Atan2(det, dot)
 	return ConvertRadToDegrees(rad)
-}
-
-// Converts *skp.Keypoint to *Point
-func ConvertKeypointToPoint(cvKeypoint *skp.Keypoint) *Point {
-	if cvKeypoint == nil {
-		return nil
-	}
-	return &Point{XPos: cvKeypoint.X, YPos: cvKeypoint.Y}
-}
-
-// Converts *Point to *skp.Keypoint
-func ConvertPointToKeypoint(point *Point) *skp.Keypoint {
-	if point == nil {
-		return nil
-	}
-	return &skp.Keypoint{X: point.XPos, Y: point.YPos}
 }

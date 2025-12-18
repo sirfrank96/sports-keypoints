@@ -14,7 +14,7 @@ class InitialPage(tk.Frame):
         self.golfkeypoints_client = golfkeypoints_client
         self.parent = parent
         self.controller = controller
-        #Create new user
+        # Create new user
         self.create_user_button = tk.Button(self, text="Create a new user", command=self.go_to_create_user_page)
         self.create_user_button.grid(row=0, column=0, columnspan=2, pady=10)
         # Login Button
@@ -36,27 +36,23 @@ class CreateUserPage(tk.Frame):
         self.golfkeypoints_client = golfkeypoints_client
         self.parent = parent
         self.controller = controller
-        #same as login, but button is createuser instead of login
-        #messages are different: success -> created user, fail -> unable to create user
+        # same as login, but button is createuser instead of login
+        # messages are different: success -> created user, fail -> unable to create user
         # Username Label and Entry
         self.username_label = tk.Label(self, text="Username:")
         self.username_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
-        #username_label.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
         self.username_entry = tk.Entry(self)
         self.username_entry.grid(row=0, column=1, padx=5, pady=5)
-
         # Password Label and Entry
         self.password_label = tk.Label(self, text="Password:")
         self.password_label.grid(row=1, column=0, padx=5, pady=5, sticky="w")
         self.password_entry = tk.Entry(self, show="*") # Mask the password
         self.password_entry.grid(row=1, column=1, padx=5, pady=5)
-
         # Email Label and Entry
         self.email_label = tk.Label(self, text="Email:")
         self.email_label.grid(row=2, column=0, padx=5, pady=5, sticky="w")
         self.email_entry = tk.Entry(self)
         self.email_entry.grid(row=2, column=1, padx=5, pady=5)
-
         # Create User Button
         self.login_button = tk.Button(self, text="Create New User", command=self.create_user)
         self.login_button.grid(row=3, column=0, columnspan=2, pady=10)
@@ -65,10 +61,9 @@ class CreateUserPage(tk.Frame):
         username = self.username_entry.get()
         password = self.password_entry.get()
         email = self.email_entry.get()
-
         # Replace with your actual login logic (e.g., database check)
         if username != "" and password != "" and email != "":
-            #API: CreateUser
+            # API: CreateUser
             try:
                 response = self.user_client.create_user(username, password, email)
                 messagebox.showinfo("CreateUser Response", f"Response: {response}")
@@ -92,16 +87,14 @@ class LoginPage(tk.Frame):
         # Username Label and Entry
         self.username_label = tk.Label(self, text="Username:")
         self.username_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
-        #username_label.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        # username_label.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
         self.username_entry = tk.Entry(self)
         self.username_entry.grid(row=0, column=1, padx=5, pady=5)
-
         # Password Label and Entry
         self.password_label = tk.Label(self, text="Password:")
         self.password_label.grid(row=1, column=0, padx=5, pady=5, sticky="w")
         self.password_entry = tk.Entry(self, show="*") # Mask the password
         self.password_entry.grid(row=1, column=1, padx=5, pady=5)
-
         # Login Button
         self.login_button = tk.Button(self, text="Login", command=self.login)
         self.login_button.grid(row=2, column=0, columnspan=2, pady=10)
@@ -109,10 +102,9 @@ class LoginPage(tk.Frame):
     def login(self):
         username = self.username_entry.get()
         password = self.password_entry.get()
-
         # Replace with your actual login logic (e.g., database check)
         if username != "" and password != "":
-            #API: RegisterUser
+            # API: RegisterUser
             try: 
                 response = self.user_client.register_user(username, password)
                 session_token = response.session_token
