@@ -32,39 +32,46 @@ The following are instructions on how to start the sports-keypoints services and
 ### Usage
 
 1. Clone the repo:
-  `git clone https://github.com/sirfrank96/sports-keypoints.git`
-2. Create .env file in root directory of the sports-keypoints repo and add environment variables:
-  * If you do not have NVIDIA GPUs:
+   `git clone https://github.com/sirfrank96/sports-keypoints.git`
+2. Navigate to root directory of repo
+   `cd sports-keypoints`
+3. Sync Openpose and Openpose's 3rd party submodules
+   `git submodule update --init`
+4. Create .env file in root directory of the sports-keypoints repo
+  * If Windows:
+      `echo > .env`
+  * If Unix Shell (eg. bash or mac zsh):
+      `touch .env`
+5. Add environment variables to .env file
+  * If you have NVIDIA GPUs and want to use them:
     ```
-    #.env file
-    PROCESSING_TYPE=cpu
-    ```
-  * If you do have NVIDIA GPUs and want to use them:
-    ```
-    #.env file
     PROCESSING_TYPE=gpu
     NUM_GPUS=all
     ```
-3. Spin up the sports-keypoints service containers with docker compose:
+  * If you just want to use CPU:
+    ```
+    PROCESSING_TYPE=cpu
+    ```
+6. Spin up the sports-keypoints service containers with docker compose:
    `docker compose up --build`
-4. Navigate to client application:
+7. Navigate to client application:
    `cd clients/python-golf-client`
-5. Create a virtual environment:
+8. Create a virtual environment:
    `C:path\to\python310\python.exe -m venv python310_venv`
-6. Activate virtual environment:
+9. Activate virtual environment:
   * If Windows Command Prompt:
       `python310_venv\Scripts\activate.bat`
   * If Windows Powershell:
       `python310_venv\Scripts\Activate.ps1`
-  * If Unix Shell (eg. bash):
+  * If Unix Shell (eg. bash or mac zsh):
       `source python310_venv/bin/activate`
-7. Install requirements:
+10. Install requirements:
     `python -m pip install -r requirements.txt`
-8. Navigate to main script:
+11. Navigate to main script:
     `cd src`
-9. Run client application:
+12. Run client application:
     `python main.py`
-10. See README in clients/python-golf-client for more details on how to use the client application
+13. See README in clients/python-golf-client for more details on how to use the client application
 
 ### Alternatives To Docker
 
