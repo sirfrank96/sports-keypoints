@@ -36,7 +36,7 @@ The following are instructions on how to start the sports-keypoints services and
 2. Navigate to root directory of repo
    `cd sports-keypoints`
 3. Sync Openpose and Openpose's 3rd party submodules
-   `git submodule update --init`
+   `git submodule update --init --recursive`
 4. Create .env file in root directory of the sports-keypoints repo
   * If Windows:
       `echo > .env`
