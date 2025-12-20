@@ -52,8 +52,8 @@ The following are instructions on how to start the sports-keypoints services and
     ```
     PROCESSING_TYPE=cpu
     ```
-6. Spin up the sports-keypoints service containers with docker compose:
-(If using GPU -> Login to NVIDIA NGC Catalog `docker login nvcr.io`, then pull archived image `docker pull nvcr.io/nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04`
+6. Spin up the sports-keypoints service containers with docker compose:<br>
+(If using GPU -> Login to NVIDIA NGC Catalog `docker login nvcr.io`, then pull archived image `docker pull nvcr.io/nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04`)<br>
    `docker compose up --build`
 8. Navigate to client application:
    `cd clients/python-golf-client`
