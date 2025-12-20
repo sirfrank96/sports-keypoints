@@ -27,7 +27,7 @@ The following are instructions on how to start the sports-keypoints services and
 * Git: <https://git-scm.com/install/>
 * Docker: <https://www.docker.com/get-started/>
 * Python 3.10 (this is for the client gui application, see README in clients/python-golf-client for more information): <https://www.python.org/downloads/> 
-* Optional: Machine with NVIDIA GPUs with 10+ GB of VRAM + Drivers + NVIDIA Container Toolkit (this is for the computer vision service, see README in computervision-service for more information)
+* Optional: Machine with NVIDIA GPUs with 10+ GB of VRAM + Drivers + NVIDIA Container Toolkit. NVIDIA NGC Catalog account: <https://catalog.ngc.nvidia.com/> (this is for the computer vision service, see README in computervision-service for more information)
 
 ### Usage
 
@@ -53,12 +53,13 @@ The following are instructions on how to start the sports-keypoints services and
     PROCESSING_TYPE=cpu
     ```
 6. Spin up the sports-keypoints service containers with docker compose:
+(If using GPU -> Login to NVIDIA NGC Catalog `docker login nvcr.io`, then pull archived image `docker pull nvcr.io/nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04`
    `docker compose up --build`
-7. Navigate to client application:
+8. Navigate to client application:
    `cd clients/python-golf-client`
-8. Create a virtual environment:
+9. Create a virtual environment:
    `C:path\to\python310\python.exe -m venv python310_venv`
-9. Activate virtual environment:
+10. Activate virtual environment:
   * If Windows Command Prompt:
       `python310_venv\Scripts\activate.bat`
   * If Windows Powershell:
