@@ -31,48 +31,50 @@ The following are instructions on how to start the sports-keypoints services and
 
 ### Usage
 
-1. Clone the repo:
+1. Clone the repo:<br>
    `git clone https://github.com/sirfrank96/sports-keypoints.git`
-2. Navigate to root directory of repo
+2. Navigate to root directory of repo:<br>
    `cd sports-keypoints`
-3. Sync Openpose and Openpose's 3rd party submodules
+3. Sync Openpose and Openpose's 3rd party submodules:<br>
    `git submodule update --init --recursive`
-4. Create .env file in root directory of the sports-keypoints repo
-  * If Windows:
+4. Create .env file in root directory of the sports-keypoints repo:<br>
+  * If Windows:<br>
       `echo > .env`
-  * If Unix Shell (eg. bash or mac zsh):
+  * If Unix Shell (eg. bash or mac zsh):<br>
       `touch .env`
-5. Add environment variables to .env file
-  * If you have NVIDIA GPUs and want to use them:
+5. Add environment variables to .env file:<br>
+  * If you have NVIDIA GPUs and want to use them:<br>
     ```
     PROCESSING_TYPE=gpu
     NUM_GPUS=all
     ```
-  * If you just want to use CPU:
+  * If you just want to use CPU:<br>
     ```
     PROCESSING_TYPE=cpu
     ```
 
-_(If using GPU then pull archived NVIDIA image `docker pull nvcr.io/nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04`. If you have issues, you may need to create an NVIDIA NGC Catalog account: <https://catalog.ngc.nvidia.com/> and then `docker login nvcr.io` before pulling the image.)<br>_
+6a. _(If using GPU then pull archived NVIDIA image:<br>
+   `docker pull nvcr.io/nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04`<br> 
+   If you have issues, you may need to create an NVIDIA NGC Catalog account: <https://catalog.ngc.nvidia.com/> and then `docker login nvcr.io` before pulling the image.)_
 
 6. Spin up the sports-keypoints service containers with docker compose:<br>
    `docker compose up --build`
-7. While that builds, in another window navigate to the client application:
+7. While that builds, in another window navigate to the client application:<br>
    `cd sports-keypoints/clients/python-golf-client`
-8. Create a virtual environment:
-   `C:path\to\python310\python.exe -m venv python310_venv`
-9. Activate virtual environment:
-  * If Windows Command Prompt:
+8. Create a virtual environment:<br>
+   `C:path\to\python310\python.exe -m venv python310_venv` (Mine was C:Users\UserA\AppData\Local\Programs\Python\Python310\python.exe on Windows)
+9. Activate virtual environment:<br>
+  * If Windows Command Prompt:<br>
       `python310_venv\Scripts\activate.bat`
-  * If Windows Powershell:
+  * If Windows Powershell:<br>
       `python310_venv\Scripts\Activate.ps1`
-  * If Unix Shell (eg. bash or mac zsh):
+  * If Unix Shell (eg. bash or mac zsh):<br>
       `source python310_venv/bin/activate`
-10. Install requirements:
+10. Install requirements:<br>
     `python -m pip install -r requirements.txt`
-11. Navigate to main script:
+11. Navigate to main script:<br>
     `cd src`
-12. Once the backend services are running, run the client application:
+12. Once the backend services are running, run the client application:<br>
     `python main.py`
 13. See README in clients/python-golf-client for more details on how to use the client application
 
@@ -88,9 +90,9 @@ Prerequisites:
 
 You will also need to follow the official openpose docs (<https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/doc/installation/0_index.md>) for installation prerequisites and how to build and compile for python api usage.
 
-1. Start MongoDb:
-   `C:path\to\mongo\mongdb.exe` (Mine was C:\Program Files\MongoDB\Server\8.2\bin\mongodb.exe)
-2. Start computervision service:
+1. Start MongoDb:<br>
+   `C:path\to\mongo\mongdb.exe` (Mine was C:\Program Files\MongoDB\Server\8.2\bin\mongodb.exe on Windows)
+2. Start computervision service:<br>
    ```
    cd computervision-service
    C:path\to\python38\python.exe -m venv python38_venv
@@ -101,7 +103,7 @@ You will also need to follow the official openpose docs (<https://github.com/CMU
    cd src
    python server.py
    ```
-4. Start go backend server
+4. Start go backend server:<br>
    ```
    cd server\go-server
    go run main.go
