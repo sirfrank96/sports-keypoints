@@ -10,12 +10,15 @@ import platform
 curr_dir = Path(__file__).parent.resolve()
 isWindows = False
 try:
-    if platform.system() == "Windows":
+    os = platform.system()
+    if os == "Windows":
         isWindows = True
         sys.path.append(curr_dir / r"..\3rdparty\openpose\build_windows\python\openpose\Release")
         os.add_dll_directory(curr_dir / r"..\3rdparty\openpose\build_windows\x64\Release")
         os.add_dll_directory(curr_dir / r"..\3rdparty\openpose\build_windows\bin")
         print(curr_dir)
+    elif os == "Linux":
+        sys.path.append('/usr/local/python/openpose')
 except ImportError as e:
     print('Error getting platform system')
 

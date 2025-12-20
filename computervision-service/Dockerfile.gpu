@@ -1,4 +1,6 @@
-FROM nvidia/cuda:11.7.1-cudnn8-devel-ubuntu20.04
+#FROM nvidia/cuda:11.7.1-cudnn8-devel-ubuntu20.04
+#FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04
+FROM nvcr.io/nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04 
 
 WORKDIR /app
 
@@ -8,8 +10,8 @@ ENV OPENPOSE_ROOT=/app/3rdparty/openpose
 # openpose dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        python3.8 \
-        python3.8-dev \
+        python3.7 \
+        python3.7-dev \
         python3-pip \
         python3-setuptools \
         build-essential \
@@ -32,11 +34,11 @@ RUN apt-get update && \
         wget \
     && rm -rf /var/lib/apt/lists/*
 
-RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install --upgrade setuptools
+RUN python3.7 -m pip install --upgrade pip
+RUN python3.7 -m pip install --upgrade setuptools
 
 COPY requirements.txt .
-RUN python3 -m pip install -r requirements.txt
+RUN python3.7 -m pip install -r requirements.txt
 
 COPY . .
 
@@ -60,8 +62,8 @@ RUN cmake .. -DBUILD_PYTHON=ON \
                 -DDOWNLOAD_BODY_25_MODEL=ON \
                 -DDOWNLOAD_BODY_COCO_MODEL=OFF \
                 -DDOWNLOAD_BODY_MPI_MODEL=OFF \
-                -DDOWNLOAD_FACE_MODEL=ON \
-                -DDOWNLOAD_HAND_MODEL=ON \
+                -DDOWNLOAD_FACE_MODEL=OFF \
+                -DDOWNLOAD_HAND_MODEL=OFF \
                 -DCMAKE_BUILD_TYPE=Release \
                 -DUSE_CUDNN=ON \
                 #-DUSE_MKL=ON \
@@ -72,6 +74,10 @@ RUN cmake .. -DBUILD_PYTHON=ON \
                 #-DBOOST_INCLUDE_DIR="/usr/include/boost" \
                 #-DBOOST_LIBRARYDIR="/usr/lib/x86_64-linux-gnu" \
                 -DWITH_EIGEN=FIND \
+                -DBOOST_DEBUG=ON \
+                -DCUDA_ARCH=Manual \
+                -DCUDA_ARCH_BIN="50 52 60 61 70 75" \
+                -DCUDA_ARCH_PTX="50 52 60 61 70 75" \
     && make -j `nproc` \
     && make install
 
@@ -87,4 +93,4 @@ ENV PYTHONPATH="/usr/local/python/openpose"
 
 EXPOSE 50051
 
-CMD ["python3", "src/server.py"]
+CMD ["python3.7", "src/server.py"]
