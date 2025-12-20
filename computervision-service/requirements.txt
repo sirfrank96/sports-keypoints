@@ -1,5 +1,11 @@
-grpcio==1.70.0
-grpcio-tools==1.70.0
-opencv-python==4.12.0.88
+#grpcio==1.70.0
+#grpcio-tools==1.70.0
+#opencv-python==4.12.0.88
+#numpy
+#protobuf==5.29.5
+
+grpcio
+grpcio-tools
+opencv-python
 numpy
-protobuf==5.29.5
+protobuf
