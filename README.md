@@ -27,7 +27,7 @@ The following are instructions on how to start the sports-keypoints services and
 * Git: <https://git-scm.com/install/>
 * Docker: <https://www.docker.com/get-started/>
 * Python 3.10 (this is for the client gui application, see README in clients/python-golf-client for more information): <https://www.python.org/downloads/> 
-* Optional: Machine with NVIDIA GPUs with 10+ GB of VRAM + Drivers + NVIDIA Container Toolkit. NVIDIA NGC Catalog account: <https://catalog.ngc.nvidia.com/> (this is for the computer vision service, see README in computervision-service for more information)
+* Optional: Machine with NVIDIA GPUs with 5+ GB of VRAM + Drivers + NVIDIA Container Toolkit. (this is for the computer vision service, see README in computervision-service for more information)
 
 ### Usage
 
@@ -52,14 +52,16 @@ The following are instructions on how to start the sports-keypoints services and
     ```
     PROCESSING_TYPE=cpu
     ```
+
+_(If using GPU then pull archived NVIDIA image `docker pull nvcr.io/nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04`. If you have issues, you may need to create an NVIDIA NGC Catalog account: <https://catalog.ngc.nvidia.com/> and then `docker login nvcr.io` before pulling the image.)<br>_
+
 6. Spin up the sports-keypoints service containers with docker compose:<br>
-(If using GPU -> Login to NVIDIA NGC Catalog `docker login nvcr.io`, then pull archived image `docker pull nvcr.io/nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04`)<br>
    `docker compose up --build`
-8. Navigate to client application:
-   `cd clients/python-golf-client`
-9. Create a virtual environment:
+7. While that builds, in another window navigate to the client application:
+   `cd sports-keypoints/clients/python-golf-client`
+8. Create a virtual environment:
    `C:path\to\python310\python.exe -m venv python310_venv`
-10. Activate virtual environment:
+9. Activate virtual environment:
   * If Windows Command Prompt:
       `python310_venv\Scripts\activate.bat`
   * If Windows Powershell:
@@ -70,7 +72,7 @@ The following are instructions on how to start the sports-keypoints services and
     `python -m pip install -r requirements.txt`
 11. Navigate to main script:
     `cd src`
-12. Run client application:
+12. Once the backend services are running, run the client application:
     `python main.py`
 13. See README in clients/python-golf-client for more details on how to use the client application
 
