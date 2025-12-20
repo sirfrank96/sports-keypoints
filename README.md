@@ -82,7 +82,7 @@ If you do no not want to run Docker (overhead too large or running too slowly), 
 
 Prerequisites: 
 * MongoDb (<https://www.mongodb.com/docs/manual/installation/>)
-* Python 3.8 (<https://www.python.org/downloads/release/python-380/>)
+* Python 3.7 (<https://www.python.org/downloads/release/python-370/>)
 * go 1.25.3 (<https://go.dev/doc/install>)
 * Python 3.10 (<https://www.python.org/downloads/release/python-3100/>)
 
