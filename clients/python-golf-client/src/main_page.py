@@ -21,26 +21,43 @@ class MainAppPage(tk.Frame):
         self.parent = parent
         self.controller = controller 
 
-        self.main_app_label = tk.Label(self, text="This is the main app")
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+        # create canvas inside the frame (self)
+        self.whole_canvas = tk.Canvas(self)
+        self.whole_canvas.grid(row=0, column=0, sticky="nsew")
+        # create scrollbar in frame (self) that controls canvas 
+        self.scrollbar = tk.Scrollbar(self, orient="vertical", command=self.whole_canvas.yview)
+        self.whole_canvas.configure(yscrollcommand=self.scrollbar.set)
+        self.scrollbar.grid(row=0, column=1, sticky="ns")
+        # create frame inside the canvas for content inside the canvas
+        self.content_frame = tk.Frame(self.whole_canvas)
+        #self.content_frame.grid_columnconfigure(0, weight=1)
+        #self.content_frame.grid_rowconfigure(0, weight=1)
+        self.whole_canvas.create_window((0, 0), window=self.content_frame, anchor="nw")
+        self.whole_canvas.bind_all("<MouseWheel>", partial(self.on_mousewheel, self.whole_canvas))
+
+        # add labels and buttons
+        self.main_app_label = tk.Label(self.content_frame, text="This is the main app")
         self.main_app_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
 
-        self.select_new_input_image_button = tk.Button(self, text="Select New Input Image", command=self.select_new_input_image)
+        self.select_new_input_image_button = tk.Button(self.content_frame, text="Select New Input Image", command=self.select_new_input_image)
         self.select_new_input_image_button.grid(row=1, column=0, padx=5, pady=5, sticky="w")
 
-        self.show_input_images_button = tk.Button(self, text="Show Previous Input Images", command=self.show_previous_input_images)
+        self.show_input_images_button = tk.Button(self.content_frame, text="Show Previous Input Images", command=self.show_previous_input_images)
         self.show_input_images_button.grid(row=2, column=0, padx=5, pady=5, sticky="w")
 
-        self.read_user_button = tk.Button(self, text="Show User", command=self.read_user)
+        self.read_user_button = tk.Button(self.content_frame, text="Show User", command=self.read_user)
         self.read_user_button.grid(row=3, column=0, padx=5, pady=5, sticky="w")
         
-        self.update_user_button = tk.Button(self, text="Update User", command=self.update_user)
+        self.update_user_button = tk.Button(self.content_frame, text="Update User", command=self.update_user)
         self.update_user_button.grid(row=4, column=0, padx=5, pady=5, sticky="w")
 
-        self.delete_user_button = tk.Button(self, text="Delete User", command=self.delete_user)
+        self.delete_user_button = tk.Button(self.content_frame, text="Delete User", command=self.delete_user)
         self.delete_user_button.grid(row=5, column=0, padx=5, pady=5, sticky="w")
 
-        # 1/4 size of image
-        self.canvas = tk.Canvas(self, width=270, height=600, bg='white')
+        # 1/4 size of image -> canvas for images
+        self.canvas = tk.Canvas(self.content_frame, width=270, height=600, bg='white')
         self.canvas.grid(row=12, column=1, padx=5, pady=5, sticky="w")
 
         self.identify_mode = self.IdentifyMode.NONE
@@ -149,40 +166,40 @@ class MainAppPage(tk.Frame):
     def display_input_image(self, image):
         self.display_image(image)
 
-        self.axes_button = tk.Button(self, text="Get Axes Calibration Image", command=self.get_axes_calibration_image)
+        self.axes_button = tk.Button(self.content_frame, text="Get Axes Calibration Image", command=self.get_axes_calibration_image)
         self.axes_button.grid(row=0, column=2, padx=5, pady=5, sticky="w")
 
-        self.vanishing_point_button = tk.Button(self, text="Get Vanishing Point Calibration Image", command=self.get_vanishing_point_calibration_image)
+        self.vanishing_point_button = tk.Button(self.content_frame, text="Get Vanishing Point Calibration Image", command=self.get_vanishing_point_calibration_image)
         self.vanishing_point_button.grid(row=1, column=2, padx=5, pady=5, sticky="w")
 
-        self.identify_golf_ball_button = tk.Button(self, text="Identify Golf Ball", command=self.identify_golf_ball)
+        self.identify_golf_ball_button = tk.Button(self.content_frame, text="Identify Golf Ball", command=self.identify_golf_ball)
         self.identify_golf_ball_button.grid(row=2, column=2, padx=5, pady=5, sticky="w")
 
-        self.identify_club_butt_button = tk.Button(self, text="Identify Club Butt", command=self.identify_club_butt)
+        self.identify_club_butt_button = tk.Button(self.content_frame, text="Identify Club Butt", command=self.identify_club_butt)
         self.identify_club_butt_button.grid(row=3, column=2, padx=5, pady=5, sticky="w")
 
-        self.identify_club_head_button = tk.Button(self, text="Identify Club Head", command=self.identify_club_head)
+        self.identify_club_head_button = tk.Button(self.content_frame, text="Identify Club Head", command=self.identify_club_head)
         self.identify_club_head_button.grid(row=4, column=2, padx=5, pady=5, sticky="w")
 
-        self.feet_line_button = tk.Button(self, text="Modify Feet Line Method", command=self.modify_feet_line_method)
+        self.feet_line_button = tk.Button(self.content_frame, text="Modify Feet Line Method", command=self.modify_feet_line_method)
         self.feet_line_button.grid(row=5, column=2, padx=5, pady=5, sticky="w")
 
-        self.shoulder_tilt_button = tk.Button(self, text="Input Shoulder Tilt For DTL", command=self.input_shoulder_tilt)
+        self.shoulder_tilt_button = tk.Button(self.content_frame, text="Input Shoulder Tilt For DTL", command=self.input_shoulder_tilt)
         self.shoulder_tilt_button.grid(row=6, column=2, padx=5, pady=5, sticky="w")
 
-        self.calibrate_button = tk.Button(self, text="Calibrate Image", command=partial(self.calibrate_image))
+        self.calibrate_button = tk.Button(self.content_frame, text="Calibrate Image", command=partial(self.calibrate_image))
         self.calibrate_button.grid(row=7, column=2, padx=5, pady=5, sticky="w")
 
-        self.calculate_button = tk.Button(self, text="Calculate Golf Keypoints", command=partial(self.calculate_golf_keypoints))
+        self.calculate_button = tk.Button(self.content_frame, text="Calculate Golf Keypoints", command=partial(self.calculate_golf_keypoints))
         self.calculate_button.grid(row=8, column=2, padx=5, pady=5, sticky="w")
 
-        self.read_keypoints_button = tk.Button(self, text="Read Keypoints for Input Image", command=partial(self.read_golf_keypoints))
+        self.read_keypoints_button = tk.Button(self.content_frame, text="Read Keypoints for Input Image", command=partial(self.read_golf_keypoints))
         self.read_keypoints_button.grid(row=9, column=2, padx=5, pady=5, sticky="w")
 
-        self.delete_input_img_button = tk.Button(self, text="Delete Input Image", command=partial(self.delete_input_image))
+        self.delete_input_img_button = tk.Button(self.content_frame, text="Delete Input Image", command=partial(self.delete_input_image))
         self.delete_input_img_button.grid(row=10, column=2, padx=5, pady=5, sticky="w")
 
-        self.delete_keypoints_button = tk.Button(self, text="Delete Keypoints for Input Image", command=partial(self.delete_golf_keypoints))
+        self.delete_keypoints_button = tk.Button(self.content_frame, text="Delete Keypoints for Input Image", command=partial(self.delete_golf_keypoints))
         self.delete_keypoints_button.grid(row=11, column=2, padx=5, pady=5, sticky="w")
 
     def get_axes_calibration_image(self):
@@ -321,6 +338,8 @@ class MainAppPage(tk.Frame):
 
     def update_body_keypoints(self, popup):
         popup.destroy
+        # bind mousewheel back to whole canvas
+        self.whole_canvas.bind_all("<MouseWheel>", partial(self.on_mousewheel, self.whole_canvas))
         try:
             response = self.golfkeypoints_client.update_body_keypoints(self.session_token, self.curr_input_image_id, self.body_keypoints)
             messagebox.showinfo("Update Body Keypoints", f"Update Body Keypoints successful: {response}")
