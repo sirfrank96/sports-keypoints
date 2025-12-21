@@ -21,29 +21,45 @@ class MainAppPage(tk.Frame):
         self.parent = parent
         self.controller = controller 
 
-        self.main_app_label = tk.Label(self, text="This is the main app")
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+        # create canvas inside the frame (self)
+        self.whole_canvas = tk.Canvas(self)
+        self.whole_canvas.grid(row=0, column=0, sticky="nsew")
+        # create scrollbar in frame (self) that controls canvas 
+        self.scrollbar = tk.Scrollbar(self, orient="vertical", command=self.whole_canvas.yview)
+        self.whole_canvas.configure(yscrollcommand=self.scrollbar.set)
+        self.scrollbar.grid(row=0, column=1, sticky="ns")
+        # create frame inside the canvas for content inside the canvas
+        self.content_frame = tk.Frame(self.whole_canvas)
+        #self.content_frame.grid_columnconfigure(0, weight=1)
+        #self.content_frame.grid_rowconfigure(0, weight=1)
+        self.whole_canvas.create_window((0, 0), window=self.content_frame, anchor="nw")
+        self.whole_canvas.bind_all("<MouseWheel>", partial(self.on_mousewheel, self.whole_canvas))
+
+        # add labels and buttons
+        self.main_app_label = tk.Label(self.content_frame, text="This is the main app")
         self.main_app_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
 
-        self.select_new_input_image_button = tk.Button(self, text="Select New Input Image", command=self.select_new_input_image)
+        self.select_new_input_image_button = tk.Button(self.content_frame, text="Select New Input Image", command=self.select_new_input_image)
         self.select_new_input_image_button.grid(row=1, column=0, padx=5, pady=5, sticky="w")
 
-        self.show_input_images_button = tk.Button(self, text="Show Previous Input Images", command=self.show_previous_input_images)
+        self.show_input_images_button = tk.Button(self.content_frame, text="Show Previous Input Images", command=self.show_previous_input_images)
         self.show_input_images_button.grid(row=2, column=0, padx=5, pady=5, sticky="w")
 
-        self.read_user_button = tk.Button(self, text="Show User", command=self.read_user)
+        self.read_user_button = tk.Button(self.content_frame, text="Show User", command=self.read_user)
         self.read_user_button.grid(row=3, column=0, padx=5, pady=5, sticky="w")
         
-        self.update_user_button = tk.Button(self, text="Update User", command=self.update_user)
+        self.update_user_button = tk.Button(self.content_frame, text="Update User", command=self.update_user)
         self.update_user_button.grid(row=4, column=0, padx=5, pady=5, sticky="w")
 
-        self.delete_user_button = tk.Button(self, text="Delete User", command=self.delete_user)
+        self.delete_user_button = tk.Button(self.content_frame, text="Delete User", command=self.delete_user)
         self.delete_user_button.grid(row=5, column=0, padx=5, pady=5, sticky="w")
 
-        # 1/4 size of image
-        self.canvas = tk.Canvas(self, width=270, height=600, bg='white')
-        self.canvas.grid(row=8, column=1, padx=5, pady=5, sticky="w")
+        # 1/4 size of image -> canvas for images
+        self.canvas = tk.Canvas(self.content_frame, width=270, height=600, bg='white')
+        self.canvas.grid(row=12, column=1, padx=5, pady=5, sticky="w")
 
-        self.curr_input_image_id = ""
         self.identify_mode = self.IdentifyMode.NONE
         self.golf_ball = None
         self.club_butt = None
@@ -53,6 +69,10 @@ class MainAppPage(tk.Frame):
         self.vanishing_point_calibration_image = None
         self.feet_line_method = golfkeypoints_pb2.FeetLineMethod.USE_HEEL_LINE
         self.shoulder_tilt = common_pb2.Double(data=0, warning="no shoulder tilt")
+
+        self.curr_input_image_id = ""
+        self.curr_input_image = None
+        self.body_keypoints = None
 
     class IdentifyMode(Enum):
         NONE = 1
@@ -83,12 +103,13 @@ class MainAppPage(tk.Frame):
                 response = self.golfkeypoints_client.upload_input_image(session_token=self.session_token, image_type= self.image_type, image=bytes)
                 messagebox.showinfo("Successfully Upload Input", f"response is {response}")
                 self.curr_input_image_id = response.input_image_id
-                self.display_input_image(img)
+                self.curr_input_image = img
+                self.display_input_image(self.curr_input_image)
             except grpc.RpcError as e:
                 messagebox.showerror("Upload input image failed", f"Could not upload input image: {e.code()}: {e.details()}")
             
     def show_previous_input_images(self):
-        self.canvas.delete("all")
+        self.clear_canvas()
         try:
             response = self.golfkeypoints_client.list_input_images_for_user(session_token=self.session_token)
             for i, input_image_id in enumerate(response.input_image_ids):
@@ -104,12 +125,13 @@ class MainAppPage(tk.Frame):
             buffer = BytesIO(response.image)
             img = Image.open(buffer)
             self.curr_input_image_id = input_image_id
-            self.display_input_image(img)
+            self.curr_input_image = img
+            self.display_input_image(self.curr_input_image)
         except grpc.RpcError as e:
             messagebox.showerror("Show Image Failed", f"Could not get image: {e.code()}: {e.details()}")
     
     def display_image(self, image):
-        self.canvas.delete("all")
+        self.clear_canvas()
         # 1/4 the size to display on canvas
         resized_img = image.resize((270, 600), Image.Resampling.LANCZOS)
         # Convert the image to a PhotoImage object
@@ -117,38 +139,68 @@ class MainAppPage(tk.Frame):
         self.canvas.create_image(0, 0, anchor=tk.NW, image=photo)
         self.canvas.image = photo
 
+    def read_user(self):
+        try:
+            response = self.user_client.read_user(self.session_token)
+            messagebox.showinfo("Show User", f"User info: {response}")
+        except grpc.RpcError as e:
+            messagebox.showerror("Show User", f"Show user failed: {e.code()}: {e.details()}")
+
+    def update_user(self):
+        try:
+            new_username = simpledialog.askstring("Input New Username", prompt="Enter new username, if same leave empty")
+            new_password = simpledialog.askstring("Input New Password", prompt="Enter new password, if same leave empty", show="*")
+            new_email = simpledialog.askstring("Input New Email", prompt="Enter new email, if same leave empty")
+            response = self.user_client.update_user(session_token=self.session_token, username=new_username, password=new_password, email=new_email)
+            messagebox.showinfo("Update User", f"Updated user info: {response}")
+        except grpc.RpcError as e:
+            messagebox.showerror("Update User", f"Update user failed: {e.code()}: {e.details()}")
+    
+    def delete_user(self):
+        try:
+            response = self.user_client.delete_user(self.session_token)
+            messagebox.showinfo("Delete User", f"Successfully deleted user {response}")
+        except grpc.RpcError as e:
+            messagebox.showerror("Delete User", f"Delete user failed: {e.code()}: {e.details()}")
+
     def display_input_image(self, image):
         self.display_image(image)
 
-        self.open_button = tk.Button(self, text="Get Axes Calibration Image", command=self.get_axes_calibration_image)
-        self.open_button.grid(row=0, column=2, padx=5, pady=5, sticky="w")
+        self.axes_button = tk.Button(self.content_frame, text="Get Axes Calibration Image", command=self.get_axes_calibration_image)
+        self.axes_button.grid(row=0, column=2, padx=5, pady=5, sticky="w")
 
-        self.open_button = tk.Button(self, text="Get Vanishing Point Calibration Image", command=self.get_vanishing_point_calibration_image)
-        self.open_button.grid(row=1, column=2, padx=5, pady=5, sticky="w")
+        self.vanishing_point_button = tk.Button(self.content_frame, text="Get Vanishing Point Calibration Image", command=self.get_vanishing_point_calibration_image)
+        self.vanishing_point_button.grid(row=1, column=2, padx=5, pady=5, sticky="w")
 
-        self.open_button = tk.Button(self, text="Identify Golf Ball", command=self.identify_golf_ball)
-        self.open_button.grid(row=2, column=2, padx=5, pady=5, sticky="w")
+        self.identify_golf_ball_button = tk.Button(self.content_frame, text="Identify Golf Ball", command=self.identify_golf_ball)
+        self.identify_golf_ball_button.grid(row=2, column=2, padx=5, pady=5, sticky="w")
 
-        self.open_button = tk.Button(self, text="Identify Club Butt", command=self.identify_club_butt)
-        self.open_button.grid(row=3, column=2, padx=5, pady=5, sticky="w")
+        self.identify_club_butt_button = tk.Button(self.content_frame, text="Identify Club Butt", command=self.identify_club_butt)
+        self.identify_club_butt_button.grid(row=3, column=2, padx=5, pady=5, sticky="w")
 
-        self.open_button = tk.Button(self, text="Identify Club Head", command=self.identify_club_head)
-        self.open_button.grid(row=4, column=2, padx=5, pady=5, sticky="w")
+        self.identify_club_head_button = tk.Button(self.content_frame, text="Identify Club Head", command=self.identify_club_head)
+        self.identify_club_head_button.grid(row=4, column=2, padx=5, pady=5, sticky="w")
 
-        self.open_button = tk.Button(self, text="Modify Feet Line Method", command=self.modify_feet_line_method)
-        self.open_button.grid(row=5, column=2, padx=5, pady=5, sticky="w")
+        self.feet_line_button = tk.Button(self.content_frame, text="Modify Feet Line Method", command=self.modify_feet_line_method)
+        self.feet_line_button.grid(row=5, column=2, padx=5, pady=5, sticky="w")
 
-        self.open_button = tk.Button(self, text="Input Shoulder Tilt For DTL", command=self.input_shoulder_tilt)
-        self.open_button.grid(row=6, column=2, padx=5, pady=5, sticky="w")
+        self.shoulder_tilt_button = tk.Button(self.content_frame, text="Input Shoulder Tilt For DTL", command=self.input_shoulder_tilt)
+        self.shoulder_tilt_button.grid(row=6, column=2, padx=5, pady=5, sticky="w")
 
-        self.open_button = tk.Button(self, text="Calibrate Image", command=partial(self.calibrate_image))
-        self.open_button.grid(row=7, column=2, padx=5, pady=5, sticky="w")
+        self.calibrate_button = tk.Button(self.content_frame, text="Calibrate Image", command=partial(self.calibrate_image))
+        self.calibrate_button.grid(row=7, column=2, padx=5, pady=5, sticky="w")
 
-        self.open_button = tk.Button(self, text="Calculate Golf Keypoints", command=partial(self.calculate_golf_keypoints))
-        self.open_button.grid(row=8, column=2, padx=5, pady=5, sticky="w")
+        self.calculate_button = tk.Button(self.content_frame, text="Calculate Golf Keypoints", command=partial(self.calculate_golf_keypoints))
+        self.calculate_button.grid(row=8, column=2, padx=5, pady=5, sticky="w")
 
-        self.open_button = tk.Button(self, text="Delete Input Image", command=partial(self.delete_input_image))
-        self.open_button.grid(row=9, column=2, padx=5, pady=5, sticky="w")
+        self.read_keypoints_button = tk.Button(self.content_frame, text="Read Keypoints for Input Image", command=partial(self.read_golf_keypoints))
+        self.read_keypoints_button.grid(row=9, column=2, padx=5, pady=5, sticky="w")
+
+        self.delete_input_img_button = tk.Button(self.content_frame, text="Delete Input Image", command=partial(self.delete_input_image))
+        self.delete_input_img_button.grid(row=10, column=2, padx=5, pady=5, sticky="w")
+
+        self.delete_keypoints_button = tk.Button(self.content_frame, text="Delete Keypoints for Input Image", command=partial(self.delete_golf_keypoints))
+        self.delete_keypoints_button.grid(row=11, column=2, padx=5, pady=5, sticky="w")
 
     def get_axes_calibration_image(self):
         img = self.get_image_from_filesystem()
@@ -221,53 +273,97 @@ class MainAppPage(tk.Frame):
             response = self.golfkeypoints_client.calculate_golf_keypoints(session_token=self.session_token, input_image_id=self.curr_input_image_id)
             messagebox.showinfo("Calculate Golf Keypoints", f"Calculate Golf Keypoints successful")
             if response.output_image is not None:
-                buffer = BytesIO(response.output_image)
-                img = Image.open(buffer)
-                self.display_image(img)
-                messagebox.showinfo("Golf Keypoints", f"{response.golf_keypoints}")
-                incorrect = messagebox.askyesno("Body Keypoints Update", "Are there body keypoints that computervision identified incorrectly?")
-                if incorrect:
-                    self.update_body_keypoints(response.golf_keypoints.body_keypoints)
+                self.process_golf_keypoints(response.output_image, response.golf_keypoints)
         except grpc.RpcError as e:
             messagebox.showerror("Calculate Golf Keypoints", f"Calculate Golf Keypoints failed: {e.code()}: {e.details()}") 
 
-    def update_body_keypoints(self, body_keypoints):
-        # TODO: display a button for each body keypoint
-        # user clicks on button
-        # self.canvas.bind button1
-        # add bodykeypoints identifymode
+    def read_golf_keypoints(self):
+        try:
+            response = self.golfkeypoints_client.read_golf_keypoints(self.session_token, self.curr_input_image_id)
+            messagebox.showinfo("Read Golf Keypoints", f"Read Golf Keypoints successful")
+            if response.output_image is not None:
+                self.process_golf_keypoints(response.output_image, response.golf_keypoints)
+        except grpc.RpcError as e:
+            messagebox.showerror("Read Golf Keypoints", f"Read golf keypoints failed: {e.code()}: {e.details()}")
+
+    def process_golf_keypoints(self, output_image, golf_keypoints):
+        buffer = BytesIO(output_image)
+        img = Image.open(buffer)
+        self.display_image(img)
+        messagebox.showinfo("Golf Keypoints", f"{golf_keypoints}")
+        self.body_keypoints = golf_keypoints.body_keypoints
+        incorrect = messagebox.askyesno("Body Keypoints Update", "Are there body keypoints that computervision identified incorrectly?")
+        if incorrect:
+            self.select_body_keypoints_to_update(self.body_keypoints)
+
+    body_pose_field_descriptors = common_pb2.Body25PoseKeypoints.DESCRIPTOR.fields
+
+    def on_mousewheel(self, canvas, event):
+        canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+    def select_body_keypoints_to_update(self, body_keypoints):
+        # create popup window
+        popup = tk.Toplevel(self)
+        popup.wm_title("Body Keypoints Window")
+        # create canvas inside popup window
+        popup_canvas = tk.Canvas(popup)
+        popup_canvas.grid(row=0, column=0, sticky="nsew")
+        # create scrollbar in popup window that controls canvas 
+        scrollbar = tk.Scrollbar(popup, orient="vertical", command=popup_canvas.yview)
+        popup_canvas.configure(yscrollcommand=scrollbar.set)
+        scrollbar.grid(row=0, column=1, sticky="ns")
+        # create frame for content inside the canvas
+        content_frame = tk.Frame(popup_canvas)
+        popup_canvas.create_window((0, 0), window=content_frame, anchor="nw")
+        popup_canvas.bind_all("<MouseWheel>", partial(self.on_mousewheel, popup_canvas))
+        # create buttons for each body keypoint for selections
+        idx = 0
+        for field in self.body_pose_field_descriptors:
+            name = field.name
+            body_keypoint_value = getattr(body_keypoints, name)
+            button = tk.Button(content_frame, text=f"Modify {name}: {body_keypoint_value}", command=partial(self.update_body_keypoint, name))
+            button.grid(row=idx, column=0, padx=5, pady=5, sticky="w")
+            idx += 1
+        done_button = tk.Button(content_frame, text="Done Updating Body Keypoints", command=partial(self.update_body_keypoints, popup))
+        done_button.grid(row=idx, column=0, padx=5, pady=5, sticky="w")
         return 
-
-    def read_user(self):
-        try:
-            response = self.user_client.read_user(self.session_token)
-            messagebox.showinfo("Show User", f"User info: {response}")
-        except grpc.RpcError as e:
-            messagebox.showerror("Show User", f"Show user failed: {e.code()}: {e.details()}")
-
-    def update_user(self):
-        try:
-            new_username = simpledialog.askstring("Input New Username", prompt="Enter new username, if same leave empty")
-            new_password = simpledialog.askstring("Input New Password", prompt="Enter new password, if same leave empty", show="*")
-            new_email = simpledialog.askstring("Input New Email", prompt="Enter new email, if same leave empty")
-            response = self.user_client.update_user(session_token=self.session_token, username=new_username, password=new_password, email=new_email)
-            messagebox.showinfo("Update User", f"Updated user info: {response}")
-        except grpc.RpcError as e:
-            messagebox.showerror("Update User", f"Update user failed: {e.code()}: {e.details()}")
     
-    def delete_user(self):
-        try:
-            response = self.user_client.delete_user(self.session_token)
-            messagebox.showinfo("Delete User", f"Successfully deleted user {response}")
-        except grpc.RpcError as e:
-            messagebox.showerror("Delete User", f"Delete user failed: {e.code()}: {e.details()}")
+    def update_body_keypoint(self, field_name):
+        x = simpledialog.askfloat("New Value ", prompt=f"What is the new x value for {field_name}")
+        y = simpledialog.askfloat("New Value ", prompt=f"What is the new y value for {field_name}")
+        field = getattr(self.body_keypoints, field_name)
+        setattr(field, "x", x)
+        setattr(field, "y", y)
+        setattr(field, "confidence", 1.0)
 
-    def delete_input_image(self, input_image_id):
+    def update_body_keypoints(self, popup):
+        popup.destroy
+        # bind mousewheel back to whole canvas
+        self.whole_canvas.bind_all("<MouseWheel>", partial(self.on_mousewheel, self.whole_canvas))
         try:
-            response = self.golfkeypoints_client.delete_input_image(self.session_token, input_image_id)
+            response = self.golfkeypoints_client.update_body_keypoints(self.session_token, self.curr_input_image_id, self.body_keypoints)
+            messagebox.showinfo("Update Body Keypoints", f"Update Body Keypoints successful: {response}")
+        except grpc.RpcError as e:
+            messagebox.showerror("Update Body Keypoints", f"Update Body keypoints failed: {e.code()}: {e.details()}")
+        
+
+    def delete_input_image(self):
+        try:
+            response = self.golfkeypoints_client.delete_input_image(self.session_token, self.curr_input_image_id)
             messagebox.showinfo("Delete Input Image", f"Successfully deleted input image {response}")
+            # clear canvas
+            self.clear_canvas()
         except grpc.RpcError as e:
             messagebox.showerror("Delete Input Image", f"Delete input image failed: {e.code()}: {e.details()}")
+
+    def delete_golf_keypoints(self):
+        try:
+            response = self.golfkeypoints_client.delete_golf_keypoints(self.session_token, self.curr_input_image_id)
+            messagebox.showinfo("Delete Golf Keypoints", f"Successfully deleted golf keypoints {response}")
+            # go back to original input image
+            self.display_image(self.curr_input_image)
+        except grpc.RpcError as e:
+            messagebox.showerror("Delete Golf Keypoints", f"Delete golf keypoints failed: {e.code()}: {e.details()}")
 
     def draw_circle(self, x, y, color):
         radius = 3
@@ -329,4 +425,7 @@ class MainAppPage(tk.Frame):
         buffer = io.BytesIO()
         image.save(buffer, format='JPEG')
         return buffer.getvalue()  
+    
+    def clear_canvas(self):
+        self.canvas.delete("all")
     

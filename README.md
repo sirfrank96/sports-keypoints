@@ -55,14 +55,16 @@ The following are instructions on how to start the sports-keypoints services and
 
 6a. _(If using GPU then pull archived NVIDIA image:<br>
    `docker pull nvcr.io/nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04`<br> 
-   If you have issues, you may need to create an NVIDIA NGC Catalog account: <https://catalog.ngc.nvidia.com/> and then `docker login nvcr.io` before pulling the image.)_
+   If you have issues, you may need to create an NVIDIA NGC Catalog account: <https://catalog.ngc.nvidia.com/> and then `docker login nvcr.io` before pulling the image.
+   Also, because this is an archived image, it is recommended to use a security scanner like Aqua Trivy to scan this image before continuing (It can be downloaded as 
+   an extension in Docker Desktop or running the Docker image `docker run aquasec/trivy:latest image nvcr.io/nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04`)_
 
 6. Spin up the sports-keypoints service containers with docker compose:<br>
    `docker compose up --build`
 7. While that builds, in another window navigate to the client application:<br>
    `cd sports-keypoints/clients/python-golf-client`
 8. Create a virtual environment:<br>
-   `C:path\to\python310\python.exe -m venv python310_venv` (Mine was C:Users\UserA\AppData\Local\Programs\Python\Python310\python.exe on Windows)
+   `C:path\to\python310\python.exe -m venv python310_venv` (Mine was C:\Users\UserA\AppData\Local\Programs\Python\Python310\python.exe on Windows)
 9. Activate virtual environment:<br>
   * If Windows Command Prompt:<br>
       `python310_venv\Scripts\activate.bat`
@@ -80,7 +82,7 @@ The following are instructions on how to start the sports-keypoints services and
 
 ### Alternatives To Docker
 
-If you do no not want to run Docker (overhead too large or running too slowly), you can run sports-keypoints without docker.
+If you do no not want to run Docker (overhead too large, running too slowly, or want to more easily test locally), you can run sports-keypoints without docker.
 
 Prerequisites: 
 * MongoDb (<https://www.mongodb.com/docs/manual/installation/>)
