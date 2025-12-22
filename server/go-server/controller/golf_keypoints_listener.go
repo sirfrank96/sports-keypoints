@@ -157,6 +157,9 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 	if inputImage.ImageType == skp.ImageType_DTL {
 		// axes calibration
 		if calibrationInfo.CalibrationType != skp.CalibrationType_NO_CALIBRATION {
+			if inputImage.CalibrationImgAxes == nil {
+				return nil, fmt.Errorf("calibration image axes is required")
+			}
 			getPoseDataResponse, err := g.cvmgr.GetPoseData(inputImage.CalibrationImgAxes)
 			if err != nil {
 				return nil, fmt.Errorf("could not get pose data for calibration image axes %w", err)
@@ -169,6 +172,9 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 			}
 			// vanishing point calibration
 			if calibrationInfo.CalibrationType != skp.CalibrationType_AXES_CALIBRATION_ONLY {
+				if inputImage.CalibrationImgVanishingPoint == nil {
+					return nil, fmt.Errorf("calibration image vanishing point is required")
+				}
 				// add shoulder tilt for shoulder alignment calculation if provided
 				if request.ShoulderTilt != nil {
 					calibrationInfo.ShoulderTilt = *request.ShoulderTilt
@@ -190,6 +196,9 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 	} else {
 		// axes calibration
 		if calibrationInfo.CalibrationType != skp.CalibrationType_NO_CALIBRATION {
+			if inputImage.CalibrationImgAxes == nil {
+				return nil, fmt.Errorf("calibration image axes is required")
+			}
 			getPoseDataResponse, err := g.cvmgr.GetPoseData(inputImage.CalibrationImgAxes)
 			if err != nil {
 				return nil, fmt.Errorf("could not get pose data for calibration image axes %w", err)
