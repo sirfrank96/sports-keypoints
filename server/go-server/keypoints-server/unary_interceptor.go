@@ -2,6 +2,7 @@ package keypointsserver
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
@@ -94,6 +95,9 @@ func sessionUnaryInterceptor(ctx context.Context, req interface{}, info *grpc.Un
 }
 
 func getUserIdFromSessionToken(sessionToken string) (string, error) {
+	if sessionToken == "" {
+		return "", fmt.Errorf("no session token provided")
+	}
 	claims, err := util.VerifyJWTSessionToken(sessionToken)
 	if err != nil {
 		return "", err
