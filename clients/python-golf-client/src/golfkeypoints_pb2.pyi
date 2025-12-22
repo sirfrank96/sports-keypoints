@@ -85,18 +85,22 @@ class ReadInputImageRequest(_message.Message):
     def __init__(self, session_token: _Optional[str] = ..., input_image_id: _Optional[str] = ...) -> None: ...
 
 class ReadInputImageResponse(_message.Message):
-    __slots__ = ("success", "image_type", "image", "calibration_type", "feet_line_method")
+    __slots__ = ("success", "image_type", "image", "calibration_type", "feet_line_method", "description", "timestamp")
     SUCCESS_FIELD_NUMBER: _ClassVar[int]
     IMAGE_TYPE_FIELD_NUMBER: _ClassVar[int]
     IMAGE_FIELD_NUMBER: _ClassVar[int]
     CALIBRATION_TYPE_FIELD_NUMBER: _ClassVar[int]
     FEET_LINE_METHOD_FIELD_NUMBER: _ClassVar[int]
+    DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    TIMESTAMP_FIELD_NUMBER: _ClassVar[int]
     success: bool
     image_type: ImageType
     image: bytes
     calibration_type: CalibrationType
     feet_line_method: FeetLineMethod
-    def __init__(self, success: bool = ..., image_type: _Optional[_Union[ImageType, str]] = ..., image: _Optional[bytes] = ..., calibration_type: _Optional[_Union[CalibrationType, str]] = ..., feet_line_method: _Optional[_Union[FeetLineMethod, str]] = ...) -> None: ...
+    description: str
+    timestamp: _timestamp_pb2.Timestamp
+    def __init__(self, success: bool = ..., image_type: _Optional[_Union[ImageType, str]] = ..., image: _Optional[bytes] = ..., calibration_type: _Optional[_Union[CalibrationType, str]] = ..., feet_line_method: _Optional[_Union[FeetLineMethod, str]] = ..., description: _Optional[str] = ..., timestamp: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class DeleteInputImageRequest(_message.Message):
     __slots__ = ("session_token", "input_image_id")
