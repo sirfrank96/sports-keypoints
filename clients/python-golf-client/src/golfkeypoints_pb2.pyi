@@ -1,4 +1,7 @@
+import datetime
+
 import common_pb2 as _common_pb2
+from google.protobuf import timestamp_pb2 as _timestamp_pb2
 from google.protobuf.internal import containers as _containers
 from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
@@ -38,14 +41,18 @@ USE_HEEL_LINE: FeetLineMethod
 USE_TOE_LINE: FeetLineMethod
 
 class UploadInputImageRequest(_message.Message):
-    __slots__ = ("session_token", "image_type", "image")
+    __slots__ = ("session_token", "image_type", "image", "description", "timestamp")
     SESSION_TOKEN_FIELD_NUMBER: _ClassVar[int]
     IMAGE_TYPE_FIELD_NUMBER: _ClassVar[int]
     IMAGE_FIELD_NUMBER: _ClassVar[int]
+    DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    TIMESTAMP_FIELD_NUMBER: _ClassVar[int]
     session_token: str
     image_type: ImageType
     image: bytes
-    def __init__(self, session_token: _Optional[str] = ..., image_type: _Optional[_Union[ImageType, str]] = ..., image: _Optional[bytes] = ...) -> None: ...
+    description: str
+    timestamp: _timestamp_pb2.Timestamp
+    def __init__(self, session_token: _Optional[str] = ..., image_type: _Optional[_Union[ImageType, str]] = ..., image: _Optional[bytes] = ..., description: _Optional[str] = ..., timestamp: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class UploadInputImageResponse(_message.Message):
     __slots__ = ("success", "input_image_id")

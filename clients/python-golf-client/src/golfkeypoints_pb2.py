@@ -23,63 +23,64 @@ _sym_db = _symbol_database.Default()
 
 
 import common_pb2 as common__pb2
+from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x13golfkeypoints.proto\x12\x16sports_keypoints_proto\x1a\x0c\x63ommon.proto\"v\n\x17UploadInputImageRequest\x12\x15\n\rsession_token\x18\x01 \x01(\t\x12\x35\n\nimage_type\x18\x02 \x01(\x0e\x32!.sports_keypoints_proto.ImageType\x12\r\n\x05image\x18\x03 \x01(\x0c\"C\n\x18UploadInputImageResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x16\n\x0einput_image_id\x18\x02 \x01(\t\"6\n\x1dListInputImagesForUserRequest\x12\x15\n\rsession_token\x18\x01 \x01(\t\"J\n\x1eListInputImagesForUserResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x17\n\x0finput_image_ids\x18\x02 \x03(\t\"F\n\x15ReadInputImageRequest\x12\x15\n\rsession_token\x18\x01 \x01(\t\x12\x16\n\x0einput_image_id\x18\x02 \x01(\t\"\xf4\x01\n\x16ReadInputImageResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x35\n\nimage_type\x18\x02 \x01(\x0e\x32!.sports_keypoints_proto.ImageType\x12\r\n\x05image\x18\x03 \x01(\x0c\x12\x41\n\x10\x63\x61libration_type\x18\x04 \x01(\x0e\x32\'.sports_keypoints_proto.CalibrationType\x12@\n\x10\x66\x65\x65t_line_method\x18\x05 \x01(\x0e\x32&.sports_keypoints_proto.FeetLineMethod\"H\n\x17\x44\x65leteInputImageRequest\x12\x15\n\rsession_token\x18\x01 \x01(\t\x12\x16\n\x0einput_image_id\x18\x02 \x01(\t\"+\n\x18\x44\x65leteInputImageResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\"\xf1\x03\n\x1a\x43\x61librateInputImageRequest\x12\x15\n\rsession_token\x18\x01 \x01(\t\x12\x16\n\x0einput_image_id\x18\x02 \x01(\t\x12\x41\n\x10\x63\x61libration_type\x18\x03 \x01(\x0e\x32\'.sports_keypoints_proto.CalibrationType\x12@\n\x10\x66\x65\x65t_line_method\x18\x04 \x01(\x0e\x32&.sports_keypoints_proto.FeetLineMethod\x12\x1e\n\x16\x63\x61libration_image_axes\x18\x05 \x01(\x0c\x12)\n!calibration_image_vanishing_point\x18\x06 \x01(\x0c\x12\x33\n\tgolf_ball\x18\x07 \x01(\x0b\x32 .sports_keypoints_proto.Keypoint\x12\x33\n\tclub_butt\x18\x08 \x01(\x0b\x32 .sports_keypoints_proto.Keypoint\x12\x33\n\tclub_head\x18\t \x01(\x0b\x32 .sports_keypoints_proto.Keypoint\x12\x35\n\rshoulder_tilt\x18\n \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\".\n\x1b\x43\x61librateInputImageResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\"N\n\x1d\x43\x61lculateGolfKeypointsRequest\x12\x15\n\rsession_token\x18\x01 \x01(\t\x12\x16\n\x0einput_image_id\x18\x02 \x01(\t\"\x86\x01\n\x1e\x43\x61lculateGolfKeypointsResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x14\n\x0coutput_image\x18\x02 \x01(\x0c\x12=\n\x0egolf_keypoints\x18\x03 \x01(\x0b\x32%.sports_keypoints_proto.GolfKeypoints\"I\n\x18ReadGolfKeypointsRequest\x12\x15\n\rsession_token\x18\x01 \x01(\t\x12\x16\n\x0einput_image_id\x18\x02 \x01(\t\"\x81\x01\n\x19ReadGolfKeypointsResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x14\n\x0coutput_image\x18\x02 \x01(\x0c\x12=\n\x0egolf_keypoints\x18\x03 \x01(\x0b\x32%.sports_keypoints_proto.GolfKeypoints\"\x98\x01\n\x1aUpdateBodyKeypointsRequest\x12\x15\n\rsession_token\x18\x01 \x01(\t\x12\x16\n\x0einput_image_id\x18\x02 \x01(\t\x12K\n\x16updated_body_keypoints\x18\x03 \x01(\x0b\x32+.sports_keypoints_proto.Body25PoseKeypoints\"u\n\x1bUpdateBodyKeypointsResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x45\n\x16updated_golf_keypoints\x18\x02 \x01(\x0b\x32%.sports_keypoints_proto.GolfKeypoints\"K\n\x1a\x44\x65leteGolfKeypointsRequest\x12\x15\n\rsession_token\x18\x01 \x01(\t\x12\x16\n\x0einput_image_id\x18\x02 \x01(\t\".\n\x1b\x44\x65leteGolfKeypointsResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\"\xf0\x01\n\rGolfKeypoints\x12I\n\x15\x64tl_golf_setup_points\x18\x01 \x01(\x0b\x32*.sports_keypoints_proto.DTLGolfSetupPoints\x12O\n\x18\x66\x61\x63\x65on_golf_setup_points\x18\x02 \x01(\x0b\x32-.sports_keypoints_proto.FaceOnGolfSetupPoints\x12\x43\n\x0e\x62ody_keypoints\x18\x03 \x01(\x0b\x32+.sports_keypoints_proto.Body25PoseKeypoints\"\x8d\x04\n\x12\x44TLGolfSetupPoints\x12\x33\n\x0bspine_angle\x18\x01 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x36\n\x0e\x66\x65\x65t_alignment\x18\x02 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x36\n\x0eheel_alignment\x18\x03 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x35\n\rtoe_alignment\x18\x04 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12:\n\x12shoulder_alignment\x18\x05 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x37\n\x0fwaist_alignment\x18\x06 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x31\n\tknee_bend\x18\x07 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12:\n\x12\x64istance_from_ball\x18\x08 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x37\n\x0fulnar_deviation\x18\t \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\"\xeb\x04\n\x15\x46\x61\x63\x65OnGolfSetupPoints\x12\x31\n\tside_bend\x18\x01 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x34\n\x0cl_foot_flare\x18\x02 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x34\n\x0cr_foot_flare\x18\x03 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x34\n\x0cstance_width\x18\x04 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x35\n\rshoulder_tilt\x18\x05 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x32\n\nwaist_tilt\x18\x06 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x32\n\nshaft_lean\x18\x07 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x35\n\rball_position\x18\x08 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x35\n\rhead_position\x18\t \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x36\n\x0e\x63hest_position\x18\n \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x38\n\x10mid_hip_position\x18\x0b \x01(\x0b\x32\x1e.sports_keypoints_proto.Double*=\n\tImageType\x12\x1a\n\x16IMAGE_TYPE_UNSPECIFIED\x10\x00\x12\x0b\n\x07\x46\x41\x43\x45_ON\x10\x01\x12\x07\n\x03\x44TL\x10\x02*\x80\x01\n\x0f\x43\x61librationType\x12\x12\n\x0eNO_CALIBRATION\x10\x00\x12\x19\n\x15\x41XES_CALIBRATION_ONLY\x10\x01\x12(\n$AXES_AND_VANISHING_POINT_CALIBRATION\x10\x02\x12\x14\n\x10\x46ULL_CALIBRATION\x10\x03*W\n\x0e\x46\x65\x65tLineMethod\x12 \n\x1c\x46\x45\x45T_LINE_METHOD_UNSPECIFIED\x10\x00\x12\x11\n\rUSE_HEEL_LINE\x10\x01\x12\x10\n\x0cUSE_TOE_LINE\x10\x02\x32\x98\t\n\x14GolfKeypointsService\x12w\n\x10UploadInputImage\x12/.sports_keypoints_proto.UploadInputImageRequest\x1a\x30.sports_keypoints_proto.UploadInputImageResponse\"\x00\x12\x89\x01\n\x16ListInputImagesForUser\x12\x35.sports_keypoints_proto.ListInputImagesForUserRequest\x1a\x36.sports_keypoints_proto.ListInputImagesForUserResponse\"\x00\x12q\n\x0eReadInputImage\x12-.sports_keypoints_proto.ReadInputImageRequest\x1a..sports_keypoints_proto.ReadInputImageResponse\"\x00\x12w\n\x10\x44\x65leteInputImage\x12/.sports_keypoints_proto.DeleteInputImageRequest\x1a\x30.sports_keypoints_proto.DeleteInputImageResponse\"\x00\x12\x80\x01\n\x13\x43\x61librateInputImage\x12\x32.sports_keypoints_proto.CalibrateInputImageRequest\x1a\x33.sports_keypoints_proto.CalibrateInputImageResponse\"\x00\x12\x89\x01\n\x16\x43\x61lculateGolfKeypoints\x12\x35.sports_keypoints_proto.CalculateGolfKeypointsRequest\x1a\x36.sports_keypoints_proto.CalculateGolfKeypointsResponse\"\x00\x12z\n\x11ReadGolfKeypoints\x12\x30.sports_keypoints_proto.ReadGolfKeypointsRequest\x1a\x31.sports_keypoints_proto.ReadGolfKeypointsResponse\"\x00\x12\x80\x01\n\x13UpdateBodyKeypoints\x12\x32.sports_keypoints_proto.UpdateBodyKeypointsRequest\x1a\x33.sports_keypoints_proto.UpdateBodyKeypointsResponse\"\x00\x12\x80\x01\n\x13\x44\x65leteGolfKeypoints\x12\x32.sports_keypoints_proto.DeleteGolfKeypointsRequest\x1a\x33.sports_keypoints_proto.DeleteGolfKeypointsResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x13golfkeypoints.proto\x12\x16sports_keypoints_proto\x1a\x0c\x63ommon.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xba\x01\n\x17UploadInputImageRequest\x12\x15\n\rsession_token\x18\x01 \x01(\t\x12\x35\n\nimage_type\x18\x02 \x01(\x0e\x32!.sports_keypoints_proto.ImageType\x12\r\n\x05image\x18\x03 \x01(\x0c\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12-\n\ttimestamp\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"C\n\x18UploadInputImageResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x16\n\x0einput_image_id\x18\x02 \x01(\t\"6\n\x1dListInputImagesForUserRequest\x12\x15\n\rsession_token\x18\x01 \x01(\t\"J\n\x1eListInputImagesForUserResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x17\n\x0finput_image_ids\x18\x02 \x03(\t\"F\n\x15ReadInputImageRequest\x12\x15\n\rsession_token\x18\x01 \x01(\t\x12\x16\n\x0einput_image_id\x18\x02 \x01(\t\"\xf4\x01\n\x16ReadInputImageResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x35\n\nimage_type\x18\x02 \x01(\x0e\x32!.sports_keypoints_proto.ImageType\x12\r\n\x05image\x18\x03 \x01(\x0c\x12\x41\n\x10\x63\x61libration_type\x18\x04 \x01(\x0e\x32\'.sports_keypoints_proto.CalibrationType\x12@\n\x10\x66\x65\x65t_line_method\x18\x05 \x01(\x0e\x32&.sports_keypoints_proto.FeetLineMethod\"H\n\x17\x44\x65leteInputImageRequest\x12\x15\n\rsession_token\x18\x01 \x01(\t\x12\x16\n\x0einput_image_id\x18\x02 \x01(\t\"+\n\x18\x44\x65leteInputImageResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\"\xf1\x03\n\x1a\x43\x61librateInputImageRequest\x12\x15\n\rsession_token\x18\x01 \x01(\t\x12\x16\n\x0einput_image_id\x18\x02 \x01(\t\x12\x41\n\x10\x63\x61libration_type\x18\x03 \x01(\x0e\x32\'.sports_keypoints_proto.CalibrationType\x12@\n\x10\x66\x65\x65t_line_method\x18\x04 \x01(\x0e\x32&.sports_keypoints_proto.FeetLineMethod\x12\x1e\n\x16\x63\x61libration_image_axes\x18\x05 \x01(\x0c\x12)\n!calibration_image_vanishing_point\x18\x06 \x01(\x0c\x12\x33\n\tgolf_ball\x18\x07 \x01(\x0b\x32 .sports_keypoints_proto.Keypoint\x12\x33\n\tclub_butt\x18\x08 \x01(\x0b\x32 .sports_keypoints_proto.Keypoint\x12\x33\n\tclub_head\x18\t \x01(\x0b\x32 .sports_keypoints_proto.Keypoint\x12\x35\n\rshoulder_tilt\x18\n \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\".\n\x1b\x43\x61librateInputImageResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\"N\n\x1d\x43\x61lculateGolfKeypointsRequest\x12\x15\n\rsession_token\x18\x01 \x01(\t\x12\x16\n\x0einput_image_id\x18\x02 \x01(\t\"\x86\x01\n\x1e\x43\x61lculateGolfKeypointsResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x14\n\x0coutput_image\x18\x02 \x01(\x0c\x12=\n\x0egolf_keypoints\x18\x03 \x01(\x0b\x32%.sports_keypoints_proto.GolfKeypoints\"I\n\x18ReadGolfKeypointsRequest\x12\x15\n\rsession_token\x18\x01 \x01(\t\x12\x16\n\x0einput_image_id\x18\x02 \x01(\t\"\x81\x01\n\x19ReadGolfKeypointsResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x14\n\x0coutput_image\x18\x02 \x01(\x0c\x12=\n\x0egolf_keypoints\x18\x03 \x01(\x0b\x32%.sports_keypoints_proto.GolfKeypoints\"\x98\x01\n\x1aUpdateBodyKeypointsRequest\x12\x15\n\rsession_token\x18\x01 \x01(\t\x12\x16\n\x0einput_image_id\x18\x02 \x01(\t\x12K\n\x16updated_body_keypoints\x18\x03 \x01(\x0b\x32+.sports_keypoints_proto.Body25PoseKeypoints\"u\n\x1bUpdateBodyKeypointsResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x45\n\x16updated_golf_keypoints\x18\x02 \x01(\x0b\x32%.sports_keypoints_proto.GolfKeypoints\"K\n\x1a\x44\x65leteGolfKeypointsRequest\x12\x15\n\rsession_token\x18\x01 \x01(\t\x12\x16\n\x0einput_image_id\x18\x02 \x01(\t\".\n\x1b\x44\x65leteGolfKeypointsResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\"\xf0\x01\n\rGolfKeypoints\x12I\n\x15\x64tl_golf_setup_points\x18\x01 \x01(\x0b\x32*.sports_keypoints_proto.DTLGolfSetupPoints\x12O\n\x18\x66\x61\x63\x65on_golf_setup_points\x18\x02 \x01(\x0b\x32-.sports_keypoints_proto.FaceOnGolfSetupPoints\x12\x43\n\x0e\x62ody_keypoints\x18\x03 \x01(\x0b\x32+.sports_keypoints_proto.Body25PoseKeypoints\"\x8d\x04\n\x12\x44TLGolfSetupPoints\x12\x33\n\x0bspine_angle\x18\x01 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x36\n\x0e\x66\x65\x65t_alignment\x18\x02 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x36\n\x0eheel_alignment\x18\x03 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x35\n\rtoe_alignment\x18\x04 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12:\n\x12shoulder_alignment\x18\x05 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x37\n\x0fwaist_alignment\x18\x06 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x31\n\tknee_bend\x18\x07 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12:\n\x12\x64istance_from_ball\x18\x08 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x37\n\x0fulnar_deviation\x18\t \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\"\xeb\x04\n\x15\x46\x61\x63\x65OnGolfSetupPoints\x12\x31\n\tside_bend\x18\x01 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x34\n\x0cl_foot_flare\x18\x02 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x34\n\x0cr_foot_flare\x18\x03 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x34\n\x0cstance_width\x18\x04 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x35\n\rshoulder_tilt\x18\x05 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x32\n\nwaist_tilt\x18\x06 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x32\n\nshaft_lean\x18\x07 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x35\n\rball_position\x18\x08 \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x35\n\rhead_position\x18\t \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x36\n\x0e\x63hest_position\x18\n \x01(\x0b\x32\x1e.sports_keypoints_proto.Double\x12\x38\n\x10mid_hip_position\x18\x0b \x01(\x0b\x32\x1e.sports_keypoints_proto.Double*=\n\tImageType\x12\x1a\n\x16IMAGE_TYPE_UNSPECIFIED\x10\x00\x12\x0b\n\x07\x46\x41\x43\x45_ON\x10\x01\x12\x07\n\x03\x44TL\x10\x02*\x80\x01\n\x0f\x43\x61librationType\x12\x12\n\x0eNO_CALIBRATION\x10\x00\x12\x19\n\x15\x41XES_CALIBRATION_ONLY\x10\x01\x12(\n$AXES_AND_VANISHING_POINT_CALIBRATION\x10\x02\x12\x14\n\x10\x46ULL_CALIBRATION\x10\x03*W\n\x0e\x46\x65\x65tLineMethod\x12 \n\x1c\x46\x45\x45T_LINE_METHOD_UNSPECIFIED\x10\x00\x12\x11\n\rUSE_HEEL_LINE\x10\x01\x12\x10\n\x0cUSE_TOE_LINE\x10\x02\x32\x98\t\n\x14GolfKeypointsService\x12w\n\x10UploadInputImage\x12/.sports_keypoints_proto.UploadInputImageRequest\x1a\x30.sports_keypoints_proto.UploadInputImageResponse\"\x00\x12\x89\x01\n\x16ListInputImagesForUser\x12\x35.sports_keypoints_proto.ListInputImagesForUserRequest\x1a\x36.sports_keypoints_proto.ListInputImagesForUserResponse\"\x00\x12q\n\x0eReadInputImage\x12-.sports_keypoints_proto.ReadInputImageRequest\x1a..sports_keypoints_proto.ReadInputImageResponse\"\x00\x12w\n\x10\x44\x65leteInputImage\x12/.sports_keypoints_proto.DeleteInputImageRequest\x1a\x30.sports_keypoints_proto.DeleteInputImageResponse\"\x00\x12\x80\x01\n\x13\x43\x61librateInputImage\x12\x32.sports_keypoints_proto.CalibrateInputImageRequest\x1a\x33.sports_keypoints_proto.CalibrateInputImageResponse\"\x00\x12\x89\x01\n\x16\x43\x61lculateGolfKeypoints\x12\x35.sports_keypoints_proto.CalculateGolfKeypointsRequest\x1a\x36.sports_keypoints_proto.CalculateGolfKeypointsResponse\"\x00\x12z\n\x11ReadGolfKeypoints\x12\x30.sports_keypoints_proto.ReadGolfKeypointsRequest\x1a\x31.sports_keypoints_proto.ReadGolfKeypointsResponse\"\x00\x12\x80\x01\n\x13UpdateBodyKeypoints\x12\x32.sports_keypoints_proto.UpdateBodyKeypointsRequest\x1a\x33.sports_keypoints_proto.UpdateBodyKeypointsResponse\"\x00\x12\x80\x01\n\x13\x44\x65leteGolfKeypoints\x12\x32.sports_keypoints_proto.DeleteGolfKeypointsRequest\x1a\x33.sports_keypoints_proto.DeleteGolfKeypointsResponse\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'golfkeypoints_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_IMAGETYPE']._serialized_start=3584
-  _globals['_IMAGETYPE']._serialized_end=3645
-  _globals['_CALIBRATIONTYPE']._serialized_start=3648
-  _globals['_CALIBRATIONTYPE']._serialized_end=3776
-  _globals['_FEETLINEMETHOD']._serialized_start=3778
-  _globals['_FEETLINEMETHOD']._serialized_end=3865
-  _globals['_UPLOADINPUTIMAGEREQUEST']._serialized_start=61
-  _globals['_UPLOADINPUTIMAGEREQUEST']._serialized_end=179
-  _globals['_UPLOADINPUTIMAGERESPONSE']._serialized_start=181
-  _globals['_UPLOADINPUTIMAGERESPONSE']._serialized_end=248
-  _globals['_LISTINPUTIMAGESFORUSERREQUEST']._serialized_start=250
-  _globals['_LISTINPUTIMAGESFORUSERREQUEST']._serialized_end=304
-  _globals['_LISTINPUTIMAGESFORUSERRESPONSE']._serialized_start=306
-  _globals['_LISTINPUTIMAGESFORUSERRESPONSE']._serialized_end=380
-  _globals['_READINPUTIMAGEREQUEST']._serialized_start=382
-  _globals['_READINPUTIMAGEREQUEST']._serialized_end=452
-  _globals['_READINPUTIMAGERESPONSE']._serialized_start=455
-  _globals['_READINPUTIMAGERESPONSE']._serialized_end=699
-  _globals['_DELETEINPUTIMAGEREQUEST']._serialized_start=701
-  _globals['_DELETEINPUTIMAGEREQUEST']._serialized_end=773
-  _globals['_DELETEINPUTIMAGERESPONSE']._serialized_start=775
-  _globals['_DELETEINPUTIMAGERESPONSE']._serialized_end=818
-  _globals['_CALIBRATEINPUTIMAGEREQUEST']._serialized_start=821
-  _globals['_CALIBRATEINPUTIMAGEREQUEST']._serialized_end=1318
-  _globals['_CALIBRATEINPUTIMAGERESPONSE']._serialized_start=1320
-  _globals['_CALIBRATEINPUTIMAGERESPONSE']._serialized_end=1366
-  _globals['_CALCULATEGOLFKEYPOINTSREQUEST']._serialized_start=1368
-  _globals['_CALCULATEGOLFKEYPOINTSREQUEST']._serialized_end=1446
-  _globals['_CALCULATEGOLFKEYPOINTSRESPONSE']._serialized_start=1449
-  _globals['_CALCULATEGOLFKEYPOINTSRESPONSE']._serialized_end=1583
-  _globals['_READGOLFKEYPOINTSREQUEST']._serialized_start=1585
-  _globals['_READGOLFKEYPOINTSREQUEST']._serialized_end=1658
-  _globals['_READGOLFKEYPOINTSRESPONSE']._serialized_start=1661
-  _globals['_READGOLFKEYPOINTSRESPONSE']._serialized_end=1790
-  _globals['_UPDATEBODYKEYPOINTSREQUEST']._serialized_start=1793
-  _globals['_UPDATEBODYKEYPOINTSREQUEST']._serialized_end=1945
-  _globals['_UPDATEBODYKEYPOINTSRESPONSE']._serialized_start=1947
-  _globals['_UPDATEBODYKEYPOINTSRESPONSE']._serialized_end=2064
-  _globals['_DELETEGOLFKEYPOINTSREQUEST']._serialized_start=2066
-  _globals['_DELETEGOLFKEYPOINTSREQUEST']._serialized_end=2141
-  _globals['_DELETEGOLFKEYPOINTSRESPONSE']._serialized_start=2143
-  _globals['_DELETEGOLFKEYPOINTSRESPONSE']._serialized_end=2189
-  _globals['_GOLFKEYPOINTS']._serialized_start=2192
-  _globals['_GOLFKEYPOINTS']._serialized_end=2432
-  _globals['_DTLGOLFSETUPPOINTS']._serialized_start=2435
-  _globals['_DTLGOLFSETUPPOINTS']._serialized_end=2960
-  _globals['_FACEONGOLFSETUPPOINTS']._serialized_start=2963
-  _globals['_FACEONGOLFSETUPPOINTS']._serialized_end=3582
-  _globals['_GOLFKEYPOINTSSERVICE']._serialized_start=3868
-  _globals['_GOLFKEYPOINTSSERVICE']._serialized_end=5044
+  _globals['_IMAGETYPE']._serialized_start=3686
+  _globals['_IMAGETYPE']._serialized_end=3747
+  _globals['_CALIBRATIONTYPE']._serialized_start=3750
+  _globals['_CALIBRATIONTYPE']._serialized_end=3878
+  _globals['_FEETLINEMETHOD']._serialized_start=3880
+  _globals['_FEETLINEMETHOD']._serialized_end=3967
+  _globals['_UPLOADINPUTIMAGEREQUEST']._serialized_start=95
+  _globals['_UPLOADINPUTIMAGEREQUEST']._serialized_end=281
+  _globals['_UPLOADINPUTIMAGERESPONSE']._serialized_start=283
+  _globals['_UPLOADINPUTIMAGERESPONSE']._serialized_end=350
+  _globals['_LISTINPUTIMAGESFORUSERREQUEST']._serialized_start=352
+  _globals['_LISTINPUTIMAGESFORUSERREQUEST']._serialized_end=406
+  _globals['_LISTINPUTIMAGESFORUSERRESPONSE']._serialized_start=408
+  _globals['_LISTINPUTIMAGESFORUSERRESPONSE']._serialized_end=482
+  _globals['_READINPUTIMAGEREQUEST']._serialized_start=484
+  _globals['_READINPUTIMAGEREQUEST']._serialized_end=554
+  _globals['_READINPUTIMAGERESPONSE']._serialized_start=557
+  _globals['_READINPUTIMAGERESPONSE']._serialized_end=801
+  _globals['_DELETEINPUTIMAGEREQUEST']._serialized_start=803
+  _globals['_DELETEINPUTIMAGEREQUEST']._serialized_end=875
+  _globals['_DELETEINPUTIMAGERESPONSE']._serialized_start=877
+  _globals['_DELETEINPUTIMAGERESPONSE']._serialized_end=920
+  _globals['_CALIBRATEINPUTIMAGEREQUEST']._serialized_start=923
+  _globals['_CALIBRATEINPUTIMAGEREQUEST']._serialized_end=1420
+  _globals['_CALIBRATEINPUTIMAGERESPONSE']._serialized_start=1422
+  _globals['_CALIBRATEINPUTIMAGERESPONSE']._serialized_end=1468
+  _globals['_CALCULATEGOLFKEYPOINTSREQUEST']._serialized_start=1470
+  _globals['_CALCULATEGOLFKEYPOINTSREQUEST']._serialized_end=1548
+  _globals['_CALCULATEGOLFKEYPOINTSRESPONSE']._serialized_start=1551
+  _globals['_CALCULATEGOLFKEYPOINTSRESPONSE']._serialized_end=1685
+  _globals['_READGOLFKEYPOINTSREQUEST']._serialized_start=1687
+  _globals['_READGOLFKEYPOINTSREQUEST']._serialized_end=1760
+  _globals['_READGOLFKEYPOINTSRESPONSE']._serialized_start=1763
+  _globals['_READGOLFKEYPOINTSRESPONSE']._serialized_end=1892
+  _globals['_UPDATEBODYKEYPOINTSREQUEST']._serialized_start=1895
+  _globals['_UPDATEBODYKEYPOINTSREQUEST']._serialized_end=2047
+  _globals['_UPDATEBODYKEYPOINTSRESPONSE']._serialized_start=2049
+  _globals['_UPDATEBODYKEYPOINTSRESPONSE']._serialized_end=2166
+  _globals['_DELETEGOLFKEYPOINTSREQUEST']._serialized_start=2168
+  _globals['_DELETEGOLFKEYPOINTSREQUEST']._serialized_end=2243
+  _globals['_DELETEGOLFKEYPOINTSRESPONSE']._serialized_start=2245
+  _globals['_DELETEGOLFKEYPOINTSRESPONSE']._serialized_end=2291
+  _globals['_GOLFKEYPOINTS']._serialized_start=2294
+  _globals['_GOLFKEYPOINTS']._serialized_end=2534
+  _globals['_DTLGOLFSETUPPOINTS']._serialized_start=2537
+  _globals['_DTLGOLFSETUPPOINTS']._serialized_end=3062
+  _globals['_FACEONGOLFSETUPPOINTS']._serialized_start=3065
+  _globals['_FACEONGOLFSETUPPOINTS']._serialized_end=3684
+  _globals['_GOLFKEYPOINTSSERVICE']._serialized_start=3970
+  _globals['_GOLFKEYPOINTSSERVICE']._serialized_end=5146
 # @@protoc_insertion_point(module_scope)

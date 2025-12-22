@@ -2,6 +2,7 @@ syntax = "proto3";
 package sports_keypoints_proto;
 
 import "common.proto";
+import "google/protobuf/timestamp.proto";
 
 service GolfKeypointsService {
     rpc UploadInputImage(UploadInputImageRequest) returns (UploadInputImageResponse) {}
@@ -21,11 +22,12 @@ service GolfKeypointsService {
     // TODO: Stream for videos
 }
 
-// TODO: Add name and description tags for input image (ie. june-24th, 2020, lift left foot in backswing)
 message UploadInputImageRequest {
     string session_token = 1;
     ImageType image_type = 2;
     bytes image = 3;
+    string description = 4;
+    google.protobuf.Timestamp timestamp = 5;
 }
 
 message UploadInputImageResponse {
