@@ -242,17 +242,17 @@ class MainAppPage(tk.Frame):
     def identify_golf_ball(self):
         self.identify_mode = self.IdentifyMode.GOLFBALL
         self.canvas.bind("<Button-1>", self.on_click_on_input_image)
-        messagebox.showinfo("Golf Ball Identify", "Please identify golf ball")
+        messagebox.showinfo("Golf Ball Identify", "Please click on the input image where the golf ball is")
 
     def identify_club_butt(self):
         self.identify_mode = self.IdentifyMode.CLUBBUTT
         self.canvas.bind("<Button-1>", self.on_click_on_input_image)
-        messagebox.showinfo("Club Butt Identify", "Please identify club butt")
+        messagebox.showinfo("Club Butt Identify", "Please click on the input image where the club butt is")
 
     def identify_club_head(self):
         self.identify_mode = self.IdentifyMode.CLUBHEAD
         self.canvas.bind("<Button-1>", self.on_click_on_input_image)
-        messagebox.showinfo("Club Head Identify", "Please identify club head")
+        messagebox.showinfo("Club Head Identify", "Please click on the input image where the club head is")
 
     def modify_feet_line_method(self):
         response = messagebox.askquestion("Modify Feet Line Method", "Do you want to change the feet line method to toe line?")
