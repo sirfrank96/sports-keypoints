@@ -78,6 +78,15 @@ func verifyUploadInputImageRequest(request *skp.UploadInputImageRequest) error {
 	if request.Image == nil || len(request.Image) == 0 {
 		return fmt.Errorf("please upload an input image")
 	}
+	if request.Description == "" {
+		return fmt.Errorf("please add a description")
+	}
+	if request.Timestamp == nil {
+		return fmt.Errorf("please add a timestamp")
+	}
+	if err := request.Timestamp.CheckValid(); err != nil {
+		return fmt.Errorf("invalid timestamp: %s", err.Error())
+	}
 	return nil
 }
 
