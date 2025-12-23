@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -18,6 +19,8 @@ type InputImage struct {
 	UserId                       string               `bson:"user_id,omitempty"`
 	ImageType                    skp.ImageType        `bson:"image_type,omitempty"`
 	InputImg                     []byte               `bson:"input_img,omitempty"`
+	Description                  string               `bson:"description,omitempty"`
+	Timestamp                    time.Time            `bson:"timestamp,omitempty"`
 	CalibrationImgAxes           []byte               `bson:"calibration_img_axes,omitempty"`
 	CalibrationImgVanishingPoint []byte               `bson:"calibration_img_vanishing_point,omitempty"`
 	CalibrationInfo              util.CalibrationInfo `bson:"calibration_info,omitempty"`
@@ -102,6 +105,8 @@ func (d *DbManager) UpdateInputImage(ctx context.Context, inputImgId string, new
 			"user_id":                         newInputImage.UserId,
 			"image_type":                      newInputImage.ImageType,
 			"input_img":                       newInputImage.InputImg,
+			"description":                     newInputImage.Description,
+			"timestamp":                       newInputImage.Timestamp,
 			"calibration_img_axes":            newInputImage.CalibrationImgAxes,
 			"calibration_img_vanishing_point": newInputImage.CalibrationImgVanishingPoint,
 			"calibration_info":                newInputImage.CalibrationInfo,

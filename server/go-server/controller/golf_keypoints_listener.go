@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	cvclient "github.com/sirfrank96/go-server/cv-client"
 	db "github.com/sirfrank96/go-server/db"
 	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
@@ -37,6 +39,8 @@ func (g *GolfKeypointsListener) UploadInputImage(ctx context.Context, request *s
 		UserId:          userId,
 		ImageType:       request.ImageType,
 		InputImg:        request.Image,
+		Description:     request.Description,
+		Timestamp:       request.Timestamp.AsTime(), // UTC
 		CalibrationInfo: *util.GetEmptyCalibrationInfo(),
 	}
 	inputImage, err := g.dbmgr.CreateInputImage(ctx, inputImage)
@@ -98,6 +102,8 @@ func (g *GolfKeypointsListener) ReadInputImage(ctx context.Context, request *skp
 		Image:           inputImg.InputImg,
 		CalibrationType: inputImg.CalibrationInfo.CalibrationType,
 		FeetLineMethod:  inputImg.CalibrationInfo.FeetLineMethod,
+		Description:     inputImg.Description,
+		Timestamp:       timestamppb.New(inputImg.Timestamp),
 	}
 	return response, nil
 }

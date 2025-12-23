@@ -6,8 +6,8 @@ class GolfKeypointsClient():
     def __init__(self, channel):
         self.stub = golfkeypoints_pb2_grpc.GolfKeypointsServiceStub(channel)
 
-    def upload_input_image(self, session_token, image_type, image):
-        request = golfkeypoints_pb2.UploadInputImageRequest(session_token=session_token, image_type=image_type, image=image)
+    def upload_input_image(self, session_token, image_type, image, description, timestamp):
+        request = golfkeypoints_pb2.UploadInputImageRequest(session_token=session_token, image_type=image_type, image=image, description=description, timestamp=timestamp)
         return self.stub.UploadInputImage(request)
     
     def list_input_images_for_user(self, session_token):

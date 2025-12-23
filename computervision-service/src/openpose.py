@@ -10,8 +10,8 @@ import platform
 curr_dir = Path(__file__).parent.resolve()
 isWindows = False
 try:
-    os = platform.system()
-    if os == "Windows":
+    system = platform.system()
+    if system == "Windows":
         isWindows = True
         sys.path.append(curr_dir / r"..\3rdparty\openpose\build_windows\python\openpose\Release")
         os.add_dll_directory(curr_dir / r"..\3rdparty\openpose\build_windows\x64\Release")

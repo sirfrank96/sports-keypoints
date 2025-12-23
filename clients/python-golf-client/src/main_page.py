@@ -6,6 +6,8 @@ import io
 from io import BytesIO
 import grpc
 from enum import Enum
+from google.protobuf.timestamp_pb2 import Timestamp
+import datetime
 
 import golfkeypoints_pb2
 import golf_keypoints_client as gc
@@ -98,9 +100,16 @@ class MainAppPage(tk.Frame):
             try:
                 bytes = self.get_image_bytes(img)
                 messagebox.showinfo("Bytes", f"Length of image bytes is: {len(bytes)}, length of image raw bytes: {len(img.tobytes())}")
-                response = messagebox.askquestion("FaceOn or DTL", "Is this image Face On? (Yes for Face On, No for DTL)")
-                self.image_type = golfkeypoints_pb2.ImageType.FACE_ON if response == "yes" else golfkeypoints_pb2.ImageType.DTL
-                response = self.golfkeypoints_client.upload_input_image(session_token=self.session_token, image_type= self.image_type, image=bytes)
+                # get whether image is face on or dtl
+                faceon_response = messagebox.askquestion("FaceOn or DTL", "Is this image Face On? (Yes for Face On, No for DTL)")
+                self.image_type = golfkeypoints_pb2.ImageType.FACE_ON if faceon_response == "yes" else golfkeypoints_pb2.ImageType.DTL
+                # get description of input image
+                description_response = simpledialog.askstring("Input Image Description", prompt="Enter description for input image (eg. Driver DTL: feel pressure shift earlier)")
+                # get timestamp
+                now_utc = datetime.datetime.now(datetime.timezone.utc)
+                grpc_timestamp = Timestamp()
+                grpc_timestamp.FromDatetime(now_utc)
+                response = self.golfkeypoints_client.upload_input_image(session_token=self.session_token, image_type= self.image_type, image=bytes, description=description_response, timestamp=grpc_timestamp)
                 messagebox.showinfo("Successfully Upload Input", f"response is {response}")
                 self.curr_input_image_id = response.input_image_id
                 self.curr_input_image = img
@@ -110,11 +119,19 @@ class MainAppPage(tk.Frame):
             
     def show_previous_input_images(self):
         self.clear_canvas()
+        # get list of all input images
         try:
             response = self.golfkeypoints_client.list_input_images_for_user(session_token=self.session_token)
             for i, input_image_id in enumerate(response.input_image_ids):
-                curr_button = tk.Button(self.canvas, text=f"{input_image_id}", command=partial(self.read_input_image, input_image_id))
-                self.canvas.create_window(100, 30+(i*50), window=curr_button)
+                # for each input image, read and get the image bytes + information
+                response = self.read_input_image(input_image_id)
+                if response is not None:
+                    buffer = BytesIO(response.image)
+                    img = Image.open(buffer)
+                    self.curr_input_image_id = input_image_id
+                    self.curr_input_image = img
+                    curr_button = tk.Button(self.canvas, text=f"{response.timestamp}: {response.description}", command=partial(self.display_input_image, self.curr_input_image))
+                    self.canvas.create_window(100, 30+(i*50), window=curr_button)
         except grpc.RpcError as e:
             messagebox.showerror("List Images Failed", f"Could not get a list of images: {e.code()}: {e.details()}")
     
@@ -122,14 +139,11 @@ class MainAppPage(tk.Frame):
         try:
             response = self.golfkeypoints_client.read_input_image(session_token=self.session_token, input_image_id=input_image_id)
             messagebox.showinfo("Show Image", f"Response length of image: {len(response.image)}")
-            buffer = BytesIO(response.image)
-            img = Image.open(buffer)
-            self.curr_input_image_id = input_image_id
-            self.curr_input_image = img
-            self.display_input_image(self.curr_input_image)
+            return response
         except grpc.RpcError as e:
             messagebox.showerror("Show Image Failed", f"Could not get image: {e.code()}: {e.details()}")
-    
+            return None
+        
     def display_image(self, image):
         self.clear_canvas()
         # 1/4 the size to display on canvas
