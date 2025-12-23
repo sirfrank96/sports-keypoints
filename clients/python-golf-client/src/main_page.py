@@ -138,7 +138,7 @@ class MainAppPage(tk.Frame):
     def read_input_image(self, input_image_id):
         try:
             response = self.golfkeypoints_client.read_input_image(session_token=self.session_token, input_image_id=input_image_id)
-            messagebox.showinfo("Show Image", f"Response length of image: {len(response.image)}")
+            messagebox.showinfo("Show Image", f"Response length of image: {len(response.image)}, ImageType: {response.image_type}, CalibrationType: {response.calibration_type}, FeetLineMethod: {response.feet_line_method}, Description: {response.description}, Timestamp: {response.timestamp.ToDatetime()}")
             return response
         except grpc.RpcError as e:
             messagebox.showerror("Show Image Failed", f"Could not get image: {e.code()}: {e.details()}")
@@ -183,7 +183,7 @@ class MainAppPage(tk.Frame):
         self.axes_button = tk.Button(self.content_frame, text="Get Axes Calibration Image", command=self.get_axes_calibration_image)
         self.axes_button.grid(row=0, column=2, padx=5, pady=5, sticky="w")
 
-        self.vanishing_point_button = tk.Button(self.content_frame, text="Get Vanishing Point Calibration Image", command=self.get_vanishing_point_calibration_image)
+        self.vanishing_point_button = tk.Button(self.content_frame, text="Get Vanishing Point Calibration Image (DTL Only)", command=self.get_vanishing_point_calibration_image)
         self.vanishing_point_button.grid(row=1, column=2, padx=5, pady=5, sticky="w")
 
         self.identify_golf_ball_button = tk.Button(self.content_frame, text="Identify Golf Ball", command=self.identify_golf_ball)
@@ -195,11 +195,11 @@ class MainAppPage(tk.Frame):
         self.identify_club_head_button = tk.Button(self.content_frame, text="Identify Club Head", command=self.identify_club_head)
         self.identify_club_head_button.grid(row=4, column=2, padx=5, pady=5, sticky="w")
 
-        self.feet_line_button = tk.Button(self.content_frame, text="Modify Feet Line Method", command=self.modify_feet_line_method)
-        self.feet_line_button.grid(row=5, column=2, padx=5, pady=5, sticky="w")
+        self.modify_feet_line_button = tk.Button(self.content_frame, text="Modify Feet Line Method (Optional)", command=self.modify_feet_line_method)
+        self.modify_feet_line_button.grid(row=5, column=2, padx=5, pady=5, sticky="w")
 
-        self.shoulder_tilt_button = tk.Button(self.content_frame, text="Input Shoulder Tilt For DTL", command=self.input_shoulder_tilt)
-        self.shoulder_tilt_button.grid(row=6, column=2, padx=5, pady=5, sticky="w")
+        self.input_shoulder_tilt_button = tk.Button(self.content_frame, text="Input Shoulder Tilt (DTL Only)", command=self.input_shoulder_tilt)
+        self.input_shoulder_tilt_button.grid(row=6, column=2, padx=5, pady=5, sticky="w")
 
         self.calibrate_button = tk.Button(self.content_frame, text="Calibrate Image", command=partial(self.calibrate_image))
         self.calibrate_button.grid(row=7, column=2, padx=5, pady=5, sticky="w")
@@ -221,6 +221,7 @@ class MainAppPage(tk.Frame):
         if img is not None:
             bytes = self.get_image_bytes(img)
             self.axes_calibration_image = bytes
+            self.axes_button.config(state=tk.DISABLED)
             messagebox.showinfo("Axes Calibration Image", "Successfully set axes calibration image")
         else:
             messagebox.showerror("Axes Calibration Image", "Could not get axes calibration image")
@@ -233,6 +234,7 @@ class MainAppPage(tk.Frame):
             if img is not None:
                 bytes = self.get_image_bytes(img)
                 self.vanishing_point_calibration_image = bytes
+                self.vanishing_point_button.config(state=tk.DISABLED)
                 messagebox.showinfo("Vanishing Point Calibration Image", "Successfully set vanishing point calibration image")
             else:
                 messagebox.showerror("Vanishing Point Calibration Image", "Could not get vanishing point calibration image")
@@ -240,26 +242,28 @@ class MainAppPage(tk.Frame):
     def identify_golf_ball(self):
         self.identify_mode = self.IdentifyMode.GOLFBALL
         self.canvas.bind("<Button-1>", self.on_click_on_input_image)
-        messagebox.showinfo("Golf Ball Identify", "Please identify golf ball")
+        messagebox.showinfo("Golf Ball Identify", "Please click on the input image where the golf ball is")
 
     def identify_club_butt(self):
         self.identify_mode = self.IdentifyMode.CLUBBUTT
         self.canvas.bind("<Button-1>", self.on_click_on_input_image)
-        messagebox.showinfo("Club Butt Identify", "Please identify club butt")
+        messagebox.showinfo("Club Butt Identify", "Please click on the input image where the club butt is")
 
     def identify_club_head(self):
         self.identify_mode = self.IdentifyMode.CLUBHEAD
         self.canvas.bind("<Button-1>", self.on_click_on_input_image)
-        messagebox.showinfo("Club Head Identify", "Please identify club head")
+        messagebox.showinfo("Club Head Identify", "Please click on the input image where the club head is")
 
     def modify_feet_line_method(self):
         response = messagebox.askquestion("Modify Feet Line Method", "Do you want to change the feet line method to toe line?")
         if response == "yes":
             self.feet_line_method = golfkeypoints_pb2.FeetLineMethod.USE_TOE_LINE
+        self.modify_feet_line_button.config(state=tk.DISABLED)
 
     def input_shoulder_tilt(self):
         self.shoulder_tilt.data = simpledialog.askfloat("Shoulder Tilt", prompt="What is the shoulder tilt?")
         self.shoulder_tilt.warning = ""
+        self.input_shoulder_tilt_button.config(state=tk.DISABLED)
 
     def determine_calibration_type(self):
         if self.image_type == golfkeypoints_pb2.FACE_ON:
@@ -279,6 +283,7 @@ class MainAppPage(tk.Frame):
         try:
             response = self.golfkeypoints_client.calibrate_input_image(session_token=self.session_token, input_image_id=self.curr_input_image_id, calibration_type=self.determine_calibration_type(), feet_line_method=self.feet_line_method, calibration_image_axes=self.axes_calibration_image, calibration_image_vanishing_point=self.vanishing_point_calibration_image, golf_ball=self.golf_ball, club_butt=self.club_butt, club_head=self.club_head, shoulder_tilt=self.shoulder_tilt)
             messagebox.showinfo("Calibrate Input Image", f"Calibrate input image successful: {response}, calculate golf keypoints next")
+            self.calibrate_button.config(state=tk.DISABLED)
         except grpc.RpcError as e:
             messagebox.showerror("Calibrate Input Image", f"Calibrate input image failed: {e.code()}: {e.details()}")    
 
@@ -288,6 +293,7 @@ class MainAppPage(tk.Frame):
             messagebox.showinfo("Calculate Golf Keypoints", f"Calculate Golf Keypoints successful")
             if response.output_image is not None:
                 self.process_golf_keypoints(response.output_image, response.golf_keypoints)
+                self.calculate_button.config(state=tk.DISABLED)
         except grpc.RpcError as e:
             messagebox.showerror("Calculate Golf Keypoints", f"Calculate Golf Keypoints failed: {e.code()}: {e.details()}") 
 
@@ -410,6 +416,7 @@ class MainAppPage(tk.Frame):
                 if ok:
                     self.golf_ball = common_pb2.Keypoint(x=scaled_x, y=scaled_y, confidence=1.0)
                     self.identify_mode = self.IdentifyMode.NONE
+                    self.identify_golf_ball_button.config(state=tk.DISABLED)
                     self.canvas.unbind("<Button-1>")
                 else:
                     self.erase_circle(circle_id)
@@ -419,6 +426,7 @@ class MainAppPage(tk.Frame):
                 if ok:
                     self.club_butt = common_pb2.Keypoint(x=scaled_x, y=scaled_y, confidence=1.0)
                     self.identify_mode = self.IdentifyMode.NONE
+                    self.identify_club_butt_button.config(state=tk.DISABLED)
                     self.canvas.unbind("<Button-1>")
                 else:
                     self.erase_circle(circle_id)
@@ -428,6 +436,7 @@ class MainAppPage(tk.Frame):
                 if ok:
                     self.club_head = common_pb2.Keypoint(x=scaled_x, y=scaled_y, confidence=1.0)
                     self.identify_mode = self.IdentifyMode.NONE
+                    self.identify_club_head_button.config(state=tk.DISABLED)
                     self.canvas.unbind("<Button-1>")
                 else:
                     self.erase_circle(circle_id)

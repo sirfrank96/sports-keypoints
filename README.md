@@ -117,3 +117,5 @@ You will also need to follow the official openpose docs (<https://github.com/CMU
 * Additional keypoints (eg. elbow bend, arm/hand positions throughout swing)
 * Allow upload video and save individual frames with processed data
 * Keypoints for other sports
+* Secure gRPC communication -> pull production certs from some kind of vault storage
+* Full test suite -> full unit test coverage, integration, and e2e
