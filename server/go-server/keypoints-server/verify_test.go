@@ -3,6 +3,8 @@ package keypointsserver
 import (
 	"testing"
 
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 )
 
@@ -148,8 +150,29 @@ func TestVerifyUploadInputImageRequest(t *testing.T) {
 	if err == nil {
 		t.Errorf("(verifyUploadInputImageRequest(%+v) is supposed to have an error", uploadInputImageRequest)
 	}
-	// good request
+	// only image and image type set
 	uploadInputImageRequest.Image = []byte{1, 2, 3, 5, 8}
+	err = verifyUploadInputImageRequest(uploadInputImageRequest)
+	if err == nil {
+		t.Errorf("(verifyUploadInputImageRequest(%+v) is supposed to have an error", uploadInputImageRequest)
+	}
+	// only image, image type, and description set
+	uploadInputImageRequest.Description = "input image description..."
+	err = verifyUploadInputImageRequest(uploadInputImageRequest)
+	if err == nil {
+		t.Errorf("(verifyUploadInputImageRequest(%+v) is supposed to have an error", uploadInputImageRequest)
+	}
+	// bad timestamp
+	uploadInputImageRequest.Timestamp = &timestamppb.Timestamp{
+		Seconds: timestamppb.Now().GetSeconds(),
+		Nanos:   1000000000, // Invalid (must be < 1 billion)
+	}
+	err = verifyUploadInputImageRequest(uploadInputImageRequest)
+	if err == nil {
+		t.Errorf("(verifyUploadInputImageRequest(%+v) is supposed to have an error", uploadInputImageRequest)
+	}
+	// good request
+	uploadInputImageRequest.Timestamp = timestamppb.Now()
 	err = verifyUploadInputImageRequest(uploadInputImageRequest)
 	if err != nil {
 		t.Errorf("verifyUploadInputImageRequest(%+v) had an unexpected error: %s", uploadInputImageRequest, err.Error())

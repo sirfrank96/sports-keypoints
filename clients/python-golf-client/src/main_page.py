@@ -130,7 +130,7 @@ class MainAppPage(tk.Frame):
                     img = Image.open(buffer)
                     self.curr_input_image_id = input_image_id
                     self.curr_input_image = img
-                    curr_button = tk.Button(self.canvas, text=f"{response.timestamp}: {response.description}", command=partial(self.display_input_image, self.curr_input_image))
+                    curr_button = tk.Button(self.canvas, text=f"{response.timestamp.ToDatetime()}: {response.description}", command=partial(self.display_input_image, self.curr_input_image))
                     self.canvas.create_window(100, 30+(i*50), window=curr_button)
         except grpc.RpcError as e:
             messagebox.showerror("List Images Failed", f"Could not get a list of images: {e.code()}: {e.details()}")
