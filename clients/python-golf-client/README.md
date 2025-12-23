@@ -31,7 +31,7 @@ parallel to the ground, and the vertical axis is perpendicular to the ground). T
 * Stand upright and straight with feet wider than shoulder width perpendicular to the camera angle.
   * Face On: Align the camera perpendicular to the target line, Feet should run parallel to the target line.
   * DTL: Align the camera to point at the target, Feet should run perpendicular to the target line.
- ![dtl-feetalign-axescalibration](https://github.com/user-attachments/assets/88bff990-e5c3-413f-a575-e726f316b5d3)
+![dtl-spineangle-axescalibration](https://github.com/user-attachments/assets/2ef6aab9-c757-4b8e-98b9-c65bdbf9fe89)
 
 DTL images require an additional "Vanishing Point Calibration Image). This image provides information to identify where the camera is pointing/the target 
 (ie. the vanishing point), in order to track alignments. To take this iamge, do the following:<br>
@@ -39,7 +39,7 @@ DTL images require an additional "Vanishing Point Calibration Image). This image
 * Take your stance (shoulder width or wider) so that your feet are off center from camera frame (ie. from left of the center of the frame, it will look like your feet are pointing to the right)
 * Aim your feet parallel to target line (recommended to use an alignment stick) (parallel lines converge in the distance, so probably right at the target/1 foot away)
 * Make sure either both your heels or both your toes are visible in image
-![dtl-feetalign-vanishingpointcalibration](https://github.com/user-attachments/assets/ab6d200e-9215-4f82-9fd1-db3585810b6e)
+![dtl-spineangle-vanishingpointcalibration](https://github.com/user-attachments/assets/2d4d4bd4-c660-4d73-8de4-b4289f3ed847)
 
 Save these images in your filesystem where they can be easily accessed.
 
