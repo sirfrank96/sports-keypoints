@@ -45,6 +45,8 @@ Prerequisites:
 * CMake
 * Python 3.7 (<https://www.python.org/downloads/release/python-370/>)
 
+After installing prerequisites, follow the instructions below:
+
 1. Create and start python virtual environment:<br>
   ```
   C:path\to\python38\python.exe -m venv python38_venv
