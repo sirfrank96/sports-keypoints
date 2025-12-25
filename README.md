@@ -119,3 +119,4 @@ You will also need to follow the official openpose docs (<https://github.com/CMU
 * Keypoints for other sports
 * Secure gRPC communication -> pull production certs from some kind of vault storage
 * Full test suite -> full unit test coverage, integration, and e2e
+* Add other clients (mobile, cli)
