@@ -23,18 +23,18 @@ The following are instructions on how to start the computervision-service.
 
 * Docker: <https://www.docker.com/get-started/>
 * Optional: If you want to use GPU:
-*   NVIDIA GPU with Drivers >= 418.XX (<https://docs.nvidia.com/datacenter/tesla/pdf/NVIDIA_CUDA_Drivers_Support.pdf>) for CUDA 10.1
-*   GPU should have 5+ GB of VRAM (run `nvidia-smi` to see available memory)
-*   If you do not have Docker Desktop, you probably have to install the NVIDIA Container Toolkit to access your GPUs from the docker container (<https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html>)  
+  * NVIDIA GPU with Drivers >= 418.XX (<https://docs.nvidia.com/datacenter/tesla/pdf/NVIDIA_CUDA_Drivers_Support.pdf>) for CUDA 10.1
+  * GPU should have 5+ GB of VRAM (run `nvidia-smi` to see available memory)
+  * If you do not have Docker Desktop, you probably have to install the NVIDIA Container Toolkit to access your GPUs from the docker container (<https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html>)  
 
 ### Usage
 
 1. Depending on if you are using GPU or CPU only, create a Docker image from the appropriate Dockerfile
-* GPU: `docker build -f Dockerfile.gpu -t computervision-gpu-image .`
-* CPU-only: `docker build -f Dockerfile.cpu -t computervision-cpu-image .`
+  * GPU: `docker build -f Dockerfile.gpu -t computervision-gpu-image .`
+  * CPU-only: `docker build -f Dockerfile.cpu -t computervision-cpu-image .`
 2. Spin up the Docker container from the image that you just created
-* GPU: `docker run -p 50051:50051 --gpus all computervision-gpu-image:latest`
-* CPU-only: `docker run -p 50051:50051 computervision-cpu-image:latest`
+  * GPU: `docker run -p 50051:50051 --gpus all computervision-gpu-image:latest`
+  * CPU-only: `docker run -p 50051:50051 computervision-cpu-image:latest`
 
 ### Alternative To Docker
 
@@ -42,8 +42,8 @@ If you do no not want to run Docker (overhead too large, running too slowly, or 
 However, this requires a lot of work up front to build and compile the OpenPose Python library.
 
 Prerequisites:
-* CMake
-* Python 3.7 (<https://www.python.org/downloads/release/python-370/>)
+  * CMake
+  * Python 3.7 (<https://www.python.org/downloads/release/python-370/>)
 
 After installing prerequisites, follow the instructions below:
 
