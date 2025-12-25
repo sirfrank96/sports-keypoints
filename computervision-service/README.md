@@ -63,7 +63,7 @@ After installing prerequisites, follow the instructions below:
 `set PYTHONPATH=C:path\to\sports-keypoints\computervision-service\3rdparty\openpose\build_windows\python\openpose\Release`
 5. Navigate to where wrapper scripts are:<br>
 `cd src`
-6. Run server.py
+6. Run server.py:<br>
 `python server.py`
 
 ## Future Todos
