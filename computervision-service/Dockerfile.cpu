@@ -45,6 +45,8 @@ RUN mkdir $OPENPOSE_ROOT/build
 WORKDIR $OPENPOSE_ROOT/build
 RUN cmake .. -DBUILD_PYTHON=ON \
              -DGPU_MODE=CPU_ONLY \
+             -DDOWNLOAD_FACE_MODEL=OFF \
+             -DDOWNLOAD_HAND_MODEL=OFF \
     && make -j `nproc` \
     && make install
 
