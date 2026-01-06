@@ -1,9 +1,23 @@
 package util
 
+import (
+	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
+)
+
 type Line struct {
 	Slope       float64 `bson:"slope,omitempty"`
 	YIntercept  float64 `bson:"y_intercept,omitempty"`
 	PointOnLine Point   `bson:"point_on_line,omitempty"`
+}
+
+// Return a util.Line given an skp.Line
+func ConvertSkpLineToLine(line *skp.Line) *Line {
+	if line == nil {
+		return nil
+	}
+	point1 := ConvertKeypointToPoint(line.FirstPointOnLine)
+	point2 := ConvertKeypointToPoint(line.SecondPointOnLine)
+	return GetLine(point1, point2)
 }
 
 // Return the line intersects point1 and point2

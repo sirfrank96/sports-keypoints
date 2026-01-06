@@ -15,19 +15,6 @@ import (
 // img 1: stand straddled, check to make sure heel horizontal and spine vertical are close to 90
 // img 2: set alignment stick not centered, point alignment stick at target, set up with heels against alignment stick feet shoulder width or wider (check that heels are not centered in image)
 // get vanishing point, intersection of vertaxis and heels axis
-func VerifyDTLCalibrationImages(axesKeypoints *skp.Body25PoseKeypoints, vanishingPointKeypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (*util.CalibrationInfo, util.Warning) {
-	// verify axes image
-	calibrationInfo, warning := util.VerifyCalibrationImageAxes(axesKeypoints, calibrationInfo)
-	if warning != nil {
-		return nil, warning
-	}
-	// verify vanishing point image
-	calibrationInfo, warning = util.VerifyCalibrationImageVanishingPoint(vanishingPointKeypoints, calibrationInfo)
-	if warning != nil {
-		return nil, warning
-	}
-	return calibrationInfo, nil
-}
 
 func CalculateDTLSetupPoints(ctx context.Context, keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) *skp.DTLGolfSetupPoints {
 	fmt.Printf("Calculating Dtl setup points. Keypoints: %+v\n CalibrationInfo: %+v\n", keypoints, calibrationInfo)
