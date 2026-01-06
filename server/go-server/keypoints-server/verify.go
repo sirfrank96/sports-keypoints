@@ -127,6 +127,16 @@ func verifyCalibrateInputImageRequest(request *skp.CalibrateInputImageRequest) e
 	return nil
 }
 
+func verifyCalibrateInputImageManualRequest(request *skp.CalibrateInputImageManualRequest) error {
+	if request == nil {
+		return fmt.Errorf("request is empty")
+	}
+	if request.InputImageId == "" {
+		return fmt.Errorf("please enter an input image id")
+	}
+	return nil
+}
+
 func verifyCalculateGolfKeypointsRequest(request *skp.CalculateGolfKeypointsRequest) error {
 	if request == nil {
 		return fmt.Errorf("request is empty")

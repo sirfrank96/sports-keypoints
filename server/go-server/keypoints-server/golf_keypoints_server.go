@@ -52,6 +52,13 @@ func (g *golfKeypointsServer) CalibrateInputImage(ctx context.Context, request *
 	return g.handler.CalibrateInputImage(ctx, request)
 }
 
+func (g *golfKeypointsServer) CalibrateInputImageManual(ctx context.Context, request *skp.CalibrateInputImageManualRequest) (*skp.CalibrateInputImageResponse, error) {
+	if err := verifyCalibrateInputImageManualRequest(request); err != nil {
+		return nil, err
+	}
+	return g.handler.CalibrateInputImageManual(ctx, request)
+}
+
 func (g *golfKeypointsServer) CalculateGolfKeypoints(ctx context.Context, request *skp.CalculateGolfKeypointsRequest) (*skp.CalculateGolfKeypointsResponse, error) {
 	if err := verifyCalculateGolfKeypointsRequest(request); err != nil {
 		return nil, err

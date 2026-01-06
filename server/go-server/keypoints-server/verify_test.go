@@ -253,6 +253,26 @@ func TestVerifyCalibrateInputImageRequest(t *testing.T) {
 	}
 }
 
+func TestVerifyCalibrateInputImageManualRequest(t *testing.T) {
+	// nil request
+	err := verifyCalibrateInputImageManualRequest(nil)
+	if err == nil {
+		t.Errorf("(verifyCalibrateInputImageManualRequest(nil) is supposed to have an error")
+	}
+	// empty request
+	calibrateInputImageManualRequest := &skp.CalibrateInputImageManualRequest{}
+	err = verifyCalibrateInputImageManualRequest(calibrateInputImageManualRequest)
+	if err == nil {
+		t.Errorf("(verifyCalibrateInputImageManualRequest(%+v) is supposed to have an error", calibrateInputImageManualRequest)
+	}
+	// good request
+	calibrateInputImageManualRequest.InputImageId = "image1"
+	err = verifyCalibrateInputImageManualRequest(calibrateInputImageManualRequest)
+	if err != nil {
+		t.Errorf("verifyCalibrateInputImageManualRequest(%+v) had an unexpected error: %s", calibrateInputImageManualRequest, err.Error())
+	}
+}
+
 func TestVerifyCalculateGolfKeypointsRequest(t *testing.T) {
 	// nil request
 	err := verifyCalculateGolfKeypointsRequest(nil)
