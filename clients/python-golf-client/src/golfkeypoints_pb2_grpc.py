@@ -59,6 +59,11 @@ class GolfKeypointsServiceStub(object):
                 request_serializer=golfkeypoints__pb2.CalibrateInputImageRequest.SerializeToString,
                 response_deserializer=golfkeypoints__pb2.CalibrateInputImageResponse.FromString,
                 _registered_method=True)
+        self.CalibrateInputImageManual = channel.unary_unary(
+                '/sports_keypoints_proto.GolfKeypointsService/CalibrateInputImageManual',
+                request_serializer=golfkeypoints__pb2.CalibrateInputImageManualRequest.SerializeToString,
+                response_deserializer=golfkeypoints__pb2.CalibrateInputImageResponse.FromString,
+                _registered_method=True)
         self.CalculateGolfKeypoints = channel.unary_unary(
                 '/sports_keypoints_proto.GolfKeypointsService/CalculateGolfKeypoints',
                 request_serializer=golfkeypoints__pb2.CalculateGolfKeypointsRequest.SerializeToString,
@@ -115,6 +120,13 @@ class GolfKeypointsServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def CalibrateInputImageManual(self, request, context):
+        """optional if want specific keypoints and don't want to input additional images
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def CalculateGolfKeypoints(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -166,6 +178,11 @@ def add_GolfKeypointsServiceServicer_to_server(servicer, server):
             'CalibrateInputImage': grpc.unary_unary_rpc_method_handler(
                     servicer.CalibrateInputImage,
                     request_deserializer=golfkeypoints__pb2.CalibrateInputImageRequest.FromString,
+                    response_serializer=golfkeypoints__pb2.CalibrateInputImageResponse.SerializeToString,
+            ),
+            'CalibrateInputImageManual': grpc.unary_unary_rpc_method_handler(
+                    servicer.CalibrateInputImageManual,
+                    request_deserializer=golfkeypoints__pb2.CalibrateInputImageManualRequest.FromString,
                     response_serializer=golfkeypoints__pb2.CalibrateInputImageResponse.SerializeToString,
             ),
             'CalculateGolfKeypoints': grpc.unary_unary_rpc_method_handler(
@@ -323,6 +340,33 @@ class GolfKeypointsService(object):
             target,
             '/sports_keypoints_proto.GolfKeypointsService/CalibrateInputImage',
             golfkeypoints__pb2.CalibrateInputImageRequest.SerializeToString,
+            golfkeypoints__pb2.CalibrateInputImageResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CalibrateInputImageManual(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/sports_keypoints_proto.GolfKeypointsService/CalibrateInputImageManual',
+            golfkeypoints__pb2.CalibrateInputImageManualRequest.SerializeToString,
             golfkeypoints__pb2.CalibrateInputImageResponse.FromString,
             options,
             channel_credentials,

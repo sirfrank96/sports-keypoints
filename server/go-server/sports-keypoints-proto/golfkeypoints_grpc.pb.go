@@ -24,6 +24,8 @@ type GolfKeypointsServiceClient interface {
 	DeleteInputImage(ctx context.Context, in *DeleteInputImageRequest, opts ...grpc.CallOption) (*DeleteInputImageResponse, error)
 	// optional if want specific keypoints
 	CalibrateInputImage(ctx context.Context, in *CalibrateInputImageRequest, opts ...grpc.CallOption) (*CalibrateInputImageResponse, error)
+	// optional if want specific keypoints and don't want to input additional images
+	CalibrateInputImageManual(ctx context.Context, in *CalibrateInputImageManualRequest, opts ...grpc.CallOption) (*CalibrateInputImageResponse, error)
 	CalculateGolfKeypoints(ctx context.Context, in *CalculateGolfKeypointsRequest, opts ...grpc.CallOption) (*CalculateGolfKeypointsResponse, error)
 	ReadGolfKeypoints(ctx context.Context, in *ReadGolfKeypointsRequest, opts ...grpc.CallOption) (*ReadGolfKeypointsResponse, error)
 	// if estimated body keypoints are off or have low confidence, client can manually input where body parts are
@@ -84,6 +86,15 @@ func (c *golfKeypointsServiceClient) CalibrateInputImage(ctx context.Context, in
 	return out, nil
 }
 
+func (c *golfKeypointsServiceClient) CalibrateInputImageManual(ctx context.Context, in *CalibrateInputImageManualRequest, opts ...grpc.CallOption) (*CalibrateInputImageResponse, error) {
+	out := new(CalibrateInputImageResponse)
+	err := c.cc.Invoke(ctx, "/sports_keypoints_proto.GolfKeypointsService/CalibrateInputImageManual", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *golfKeypointsServiceClient) CalculateGolfKeypoints(ctx context.Context, in *CalculateGolfKeypointsRequest, opts ...grpc.CallOption) (*CalculateGolfKeypointsResponse, error) {
 	out := new(CalculateGolfKeypointsResponse)
 	err := c.cc.Invoke(ctx, "/sports_keypoints_proto.GolfKeypointsService/CalculateGolfKeypoints", in, out, opts...)
@@ -130,6 +141,8 @@ type GolfKeypointsServiceServer interface {
 	DeleteInputImage(context.Context, *DeleteInputImageRequest) (*DeleteInputImageResponse, error)
 	// optional if want specific keypoints
 	CalibrateInputImage(context.Context, *CalibrateInputImageRequest) (*CalibrateInputImageResponse, error)
+	// optional if want specific keypoints and don't want to input additional images
+	CalibrateInputImageManual(context.Context, *CalibrateInputImageManualRequest) (*CalibrateInputImageResponse, error)
 	CalculateGolfKeypoints(context.Context, *CalculateGolfKeypointsRequest) (*CalculateGolfKeypointsResponse, error)
 	ReadGolfKeypoints(context.Context, *ReadGolfKeypointsRequest) (*ReadGolfKeypointsResponse, error)
 	// if estimated body keypoints are off or have low confidence, client can manually input where body parts are
@@ -156,6 +169,9 @@ func (UnimplementedGolfKeypointsServiceServer) DeleteInputImage(context.Context,
 }
 func (UnimplementedGolfKeypointsServiceServer) CalibrateInputImage(context.Context, *CalibrateInputImageRequest) (*CalibrateInputImageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CalibrateInputImage not implemented")
+}
+func (UnimplementedGolfKeypointsServiceServer) CalibrateInputImageManual(context.Context, *CalibrateInputImageManualRequest) (*CalibrateInputImageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CalibrateInputImageManual not implemented")
 }
 func (UnimplementedGolfKeypointsServiceServer) CalculateGolfKeypoints(context.Context, *CalculateGolfKeypointsRequest) (*CalculateGolfKeypointsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CalculateGolfKeypoints not implemented")
@@ -272,6 +288,24 @@ func _GolfKeypointsService_CalibrateInputImage_Handler(srv interface{}, ctx cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GolfKeypointsService_CalibrateInputImageManual_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CalibrateInputImageManualRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GolfKeypointsServiceServer).CalibrateInputImageManual(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sports_keypoints_proto.GolfKeypointsService/CalibrateInputImageManual",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GolfKeypointsServiceServer).CalibrateInputImageManual(ctx, req.(*CalibrateInputImageManualRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _GolfKeypointsService_CalculateGolfKeypoints_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CalculateGolfKeypointsRequest)
 	if err := dec(in); err != nil {
@@ -370,6 +404,10 @@ var GolfKeypointsService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CalibrateInputImage",
 			Handler:    _GolfKeypointsService_CalibrateInputImage_Handler,
+		},
+		{
+			MethodName: "CalibrateInputImageManual",
+			Handler:    _GolfKeypointsService_CalibrateInputImageManual_Handler,
 		},
 		{
 			MethodName: "CalculateGolfKeypoints",

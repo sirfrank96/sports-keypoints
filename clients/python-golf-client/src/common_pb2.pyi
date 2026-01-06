@@ -23,6 +23,14 @@ class Keypoint(_message.Message):
     confidence: float
     def __init__(self, x: _Optional[float] = ..., y: _Optional[float] = ..., confidence: _Optional[float] = ...) -> None: ...
 
+class Line(_message.Message):
+    __slots__ = ("first_point_on_line", "second_point_on_line")
+    FIRST_POINT_ON_LINE_FIELD_NUMBER: _ClassVar[int]
+    SECOND_POINT_ON_LINE_FIELD_NUMBER: _ClassVar[int]
+    first_point_on_line: Keypoint
+    second_point_on_line: Keypoint
+    def __init__(self, first_point_on_line: _Optional[_Union[Keypoint, _Mapping]] = ..., second_point_on_line: _Optional[_Union[Keypoint, _Mapping]] = ...) -> None: ...
+
 class Body25PoseKeypoints(_message.Message):
     __slots__ = ("nose", "neck", "r_shoulder", "r_elbow", "r_wrist", "l_shoulder", "l_elbow", "l_wrist", "midhip", "r_hip", "r_knee", "r_ankle", "l_hip", "l_knee", "l_ankle", "r_eye", "l_eye", "r_ear", "l_ear", "l_big_toe", "l_small_toe", "l_heel", "r_big_toe", "r_small_toe", "r_heel")
     NOSE_FIELD_NUMBER: _ClassVar[int]
