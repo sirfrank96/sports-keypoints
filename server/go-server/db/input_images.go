@@ -15,15 +15,13 @@ import (
 )
 
 type InputImage struct {
-	Id                           primitive.ObjectID   `bson:"_id,omitempty"`
-	UserId                       string               `bson:"user_id,omitempty"`
-	ImageType                    skp.ImageType        `bson:"image_type,omitempty"`
-	InputImg                     []byte               `bson:"input_img,omitempty"`
-	Description                  string               `bson:"description,omitempty"`
-	Timestamp                    time.Time            `bson:"timestamp,omitempty"`
-	CalibrationImgAxes           []byte               `bson:"calibration_img_axes,omitempty"`
-	CalibrationImgVanishingPoint []byte               `bson:"calibration_img_vanishing_point,omitempty"`
-	CalibrationInfo              util.CalibrationInfo `bson:"calibration_info,omitempty"`
+	Id              primitive.ObjectID   `bson:"_id,omitempty"`
+	UserId          string               `bson:"user_id,omitempty"`
+	ImageType       skp.ImageType        `bson:"image_type,omitempty"`
+	InputImg        []byte               `bson:"input_img,omitempty"`
+	Description     string               `bson:"description,omitempty"`
+	Timestamp       time.Time            `bson:"timestamp,omitempty"`
+	CalibrationInfo util.CalibrationInfo `bson:"calibration_info,omitempty"`
 }
 
 func (d *DbManager) CreateInputImage(ctx context.Context, inputImg *InputImage) (*InputImage, error) {
@@ -102,14 +100,12 @@ func (d *DbManager) UpdateInputImage(ctx context.Context, inputImgId string, new
 	filter := bson.M{"_id": objectId}
 	update := bson.M{
 		"$set": bson.M{
-			"user_id":                         newInputImage.UserId,
-			"image_type":                      newInputImage.ImageType,
-			"input_img":                       newInputImage.InputImg,
-			"description":                     newInputImage.Description,
-			"timestamp":                       newInputImage.Timestamp,
-			"calibration_img_axes":            newInputImage.CalibrationImgAxes,
-			"calibration_img_vanishing_point": newInputImage.CalibrationImgVanishingPoint,
-			"calibration_info":                newInputImage.CalibrationInfo,
+			"user_id":          newInputImage.UserId,
+			"image_type":       newInputImage.ImageType,
+			"input_img":        newInputImage.InputImg,
+			"description":      newInputImage.Description,
+			"timestamp":        newInputImage.Timestamp,
+			"calibration_info": newInputImage.CalibrationInfo,
 		},
 	}
 	var updatedInputImage InputImage

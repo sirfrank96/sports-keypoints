@@ -14,8 +14,9 @@ try:
     if system == "Windows":
         isWindows = True
         sys.path.append(curr_dir / r"..\3rdparty\openpose\build_windows\python\openpose\Release")
-        os.add_dll_directory(curr_dir / r"..\3rdparty\openpose\build_windows\x64\Release")
-        os.add_dll_directory(curr_dir / r"..\3rdparty\openpose\build_windows\bin")
+        # requires python3.8+, set path env var manually if running locally on windows
+        # os.add_dll_directory(curr_dir / r"..\3rdparty\openpose\build_windows\x64\Release")
+        # os.add_dll_directory(curr_dir / r"..\3rdparty\openpose\build_windows\bin")
         print(curr_dir)
     elif os == "Linux":
         sys.path.append('/usr/local/python/openpose')

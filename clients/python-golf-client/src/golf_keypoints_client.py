@@ -26,6 +26,10 @@ class GolfKeypointsClient():
         request = golfkeypoints_pb2.CalibrateInputImageRequest(session_token=session_token, input_image_id=input_image_id, calibration_type=calibration_type, feet_line_method=feet_line_method, calibration_image_axes=calibration_image_axes, calibration_image_vanishing_point=calibration_image_vanishing_point, golf_ball=golf_ball, club_butt=club_butt, club_head=club_head, shoulder_tilt=shoulder_tilt)
         return self.stub.CalibrateInputImage(request)
     
+    def calibrate_input_image_manual(self, session_token, input_image_id, calibration_type, feet_line_method, horizontal_axis, vertical_axis, first_line_at_target, second_line_at_target, golf_ball, club_butt, club_head, shoulder_tilt):
+        request = golfkeypoints_pb2.CalibrateInputImageManualRequest(session_token=session_token, input_image_id=input_image_id, calibration_type=calibration_type, feet_line_method=feet_line_method, horizontal_axis=horizontal_axis, vertical_axis=vertical_axis, first_line_at_target=first_line_at_target, second_line_at_target=second_line_at_target, golf_ball=golf_ball, club_butt=club_butt, club_head=club_head, shoulder_tilt=shoulder_tilt)
+        return self.stub.CalibrateInputImageManual(request)
+
     def calculate_golf_keypoints(self, session_token, input_image_id):
         request = golfkeypoints_pb2.CalculateGolfKeypointsRequest(session_token=session_token, input_image_id=input_image_id)
         return self.stub.CalculateGolfKeypoints(request)

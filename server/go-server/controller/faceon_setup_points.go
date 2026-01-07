@@ -11,10 +11,6 @@ import (
 
 // TODO: Common utility funcs for similar funcs
 
-func VerifyFaceOnCalibrationImage(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (*util.CalibrationInfo, util.Warning) {
-	return util.VerifyCalibrationImageAxes(keypoints, calibrationInfo)
-}
-
 func CalculateFaceOnSetupPoints(ctx context.Context, keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) *skp.FaceOnGolfSetupPoints {
 	fmt.Printf("Calculating Face on setup points. Keypoints: %#v\n CalibrationInfo: %#v\n", keypoints, calibrationInfo)
 	sideBend, warning := GetSideBend(keypoints, calibrationInfo)

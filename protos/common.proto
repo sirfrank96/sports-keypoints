@@ -12,6 +12,11 @@ message Keypoint {
     double confidence = 3;
 }
 
+message Line {
+    Keypoint first_point_on_line = 1;
+    Keypoint second_point_on_line = 2;
+}
+
 message Body25PoseKeypoints {
     Keypoint nose = 1;
     Keypoint neck = 2;

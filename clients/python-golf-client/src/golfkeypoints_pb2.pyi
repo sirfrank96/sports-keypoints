@@ -140,6 +140,34 @@ class CalibrateInputImageRequest(_message.Message):
     shoulder_tilt: _common_pb2.Double
     def __init__(self, session_token: _Optional[str] = ..., input_image_id: _Optional[str] = ..., calibration_type: _Optional[_Union[CalibrationType, str]] = ..., feet_line_method: _Optional[_Union[FeetLineMethod, str]] = ..., calibration_image_axes: _Optional[bytes] = ..., calibration_image_vanishing_point: _Optional[bytes] = ..., golf_ball: _Optional[_Union[_common_pb2.Keypoint, _Mapping]] = ..., club_butt: _Optional[_Union[_common_pb2.Keypoint, _Mapping]] = ..., club_head: _Optional[_Union[_common_pb2.Keypoint, _Mapping]] = ..., shoulder_tilt: _Optional[_Union[_common_pb2.Double, _Mapping]] = ...) -> None: ...
 
+class CalibrateInputImageManualRequest(_message.Message):
+    __slots__ = ("session_token", "input_image_id", "calibration_type", "feet_line_method", "horizontal_axis", "vertical_axis", "first_line_at_target", "second_line_at_target", "golf_ball", "club_butt", "club_head", "shoulder_tilt")
+    SESSION_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    INPUT_IMAGE_ID_FIELD_NUMBER: _ClassVar[int]
+    CALIBRATION_TYPE_FIELD_NUMBER: _ClassVar[int]
+    FEET_LINE_METHOD_FIELD_NUMBER: _ClassVar[int]
+    HORIZONTAL_AXIS_FIELD_NUMBER: _ClassVar[int]
+    VERTICAL_AXIS_FIELD_NUMBER: _ClassVar[int]
+    FIRST_LINE_AT_TARGET_FIELD_NUMBER: _ClassVar[int]
+    SECOND_LINE_AT_TARGET_FIELD_NUMBER: _ClassVar[int]
+    GOLF_BALL_FIELD_NUMBER: _ClassVar[int]
+    CLUB_BUTT_FIELD_NUMBER: _ClassVar[int]
+    CLUB_HEAD_FIELD_NUMBER: _ClassVar[int]
+    SHOULDER_TILT_FIELD_NUMBER: _ClassVar[int]
+    session_token: str
+    input_image_id: str
+    calibration_type: CalibrationType
+    feet_line_method: FeetLineMethod
+    horizontal_axis: _common_pb2.Line
+    vertical_axis: _common_pb2.Line
+    first_line_at_target: _common_pb2.Line
+    second_line_at_target: _common_pb2.Line
+    golf_ball: _common_pb2.Keypoint
+    club_butt: _common_pb2.Keypoint
+    club_head: _common_pb2.Keypoint
+    shoulder_tilt: _common_pb2.Double
+    def __init__(self, session_token: _Optional[str] = ..., input_image_id: _Optional[str] = ..., calibration_type: _Optional[_Union[CalibrationType, str]] = ..., feet_line_method: _Optional[_Union[FeetLineMethod, str]] = ..., horizontal_axis: _Optional[_Union[_common_pb2.Line, _Mapping]] = ..., vertical_axis: _Optional[_Union[_common_pb2.Line, _Mapping]] = ..., first_line_at_target: _Optional[_Union[_common_pb2.Line, _Mapping]] = ..., second_line_at_target: _Optional[_Union[_common_pb2.Line, _Mapping]] = ..., golf_ball: _Optional[_Union[_common_pb2.Keypoint, _Mapping]] = ..., club_butt: _Optional[_Union[_common_pb2.Keypoint, _Mapping]] = ..., club_head: _Optional[_Union[_common_pb2.Keypoint, _Mapping]] = ..., shoulder_tilt: _Optional[_Union[_common_pb2.Double, _Mapping]] = ...) -> None: ...
+
 class CalibrateInputImageResponse(_message.Message):
     __slots__ = ("success",)
     SUCCESS_FIELD_NUMBER: _ClassVar[int]

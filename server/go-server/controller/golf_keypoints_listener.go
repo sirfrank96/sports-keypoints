@@ -138,96 +138,31 @@ func (g *GolfKeypointsListener) CalibrateInputImage(ctx context.Context, request
 	if _, err := verifyUserExists(ctx, g.dbmgr, userId); err != nil {
 		return nil, fmt.Errorf("could not verify user exists")
 	}
-	// get inputimg with inputimgid from db
-	inputImage, err := g.dbmgr.ReadInputImage(ctx, request.InputImageId)
-	if err != nil {
-		return nil, fmt.Errorf("could not read input image with id: %s: %w", request.InputImageId, err)
-	}
-	inputImage.CalibrationImgAxes = request.CalibrationImageAxes
-	inputImage.CalibrationImgVanishingPoint = request.CalibrationImageVanishingPoint
 	calibrationInfo := &util.CalibrationInfo{
+		ManualGenerated:              false,
+		CalibrationImgAxes:           request.CalibrationImageAxes,
+		CalibrationImgVanishingPoint: request.CalibrationImageVanishingPoint,
+		CalibrationType:              request.CalibrationType,
+		FeetLineMethod:               request.FeetLineMethod,
+	}
+	return g.calibrateInputImageHelper(ctx, calibrationInfo, request.InputImageId, request.GolfBall, request.ClubButt, request.ClubHead, nil, nil, request.ShoulderTilt, nil, nil)
+}
+
+func (g *GolfKeypointsListener) CalibrateInputImageManual(ctx context.Context, request *skp.CalibrateInputImageManualRequest) (*skp.CalibrateInputImageResponse, error) {
+	// make sure user exists
+	userId, ok := ctx.Value(util.UserIdKey).(string)
+	if !ok {
+		return nil, fmt.Errorf("invalid user id")
+	}
+	if _, err := verifyUserExists(ctx, g.dbmgr, userId); err != nil {
+		return nil, fmt.Errorf("could not verify user exists")
+	}
+	calibrationInfo := &util.CalibrationInfo{
+		ManualGenerated: true,
 		CalibrationType: request.CalibrationType,
 		FeetLineMethod:  request.FeetLineMethod,
 	}
-	// put in golf ball/golf club points and warnings
-	if request.GolfBall != nil {
-		calibrationInfo.GolfBallPoint = *request.GolfBall
-	}
-	if request.ClubButt != nil {
-		calibrationInfo.ClubButtPoint = *request.ClubButt
-	}
-	if request.ClubHead != nil {
-		calibrationInfo.ClubHeadPoint = *request.ClubHead
-	}
-	// dtl calibration via calibration images
-	if inputImage.ImageType == skp.ImageType_DTL {
-		// axes calibration
-		if calibrationInfo.CalibrationType != skp.CalibrationType_NO_CALIBRATION {
-			if inputImage.CalibrationImgAxes == nil {
-				return nil, fmt.Errorf("calibration image axes is required")
-			}
-			getPoseDataResponse, err := g.cvmgr.GetPoseData(inputImage.CalibrationImgAxes)
-			if err != nil {
-				return nil, fmt.Errorf("could not get pose data for calibration image axes %w", err)
-			}
-			fmt.Printf("Axes calibration image processed\n")
-			var warning util.Warning
-			calibrationInfo, warning = util.VerifyCalibrationImageAxes(getPoseDataResponse.Keypoints, calibrationInfo)
-			if warning != nil {
-				return nil, fmt.Errorf("could not verify calibration image axes: %s", warning.Error())
-			}
-			// vanishing point calibration
-			if calibrationInfo.CalibrationType != skp.CalibrationType_AXES_CALIBRATION_ONLY {
-				if inputImage.CalibrationImgVanishingPoint == nil {
-					return nil, fmt.Errorf("calibration image vanishing point is required")
-				}
-				// add shoulder tilt for shoulder alignment calculation if provided
-				if request.ShoulderTilt != nil {
-					calibrationInfo.ShoulderTilt = *request.ShoulderTilt
-				} else {
-					calibrationInfo.ShoulderTilt = skp.Double{Data: 0, Warning: "Shoulder tilt not provided"}
-				}
-				getPoseDataResponse, err := g.cvmgr.GetPoseData(inputImage.CalibrationImgVanishingPoint)
-				if err != nil {
-					return nil, fmt.Errorf("could not get pose data for calibration image vanishingpoint %w", err)
-				}
-				fmt.Printf("Vanishing point calibration image processed\n")
-				calibrationInfo, warning = util.VerifyCalibrationImageVanishingPoint(getPoseDataResponse.Keypoints, calibrationInfo)
-				if warning != nil {
-					return nil, fmt.Errorf("could not verify calibration image axes: %s", warning.Error())
-				}
-			}
-		}
-		// face on calibration via calibration image
-	} else {
-		// axes calibration
-		if calibrationInfo.CalibrationType != skp.CalibrationType_NO_CALIBRATION {
-			if inputImage.CalibrationImgAxes == nil {
-				return nil, fmt.Errorf("calibration image axes is required")
-			}
-			getPoseDataResponse, err := g.cvmgr.GetPoseData(inputImage.CalibrationImgAxes)
-			if err != nil {
-				return nil, fmt.Errorf("could not get pose data for calibration image axes %w", err)
-			}
-			fmt.Printf("Axes calibration image processed\n")
-			var warning util.Warning
-			calibrationInfo, warning = util.VerifyCalibrationImageAxes(getPoseDataResponse.Keypoints, calibrationInfo)
-			if warning != nil {
-				return nil, fmt.Errorf("could not verify calibration image axes: %s", warning.Error())
-			}
-		}
-	}
-	inputImage.CalibrationInfo = *calibrationInfo
-	// update inputimg with inputimgid in db
-	_, err = g.dbmgr.UpdateInputImage(ctx, request.InputImageId, inputImage)
-	if err != nil {
-		return nil, fmt.Errorf("could not update input image with id: %s with calibration info: %w", request.InputImageId, err)
-	}
-	// return response
-	response := &skp.CalibrateInputImageResponse{
-		Success: true,
-	}
-	return response, nil
+	return g.calibrateInputImageHelper(ctx, calibrationInfo, request.InputImageId, request.GolfBall, request.ClubButt, request.ClubHead, request.HorizontalAxis, request.VerticalAxis, request.ShoulderTilt, request.FirstLineAtTarget, request.SecondLineAtTarget)
 }
 
 func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, request *skp.CalculateGolfKeypointsRequest) (*skp.CalculateGolfKeypointsResponse, error) {

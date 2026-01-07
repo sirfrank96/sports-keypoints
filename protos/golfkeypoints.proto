@@ -12,6 +12,8 @@ service GolfKeypointsService {
 
     // optional if want specific keypoints
     rpc CalibrateInputImage(CalibrateInputImageRequest) returns (CalibrateInputImageResponse) {}
+    // optional if want specific keypoints and don't want to input additional images
+    rpc CalibrateInputImageManual(CalibrateInputImageManualRequest) returns (CalibrateInputImageResponse) {}
 
     rpc CalculateGolfKeypoints(CalculateGolfKeypointsRequest) returns (CalculateGolfKeypointsResponse) {}
     rpc ReadGolfKeypoints(ReadGolfKeypointsRequest) returns (ReadGolfKeypointsResponse) {}
@@ -87,8 +89,29 @@ message CalibrateInputImageRequest {
     Keypoint club_head = 9;
     // only required if want DTL shoulder alignment
     Double shoulder_tilt = 10;
-    // TODO: optional: horizontal line and vertical line points for axes calibration
-    // TODO: optional: parallel line points for vanishing point
+}
+
+message CalibrateInputImageManualRequest {
+    string session_token = 1;
+    string input_image_id = 2;
+    CalibrationType calibration_type = 3;
+    FeetLineMethod feet_line_method = 4;
+    // only required if want certain data for DTL and Face On. Set horizontal_axis and/or vertical_axis
+    Line horizontal_axis = 5;
+    // only required if want certain data for DTL and Face On. Set horizontal_axis and/or vertical_axis
+    Line vertical_axis = 6;
+    // only required if want certain data for DTL. Set both first_line_at_target and second_line_at_target for vanishing point calculations.
+    Line first_line_at_target = 7;
+    // only required if want certain data for DTL. Set both first_line_at_target and second_line_at_target for vanishing point calculations.
+    Line second_line_at_target = 8;
+    // only required if want certain data such as distance from ball and ball position
+    Keypoint golf_ball = 9;
+    // only required if want certain data such as ulnar deviation and shaft lean (club_head is also required)
+    Keypoint club_butt = 10;
+    // only required if want certain data such as ulnar deviation and shaft lean (club_butt is also required)
+    Keypoint club_head = 11;
+    // only required if want DTL shoulder alignment
+    Double shoulder_tilt = 12;
 }
 
 message CalibrateInputImageResponse {
@@ -126,6 +149,7 @@ message UpdateBodyKeypointsRequest {
 message UpdateBodyKeypointsResponse {
     bool success = 1;
     GolfKeypoints updated_golf_keypoints = 2;
+    // TODO: updated_output_image
 }
 
 message DeleteGolfKeypointsRequest {
