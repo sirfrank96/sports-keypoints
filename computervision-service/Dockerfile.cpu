@@ -8,8 +8,8 @@ ENV OPENPOSE_ROOT=/app/3rdparty/openpose
 # openpose dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        python3.7 \
-        python3.7-dev \
+        python3.8 \
+        python3.8-dev \
         python3-pip \
         python3-setuptools \
         build-essential \
@@ -32,11 +32,11 @@ RUN apt-get update && \
         wget \
     && rm -rf /var/lib/apt/lists/*
 
-RUN python3.7 -m pip install --upgrade pip
-RUN python3.7 -m pip install --upgrade setuptools
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install --upgrade setuptools
 
 COPY requirements.txt .
-RUN python3.7 -m pip install -r requirements.txt
+RUN python3 -m pip install -r requirements.txt
 
 COPY . .
 
@@ -61,4 +61,4 @@ ENV PYTHONPATH="/usr/local/python/openpose"
 
 EXPOSE 50051
 
-CMD ["python3.7", "src/server.py"]
+CMD ["python3", "src/server.py"]
