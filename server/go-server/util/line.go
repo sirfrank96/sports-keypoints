@@ -50,7 +50,9 @@ func GetSlope(point1 *Point, point2 *Point) float64 {
 	rise := point2.YPos - point1.YPos
 	run := point2.XPos - point1.XPos
 
-	// TODO: handle 0 on denominator
+	if run == 0.0 {
+		return 1 / 0.0001
+	}
 
 	return rise / run
 }
@@ -65,7 +67,9 @@ func GetSlopeRecipricol(point1 *Point, point2 *Point) float64 {
 	rise := point2.YPos - point1.YPos
 	run := point2.XPos - point1.XPos
 
-	// TODO: handle 0 denominator
+	if rise == 0.0 {
+		return 1 / 0.0001
+	}
 
 	return float64(-1) * (run / rise)
 }

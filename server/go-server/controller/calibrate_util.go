@@ -207,7 +207,7 @@ func validateAxesAngle(horAxisLine *util.Line, vertAxisLine *util.Line) error {
 	vertDeg := util.ConvertSlopeToDegrees(vertAxisLine.Slope)
 	diff := math.Abs(vertDeg) + math.Abs(horDeg) - 90
 	if math.Abs(diff) > 10 { // TODO: Configure confidence level, configure how far off 90 degrees axes can be
-		return fmt.Errorf("axes are off. horizontal axis is %f degrees. vertical axis is %f degrees. difference of %f degrees is too large.", horDeg, vertDeg, diff)
+		return fmt.Errorf("axes are off. horizontal axis is %f degrees. vertical axis is %f degrees. offset from 90 degrees of %f is too large.", horDeg, vertDeg, diff)
 	}
 	fmt.Printf("Good axes calibration. Horizontal axis is %f degrees. vertical axis is %f degrees\n", horDeg, vertDeg)
 	return nil
