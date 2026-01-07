@@ -139,15 +139,18 @@ class MainAppPage(tk.Frame):
                 # for each input image, read and get the image bytes + information
                 response = self.read_input_image(input_image_id)
                 if response is not None:
-                    buffer = BytesIO(response.image)
-                    img = Image.open(buffer)
-                    self.curr_input_image_id = input_image_id
-                    self.curr_input_image = img
-                    self.image_type = response.image_type
-                    curr_button = tk.Button(self.canvas, text=f"{response.timestamp.ToDatetime()}: {response.description}", command=partial(self.display_input_image, self.curr_input_image))
+                    curr_button = tk.Button(self.canvas, text=f"{response.timestamp.ToDatetime()}: {response.description}", command=partial(self.on_press_input_image_list_button, input_image_id, response))
                     self.canvas.create_window(100, 30+(i*50), window=curr_button)
         except grpc.RpcError as e:
             messagebox.showerror("List Images Failed", f"Could not get a list of images: {e.code()}: {e.details()}")
+
+    def on_press_input_image_list_button(self, input_image_id, read_input_image_response):
+        self.curr_input_image_id = input_image_id
+        buffer = BytesIO(read_input_image_response.image)
+        img = Image.open(buffer)
+        self.curr_input_image = img
+        self.image_type = read_input_image_response.image_type
+        self.display_input_image(img)
     
     def read_input_image(self, input_image_id):
         try:
