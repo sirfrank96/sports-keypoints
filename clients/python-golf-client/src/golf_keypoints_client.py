@@ -1,3 +1,4 @@
+# Internal
 import golfkeypoints_pb2
 import golfkeypoints_pb2_grpc
 

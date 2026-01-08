@@ -1,10 +1,15 @@
 # start clients to golfkeypoints and user
 # launch gui for user to create user, login, upload inputimages, mark golf ball and club,
 # upload calibration images, display output, display data, update body keypoints
+
+# Tkinter
 import tkinter as tk
 import logging
+
+# GRPC
 import grpc
 
+# Internal
 import user_client as uc
 import golf_keypoints_client as gc
 import login_pages as login

@@ -1,15 +1,19 @@
-import tkinter as tk
-from tkinter import messagebox
+# Python
 import grpc
 from functools import partial
 
+# Tkinter
+import tkinter as tk
+from tkinter import messagebox
+
+# Internal
 import user_client as uc
 import main_page
 
 
 class InitialPage(tk.Frame):
     def __init__(self, parent, controller, user_client, golfkeypoints_client):
-        tk.Frame.__init__(self, parent)
+        super().__init__(parent)
         self.user_client = user_client
         self.golfkeypoints_client = golfkeypoints_client
         self.parent = parent
@@ -31,7 +35,7 @@ class InitialPage(tk.Frame):
 
 class CreateUserPage(tk.Frame):
     def __init__(self, parent, controller, user_client, golfkeypoints_client):
-        tk.Frame.__init__(self, parent)
+        super().__init__(parent)
         self.user_client = user_client
         self.golfkeypoints_client = golfkeypoints_client
         self.parent = parent
@@ -79,7 +83,7 @@ class CreateUserPage(tk.Frame):
 
 class LoginPage(tk.Frame):
     def __init__(self, parent, controller, user_client, golfkeypoints_client):
-        tk.Frame.__init__(self, parent)
+        super().__init__(parent)
         self.user_client = user_client
         self.golfkeypoints_client = golfkeypoints_client
         self.parent = parent
