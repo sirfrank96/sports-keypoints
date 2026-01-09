@@ -81,7 +81,6 @@ class LoginPage(fw.FrameWrapper):
     def login(self):
         username = self.username_entry.get()
         password = self.password_entry.get()
-        # replace with your actual login logic (e.g., database check)
         if username != "" and password != "":
             try: 
                 response = self.user_client.register_user(username, password)

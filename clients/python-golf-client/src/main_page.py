@@ -18,6 +18,9 @@ import canvas_wrapper as cw
 import frame_wrapper as fw
 
 class MainAppPage(fw.FrameWrapper):
+    # class variables
+    body_pose_field_descriptors = common_pb2.Body25PoseKeypoints.DESCRIPTOR.fields
+
     def __init__(self, parent, controller, user_client, golfkeypoints_client, session_token):
         super().__init__(parent)
         # configure frame grid
@@ -36,20 +39,18 @@ class MainAppPage(fw.FrameWrapper):
         self.show_user_button = self.content_frame.add_button(text="Show User Information", command=self.read_user, row=3, col=0, padx=5, pady=5)
         self.update_user_button = self.content_frame.add_button(text="Update User Information", command=self.update_user, row=4, col=0, padx=5, pady=5)
         self.delete_user_button = self.content_frame.add_button(text="Delete User", command=self.delete_user, row=5, col=0, padx=5, pady=5)
-
+        # set instance vars
+        self.parent = parent
+        self.controller = controller
+        # pass in clients for api access
         self.user_client = user_client
         self.golfkeypoints_client = golfkeypoints_client
-        self.parent = parent
-        self.controller = controller 
-
         self.session_token = session_token
-        # TODO: Put these into a stored input_image response object or something
+        # initialize vars that will be set during input image upload process
         self.image_type = golfkeypoints_pb2.ImageType.IMAGE_TYPE_UNSPECIFIED 
         self.curr_input_image_id = ""
         self.curr_input_image = None
-        # TODO: Put these into an object
-        self.identify_mode = self.IdentifyMode.NONE
-        self.identify_line_mode = self.IdentifyLineMode.NONE
+        # initialize vars that will be set during calibration process
         self.golf_ball = None
         self.club_butt = None
         self.club_head = None
@@ -61,15 +62,20 @@ class MainAppPage(fw.FrameWrapper):
         self.second_line_at_target = None
         self.feet_line_method = golfkeypoints_pb2.FeetLineMethod.USE_HEEL_LINE
         self.shoulder_tilt = common_pb2.Double(data=0, warning="no shoulder tilt")
-
+        # initialize identify modes to none (will change when calibrating image)
+        self.identify_mode = self.IdentifyMode.NONE
+        self.identify_line_mode = self.IdentifyLineMode.NONE
+        # initialize body keypoints vars so user can update it later
         self.body_keypoints = None
 
+    # enum used to differentiate when user is clicking on image to identify golf ball, club butt, club head
     class IdentifyMode(Enum):
         NONE = 1
         GOLFBALL = 2
         CLUBBUTT = 3
         CLUBHEAD = 4
 
+    # enum used to differentiate when user is drawing lines for calibration
     class IdentifyLineMode(Enum):
         NONE = 1
         HORAXIS = 2
@@ -271,8 +277,6 @@ class MainAppPage(fw.FrameWrapper):
         if incorrect:
             self.select_body_keypoints_to_update(self.body_keypoints)
 
-    body_pose_field_descriptors = common_pb2.Body25PoseKeypoints.DESCRIPTOR.fields
-
     def select_body_keypoints_to_update(self, body_keypoints):
         # create popup window to show body keypoints that can be updated
         popup = tk.Toplevel(self)
@@ -282,7 +286,7 @@ class MainAppPage(fw.FrameWrapper):
         popup_content_frame = popup_canvas.create_content_frame_in_canvas()
         # iterate over body keypoints and create a button for each
         idx = 0
-        for field in self.body_pose_field_descriptors:
+        for field in MainAppPage.body_pose_field_descriptors:
             name = field.name
             body_keypoint_value = getattr(body_keypoints, name)
             popup_content_frame.add_button(text=f"Modify {name}: {body_keypoint_value}", command=partial(self.update_body_keypoint, name), row=idx, col=0, padx=5, pady=5)
@@ -308,7 +312,6 @@ class MainAppPage(fw.FrameWrapper):
         except grpc.RpcError as e:
             messagebox.showerror("Update Body Keypoints", f"Update Body keypoints failed: {e.code()}: {e.details()}")
         
-
     def delete_input_image(self):
         try:
             response = self.golfkeypoints_client.delete_input_image(self.session_token, self.curr_input_image_id)
@@ -327,9 +330,15 @@ class MainAppPage(fw.FrameWrapper):
         except grpc.RpcError as e:
             messagebox.showerror("Delete Golf Keypoints", f"Delete golf keypoints failed: {e.code()}: {e.details()}")
 
+    # this function is the logic for drawing calibration lines manually
+    # each time a user clicks the image, the first point of the line is saved
+    # then when the user releases, the second point is saved a line is drawn between the two points
+    # each time a line is successfully drawn, the identify_line_mode is switched to the next mode (eg. from IdentifyLineMode.HORAXIS -> IdentifyLineMode.VERTAXIS)
+    # once the correct lines are drawn (axes for faceon, axes and vanishing point for dtl), this function will call the calibrate_input_image_manual function
     def on_draw_line_on_input_image(self, event):
         x = event.x
         y = event.y
+        # because canvas is 1/4 the size of a 1080x2400 image, we have to scale the image back
         scaled_x = x*4
         scaled_y = y*4
         match self.identify_line_mode:
@@ -344,7 +353,7 @@ class MainAppPage(fw.FrameWrapper):
                     first_y = self.horizontal_axis.first_point_on_line.y / 4
                     line_id = self.content_canvas.draw_line(first_x, first_y, x, y, "red")
                     self.content_canvas.unbind("<ButtonRelease-1")
-                    ok = messagebox.askokcancel("Drew Line", "Is this the correct horizontal axis?")
+                    ok = messagebox.askokcancel("Line Drawn", "Is this the correct horizontal axis?")
                     if ok:
                         self.identify_line_mode = self.IdentifyLineMode.VERTAXIS
                         messagebox.showinfo("Vertical Axis Identify", "Please click and drag a line for the vertical axis (ie. center of frame, perpendicular to the horizontal axis)")
@@ -362,7 +371,7 @@ class MainAppPage(fw.FrameWrapper):
                     first_y = self.vertical_axis.first_point_on_line.y / 4
                     line_id = self.content_canvas.draw_line(first_x, first_y, x, y, "blue")
                     self.content_canvas.unbind("<ButtonRelease-1")
-                    ok = messagebox.askokcancel("Drew Line", "Is this the correct vertical axis?")
+                    ok = messagebox.askokcancel("Line Drawn", "Is this the correct vertical axis?")
                     if ok:
                         if self.image_type == golfkeypoints_pb2.ImageType.DTL:
                             self.identify_line_mode = self.IdentifyLineMode.LINEATTARGET1
@@ -385,7 +394,7 @@ class MainAppPage(fw.FrameWrapper):
                     first_y = self.first_line_at_target.first_point_on_line.y / 4
                     line_id = self.content_canvas.draw_line(first_x, first_y, x, y, "green")
                     self.content_canvas.unbind("<ButtonRelease-1")
-                    ok = messagebox.askokcancel("Drew Line", "Is this the correct first line at target axis?")
+                    ok = messagebox.askokcancel("Line Drawn", "Is this the correct first line at target axis?")
                     if ok:
                         self.identify_line_mode = self.IdentifyLineMode.LINEATTARGET2
                         messagebox.showinfo("Line At Target 2 Identify", "Please click and drag a line for the second line at the target (ie. another line on the ground pointing at the target)")
@@ -403,7 +412,7 @@ class MainAppPage(fw.FrameWrapper):
                     first_y = self.second_line_at_target.first_point_on_line.y / 4
                     line_id = self.content_canvas.draw_line(first_x, first_y, x, y, "red")
                     self.content_canvas.unbind("<ButtonRelease-1")
-                    ok = messagebox.askokcancel("Drew Line", "Is this the correct second line at target axis?")
+                    ok = messagebox.askokcancel("Line Drawn", "Is this the correct second line at target axis?")
                     if ok:
                         self.identify_line_mode = self.IdentifyLineMode.NONE
                         self.calibrate_input_image_manual()
@@ -411,7 +420,9 @@ class MainAppPage(fw.FrameWrapper):
                         self.content_canvas.erase_line(line_id)
                         self.content_canvas.bind("<ButtonPress-1>", self.on_draw_line_on_input_image)
         
-
+    # this function is the logic for identifying golf ball and golf club points
+    # each time a user presses the corresponding button (Identify Golf Ball), the identify_mode is switched (IdentifyMode.GOLFBALL)
+    # when a user clicks on the input image, this function gets the coordinates and saves it to the correct object (self.golf_ball)
     def on_click_on_input_image(self, event):
         x = event.x
         y = event.y
