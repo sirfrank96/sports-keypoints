@@ -10,9 +10,7 @@ import tkinter as tk
 from tkinter import messagebox, simpledialog
 
 # Internal
-import golfkeypoints_pb2
-import golf_keypoints_client as gc
-import common_pb2
+from gen import golfkeypoints_pb2, common_pb2
 import util
 import canvas_wrapper as cw
 import frame_wrapper as fw

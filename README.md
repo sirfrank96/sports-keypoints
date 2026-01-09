@@ -60,12 +60,12 @@ The following are instructions on how to start the sports-keypoints services and
    an extension in Docker Desktop or running the Docker image `docker run aquasec/trivy:latest image nvcr.io/nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04`)_
 
 6. Spin up the sports-keypoints service containers with docker compose:<br>
-   `docker compose up --build`
-7. While that builds, in another window navigate to the client application:<br>
+   `docker compose up --build`***
+8. While that builds, in another window navigate to the client application:<br>
    `cd sports-keypoints/clients/python-golf-client`
-8. Create a virtual environment:<br>
+9. Create a virtual environment:<br>
    `C:path\to\python310\python.exe -m venv python310_venv` (Mine was C:\Users\UserA\AppData\Local\Programs\Python\Python310\python.exe on Windows)
-9. Activate virtual environment:<br>
+10. Activate virtual environment:<br>
   * If Windows Command Prompt:<br>
       `python310_venv\Scripts\activate.bat`
   * If Windows Powershell:<br>
@@ -79,6 +79,18 @@ The following are instructions on how to start the sports-keypoints services and
 12. Once the backend services are running, run the client application:<br>
     `python main.py`
 13. See README in clients/python-golf-client for more details on how to use the client application
+
+
+***Note: If you see an error like this when running docker compose, it may just be an internet connection issue (nothing was downloaded because of a timeout). Try running it again:
+```
+34.61 CMake Error at cmake/Utils.cmake:8 (file):
+34.61   file DOWNLOAD HASH mismatch
+34.61
+34.61     for file: [/app/3rdparty/openpose/models/pose/body_25/pose_iter_584000.caffemodel]
+34.61       expected hash: [78287b57cf85fa89c03f1393d368e5b7]
+34.61         actual hash: [d41d8cd98f00b204e9800998ecf8427e]
+34.61              status: [52;"Server returned nothing (no headers, no data)"]
+```
 
 ### Alternatives To Docker
 

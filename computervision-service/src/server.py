@@ -1,11 +1,18 @@
+# Python
 from concurrent import futures
 import logging
+import grpc
+import sys
+import os
+from pathlib import Path
+
+# 3rd Party
 import openpose
 
-import grpc
-import computervision_pb2
-import computervision_pb2_grpc
-import common_pb2
+# Internal
+curr_dir = Path(__file__).parent.resolve()
+sys.path.append(os.path.join(curr_dir, 'gen'))
+from gen import computervision_pb2, computervision_pb2_grpc, common_pb2
 
 # TODO: Implement all rpcs
 class ComputerVisionServiceServicer(computervision_pb2_grpc.ComputerVisionServiceServicer):
