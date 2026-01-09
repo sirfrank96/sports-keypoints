@@ -1,19 +1,31 @@
 # Python
 from PIL import ImageTk, Image
-from functools import partial
 
 # Tkinter
 import tkinter as tk
 
-class CanvasWrapper(tk.Canvas):
-    def __init__(self, parent, width='7c', height='7c', bg='white', row=0, col=0, padx=0, pady=0, sticky='nsew'):
-        super().__init__(parent, width=width, height=height, bg=bg)
-        self.grid(row=row, column=col, padx=padx, pady=pady, sticky=sticky)
+# Internal
+import frame_wrapper as fw
 
+class CanvasWrapper(tk.Canvas):
+    def __init__(self, parent, width=0, height=0, bg='', row=0, col=0, padx=0, pady=0, sticky='nsew'):
+        # if width and height are not set, get parent width and height
+        if width == 0:
+            parent.update()
+            width = parent.winfo_width()
+        if height == 0:
+            parent.update()
+            width = parent.winfo_height()
+        # if background color is not set, use default
+        if bg == '':
+            super().__init__(parent, width=width, height=height)
+        else:
+            super().__init__(parent, width=width, height=height, bg=bg)
+        self.grid(row=row, column=col, padx=padx, pady=pady, sticky=sticky)
+        # set instance vars
         self.parent = parent
         self.width = width
         self.height = height
-
         self.content_frame = None
         self.scrollbar = None
 
@@ -27,19 +39,16 @@ class CanvasWrapper(tk.Canvas):
         self.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
     def create_content_frame_in_canvas(self):
-        self.content_frame = tk.Frame(self)
-        #self.content_frame.grid_columnconfigure(0, weight=1)
-        #self.content_frame.grid_rowconfigure(0, weight=1)
+        self.content_frame = fw.FrameWrapper(self)
+        self.content_frame.grid_columnconfigure(0, weight=1)
+        self.content_frame.grid_rowconfigure(0, weight=1)
         self.create_window((0, 0), window=self.content_frame, anchor="nw")
         return self.content_frame
 
-    # TODO: Make image size of canvas
     def display_an_image(self, image):
         self.clear_canvas()
-        # 1/4 the size to display on canvas
-        #resized_img = image.resize((270, 600), Image.Resampling.LANCZOS)
         resized_img = image.resize((self.width, self.height), Image.Resampling.LANCZOS)
-        # Convert the image to a PhotoImage object
+        # convert the image to a PhotoImage object
         photo = ImageTk.PhotoImage(resized_img)
         self.create_image(0, 0, anchor=tk.NW, image=photo)
         self.image = photo

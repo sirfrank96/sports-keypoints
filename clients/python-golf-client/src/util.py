@@ -11,11 +11,11 @@ from google.protobuf.timestamp_pb2 import Timestamp
 
 
 def get_image_from_filesystem():
-    # Open the file dialog and get the file path
+    # open the file dialog and get the file path
     filepath = filedialog.askopenfilename(
         filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.gif")]
     )
-    # If a file was selected, return Image object
+    # if a file was selected, return Image object
     if filepath:
         img = Image.open(filepath)
         return img

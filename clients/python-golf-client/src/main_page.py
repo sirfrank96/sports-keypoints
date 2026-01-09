@@ -15,48 +15,27 @@ import golf_keypoints_client as gc
 import common_pb2
 import util
 import canvas_wrapper as cw
+import frame_wrapper as fw
 
-class MainAppPage(tk.Frame):
+class MainAppPage(fw.FrameWrapper):
     def __init__(self, parent, controller, user_client, golfkeypoints_client, session_token):
         super().__init__(parent)
         # configure frame grid
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
-
         # set up canvasses and frames to put stuff on
         self.whole_canvas = cw.CanvasWrapper(self)
         self.whole_canvas.make_scrollable()
         self.content_frame = self.whole_canvas.create_content_frame_in_canvas()
+        # images are 1080x2400, this content_canvas is 1/4 of the size
         self.content_canvas = cw.CanvasWrapper(self.content_frame, width=270, height=600, bg='white', row=12, col=1, padx=5, pady=5, sticky="w")
-        # create canvas inside the frame (self)
-        #self.whole_canvas = tk.Canvas(self)
-        #self.whole_canvas.grid(row=0, column=0, sticky="nsew")
-        # create scrollbar in frame (self) that controls canvas 
-        #self.scrollbar = tk.Scrollbar(self, orient="vertical", command=self.whole_canvas.yview)
-        #self.whole_canvas.configure(yscrollcommand=self.scrollbar.set)
-        #self.scrollbar.grid(row=0, column=1, sticky="ns")
-        # create frame inside the canvas for content inside the canvas
-        #self.content_frame = tk.Frame(self.whole_canvas)
-        #self.whole_canvas.create_window((0, 0), window=self.content_frame, anchor="nw")
-        #self.whole_canvas.bind_all("<MouseWheel>", partial(self.on_mousewheel, self.whole_canvas))
-        # 1/4 size of image -> canvas for images
-        #self.canvas = tk.Canvas(self.content_frame, width=270, height=600, bg='white')
-        #self.canvas.grid(row=12, column=1, padx=5, pady=5, sticky="w")
-
-
-        # add labels and buttons
-        self.main_app_label = tk.Label(self.content_frame, text="This is the main app")
-        self.main_app_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
-        self.select_new_input_image_button = tk.Button(self.content_frame, text="Select New Input Image", command=self.select_new_input_image)
-        self.select_new_input_image_button.grid(row=1, column=0, padx=5, pady=5, sticky="w")
-        self.show_input_images_button = tk.Button(self.content_frame, text="Show Existing Input Images", command=self.show_existing_input_images)
-        self.show_input_images_button.grid(row=2, column=0, padx=5, pady=5, sticky="w")
-        self.read_user_button = tk.Button(self.content_frame, text="Show User", command=self.read_user)
-        self.read_user_button.grid(row=3, column=0, padx=5, pady=5, sticky="w")
-        self.update_user_button = tk.Button(self.content_frame, text="Update User", command=self.update_user)
-        self.update_user_button.grid(row=4, column=0, padx=5, pady=5, sticky="w")
-        self.delete_user_button = tk.Button(self.content_frame, text="Delete User", command=self.delete_user)
-        self.delete_user_button.grid(row=5, column=0, padx=5, pady=5, sticky="w")
+        # add label and buttons to allow user access initial golf_keypoints and user apis
+        self.main_page_label = self.content_frame.add_label(text="This is the main page", row=0, col=0, padx=5, pady=5)
+        self.select_new_input_image_button = self.content_frame.add_button(text="Select New Input Image", command=self.select_new_input_image, row=1, col=0, padx=5, pady=5)
+        self.show_existing_images_button = self.content_frame.add_button(text="Show Existing Input Images", command=self.show_existing_input_images, row=2, col=0, padx=5, pady=5)
+        self.show_user_button = self.content_frame.add_button(text="Show User Information", command=self.read_user, row=3, col=0, padx=5, pady=5)
+        self.update_user_button = self.content_frame.add_button(text="Update User Information", command=self.update_user, row=4, col=0, padx=5, pady=5)
+        self.delete_user_button = self.content_frame.add_button(text="Delete User", command=self.delete_user, row=5, col=0, padx=5, pady=5)
 
         self.user_client = user_client
         self.golfkeypoints_client = golfkeypoints_client
@@ -176,36 +155,17 @@ class MainAppPage(tk.Frame):
 
     def display_input_image(self, image):
         self.content_canvas.display_an_image(image)
-
-        self.identify_golf_ball_button = tk.Button(self.content_frame, text="Identify Golf Ball", command=self.identify_golf_ball)
-        self.identify_golf_ball_button.grid(row=0, column=2, padx=5, pady=5, sticky="w")
-
-        self.identify_club_butt_button = tk.Button(self.content_frame, text="Identify Club Butt", command=self.identify_club_butt)
-        self.identify_club_butt_button.grid(row=1, column=2, padx=5, pady=5, sticky="w")
-
-        self.identify_club_head_button = tk.Button(self.content_frame, text="Identify Club Head", command=self.identify_club_head)
-        self.identify_club_head_button.grid(row=2, column=2, padx=5, pady=5, sticky="w")
-
-        self.modify_feet_line_button = tk.Button(self.content_frame, text="Modify Feet Line Method (Heel Line Default) (Optional)", command=self.modify_feet_line_method)
-        self.modify_feet_line_button.grid(row=3, column=2, padx=5, pady=5, sticky="w")
-
-        self.input_shoulder_tilt_button = tk.Button(self.content_frame, text="Input Shoulder Tilt (DTL Only)", command=self.input_shoulder_tilt)
-        self.input_shoulder_tilt_button.grid(row=4, column=2, padx=5, pady=5, sticky="w")
-
-        self.calibrate_button = tk.Button(self.content_frame, text="Calibrate Image", command=partial(self.calibrate_image))
-        self.calibrate_button.grid(row=5, column=2, padx=5, pady=5, sticky="w")
-
-        self.calculate_button = tk.Button(self.content_frame, text="Calculate Golf Keypoints", command=partial(self.calculate_golf_keypoints))
-        self.calculate_button.grid(row=6, column=2, padx=5, pady=5, sticky="w")
-
-        self.read_keypoints_button = tk.Button(self.content_frame, text="Read Keypoints for Input Image", command=partial(self.read_golf_keypoints))
-        self.read_keypoints_button.grid(row=7, column=2, padx=5, pady=5, sticky="w")
-
-        self.delete_input_img_button = tk.Button(self.content_frame, text="Delete Input Image", command=partial(self.delete_input_image))
-        self.delete_input_img_button.grid(row=8, column=2, padx=5, pady=5, sticky="w")
-
-        self.delete_keypoints_button = tk.Button(self.content_frame, text="Delete Keypoints for Input Image", command=partial(self.delete_golf_keypoints))
-        self.delete_keypoints_button.grid(row=9, column=2, padx=5, pady=5, sticky="w")
+        # create buttons for calibration and calculation of keypoints
+        self.identify_golf_ball_button = self.content_frame.add_button(text="Identify Golf Ball", command=self.identify_golf_ball, row=0, col=2, padx=5, pady=5)
+        self.identify_club_butt_button = self.content_frame.add_button(text="Identify Club Butt", command=self.identify_club_butt, row=1, col=2, padx=5, pady=5)
+        self.identify_club_head_button = self.content_frame.add_button(text="Identify Club Head", command=self.identify_club_head, row=2, col=2, padx=5, pady=5)
+        self.modify_feet_line_button = self.content_frame.add_button(text="Modify Feet Line Method (Heel Line Default) (Optional)", command=self.modify_feet_line_method, row=3, col=2, padx=5, pady=5)
+        self.input_shoulder_tilt_button = self.content_frame.add_button(text="Input Shoulder Tilt (DTL Only)", command=self.input_shoulder_tilt, row=4, col=2, padx=5, pady=5)
+        self.calibrate_button = self.content_frame.add_button(text="Calibrate Image", command=self.calibrate_image, row=5, col=2, padx=5, pady=5)
+        self.calculate_button = self.content_frame.add_button(text="Calculate Golf Keypoints", command=self.calculate_golf_keypoints, row=6, col=2, padx=5, pady=5)
+        self.read_keypoints_button = self.content_frame.add_button(text="Show Golf Keypoints for Input Image", command=self.read_golf_keypoints, row=7, col=2, padx=5, pady=5)
+        self.delete_input_image_button = self.content_frame.add_button(text="Delete Input Image", command=self.delete_input_image, row=8, col=2, padx=5, pady=5)
+        self.delete_keypoints_button = self.content_frame.add_button(text="Delete Golf Keypoints for Input Image", command=self.delete_golf_keypoints, row=9, col=2, padx=5, pady=5)
 
     def identify_golf_ball(self):
         self.identify_mode = self.IdentifyMode.GOLFBALL
@@ -238,10 +198,10 @@ class MainAppPage(tk.Frame):
         if additional_imgs_needed_response == "yes":
             self.calibrate_input_image()
         else:
-            # start process for user drawing manual lines
+            # start process for user drawing manual lines (see on_draw_line_on_input_image for rest of logic)
             self.identify_line_mode = self.IdentifyLineMode.HORAXIS
             messagebox.showinfo("Horizontal Axis Identify", "Please click and drag a line for the horizontal axis (ie. parallel to the ground)")
-            self.content_canvas.bind("<ButtonPress-1>", self.on_line_on_input_image)
+            self.content_canvas.bind("<ButtonPress-1>", self.on_draw_line_on_input_image)
 
     def calibrate_input_image(self):
         self.get_axes_calibration_image()
@@ -263,6 +223,7 @@ class MainAppPage(tk.Frame):
             messagebox.showerror("Calibrate Input Image Manual", f"Calibrate input image manual failed: {e.code()}: {e.details()}")
 
     def get_axes_calibration_image(self):
+        messagebox.showinfo("Get Axes Calibration Image", "Please select your axes calibration image from your filesystem")
         img = util.get_image_from_filesystem()
         if img is not None:
             bytes = util.get_image_bytes(img)
@@ -272,16 +233,14 @@ class MainAppPage(tk.Frame):
             messagebox.showerror("Axes Calibration Image", "Could not get axes calibration image")
 
     def get_vanishing_point_calibration_image(self):
-        if self.image_type == golfkeypoints_pb2.ImageType.FACE_ON:
-            messagebox.showerror("Vanishing Point Calibration Image", "Vanishing point calibration is only used for DTL images")
+        messagebox.showinfo("Get Vanishing Point Calibration Image", "Please select your vanishing point calibration image from your filesystem")
+        img = util.get_image_from_filesystem()
+        if img is not None:
+            bytes = util.get_image_bytes(img)
+            self.vanishing_point_calibration_image = bytes
+            messagebox.showinfo("Vanishing Point Calibration Image", "Successfully set vanishing point calibration image")
         else:
-            img = util.get_image_from_filesystem()
-            if img is not None:
-                bytes = util.get_image_bytes(img)
-                self.vanishing_point_calibration_image = bytes
-                messagebox.showinfo("Vanishing Point Calibration Image", "Successfully set vanishing point calibration image")
-            else:
-                messagebox.showerror("Vanishing Point Calibration Image", "Could not get vanishing point calibration image")   
+            messagebox.showerror("Vanishing Point Calibration Image", "Could not get vanishing point calibration image")   
 
     def calculate_golf_keypoints(self):
         try:
@@ -315,33 +274,20 @@ class MainAppPage(tk.Frame):
     body_pose_field_descriptors = common_pb2.Body25PoseKeypoints.DESCRIPTOR.fields
 
     def select_body_keypoints_to_update(self, body_keypoints):
-        # create popup window
+        # create popup window to show body keypoints that can be updated
         popup = tk.Toplevel(self)
         popup.wm_title("Body Keypoints Window")
-        popup_canvas = cw.CanvasWrapper(popup)
+        popup_canvas = cw.CanvasWrapper(popup, width=270, height=600)
         popup_canvas.make_scrollable()
         popup_content_frame = popup_canvas.create_content_frame_in_canvas()
-        # create canvas inside popup window
-        #popup_canvas = tk.Canvas(popup)
-        #popup_canvas.grid(row=0, column=0, sticky="nsew")
-        # create scrollbar in popup window that controls canvas 
-        #scrollbar = tk.Scrollbar(popup, orient="vertical", command=popup_canvas.yview)
-        #popup_canvas.configure(yscrollcommand=scrollbar.set)
-        #scrollbar.grid(row=0, column=1, sticky="ns")
-        # create frame for content inside the canvas
-        #content_frame = tk.Frame(popup_canvas)
-        #popup_canvas.create_window((0, 0), window=content_frame, anchor="nw")
-        #popup_canvas.bind_all("<MouseWheel>", partial(self.on_mousewheel, popup_canvas))
-        # create buttons for each body keypoint for selections
+        # iterate over body keypoints and create a button for each
         idx = 0
         for field in self.body_pose_field_descriptors:
             name = field.name
             body_keypoint_value = getattr(body_keypoints, name)
-            button = tk.Button(popup_content_frame, text=f"Modify {name}: {body_keypoint_value}", command=partial(self.update_body_keypoint, name))
-            button.grid(row=idx, column=0, padx=5, pady=5, sticky="w")
+            popup_content_frame.add_button(text=f"Modify {name}: {body_keypoint_value}", command=partial(self.update_body_keypoint, name), row=idx, col=0, padx=5, pady=5)
             idx += 1
-        done_button = tk.Button(popup_content_frame, text="Done Updating Body Keypoints", command=partial(self.update_body_keypoints, popup))
-        done_button.grid(row=idx, column=0, padx=5, pady=5, sticky="w")
+        popup_content_frame.add_button(text="Done Updating Body Keypoints", command=partial(self.update_body_keypoints, popup), row=idx, col=0, padx=5, pady=5)
         return 
     
     def update_body_keypoint(self, field_name):
@@ -381,7 +327,7 @@ class MainAppPage(tk.Frame):
         except grpc.RpcError as e:
             messagebox.showerror("Delete Golf Keypoints", f"Delete golf keypoints failed: {e.code()}: {e.details()}")
 
-    def on_line_on_input_image(self, event):
+    def on_draw_line_on_input_image(self, event):
         x = event.x
         y = event.y
         scaled_x = x*4
@@ -391,7 +337,7 @@ class MainAppPage(tk.Frame):
                 if event.type == tk.EventType.ButtonPress:
                     self.horizontal_axis = common_pb2.Line()
                     self.horizontal_axis.first_point_on_line.CopyFrom(common_pb2.Keypoint(x=scaled_x, y=scaled_y, confidence=1.0))
-                    self.content_canvas.bind("<ButtonRelease-1>", self.on_line_on_input_image)
+                    self.content_canvas.bind("<ButtonRelease-1>", self.on_draw_line_on_input_image)
                 elif event.type == tk.EventType.ButtonRelease:
                     self.horizontal_axis.second_point_on_line.CopyFrom(common_pb2.Keypoint(x=scaled_x, y=scaled_y, confidence=1.0))
                     first_x = self.horizontal_axis.first_point_on_line.x / 4
@@ -404,12 +350,12 @@ class MainAppPage(tk.Frame):
                         messagebox.showinfo("Vertical Axis Identify", "Please click and drag a line for the vertical axis (ie. center of frame, perpendicular to the horizontal axis)")
                     else:
                         self.content_canvas.erase_line(line_id)
-                    self.content_canvas.bind("<ButtonPress-1>", self.on_line_on_input_image)
+                    self.content_canvas.bind("<ButtonPress-1>", self.on_draw_line_on_input_image)
             case self.IdentifyLineMode.VERTAXIS:
                 if event.type == tk.EventType.ButtonPress:
                     self.vertical_axis = common_pb2.Line()
                     self.vertical_axis.first_point_on_line.CopyFrom(common_pb2.Keypoint(x=scaled_x, y=scaled_y, confidence=1.0))
-                    self.content_canvas.bind("<ButtonRelease-1>", self.on_line_on_input_image)
+                    self.content_canvas.bind("<ButtonRelease-1>", self.on_draw_line_on_input_image)
                 elif event.type == tk.EventType.ButtonRelease:
                     self.vertical_axis.second_point_on_line.CopyFrom(common_pb2.Keypoint(x=scaled_x, y=scaled_y, confidence=1.0))
                     first_x = self.vertical_axis.first_point_on_line.x / 4
@@ -427,12 +373,12 @@ class MainAppPage(tk.Frame):
                             return
                     else:
                         self.content_canvas.erase_line(line_id)
-                    self.content_canvas.bind("<ButtonPress-1>", self.on_line_on_input_image)
+                    self.content_canvas.bind("<ButtonPress-1>", self.on_draw_line_on_input_image)
             case self.IdentifyLineMode.LINEATTARGET1:
                 if event.type == tk.EventType.ButtonPress:
                     self.first_line_at_target = common_pb2.Line()
                     self.first_line_at_target.first_point_on_line.CopyFrom(common_pb2.Keypoint(x=scaled_x, y=scaled_y, confidence=1.0))
-                    self.content_canvas.bind("<ButtonRelease-1>", self.on_line_on_input_image)
+                    self.content_canvas.bind("<ButtonRelease-1>", self.on_draw_line_on_input_image)
                 elif event.type == tk.EventType.ButtonRelease:
                     self.first_line_at_target.second_point_on_line.CopyFrom(common_pb2.Keypoint(x=scaled_x, y=scaled_y, confidence=1.0))
                     first_x = self.first_line_at_target.first_point_on_line.x / 4
@@ -445,12 +391,12 @@ class MainAppPage(tk.Frame):
                         messagebox.showinfo("Line At Target 2 Identify", "Please click and drag a line for the second line at the target (ie. another line on the ground pointing at the target)")
                     else:
                         self.content_canvas.erase_line(line_id)
-                    self.content_canvas.bind("<ButtonPress-1>", self.on_line_on_input_image)
+                    self.content_canvas.bind("<ButtonPress-1>", self.on_draw_line_on_input_image)
             case self.IdentifyLineMode.LINEATTARGET2:
                 if event.type == tk.EventType.ButtonPress:
                     self.second_line_at_target = common_pb2.Line()
                     self.second_line_at_target.first_point_on_line.CopyFrom(common_pb2.Keypoint(x=scaled_x, y=scaled_y, confidence=1.0))
-                    self.content_canvas.bind("<ButtonRelease-1>", self.on_line_on_input_image)
+                    self.content_canvas.bind("<ButtonRelease-1>", self.on_draw_line_on_input_image)
                 elif event.type == tk.EventType.ButtonRelease:
                     self.second_line_at_target.second_point_on_line.CopyFrom(common_pb2.Keypoint(x=scaled_x, y=scaled_y, confidence=1.0))
                     first_x = self.second_line_at_target.first_point_on_line.x / 4
@@ -463,7 +409,7 @@ class MainAppPage(tk.Frame):
                         self.calibrate_input_image_manual()
                     else:
                         self.content_canvas.erase_line(line_id)
-                        self.content_canvas.bind("<ButtonPress-1>", self.on_line_on_input_image)
+                        self.content_canvas.bind("<ButtonPress-1>", self.on_draw_line_on_input_image)
         
 
     def on_click_on_input_image(self, event):
