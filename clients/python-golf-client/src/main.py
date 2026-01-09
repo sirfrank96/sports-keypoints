@@ -1,33 +1,36 @@
 # start clients to golfkeypoints and user
 # launch gui for user to create user, login, upload inputimages, mark golf ball and club,
 # upload calibration images, display output, display data, update body keypoints
+
+# Tkinter
 import tkinter as tk
 import logging
+
+# GRPC
 import grpc
 
+# Internal
 import user_client as uc
 import golf_keypoints_client as gc
 import login_pages as login
-import main_page
-
-
-# Images are 1080x2400
 
 class GolfKeypointsClientApp(tk.Tk):
     def __init__(self, user_client, golfkeypoints_client):
         super().__init__()
         self.title("Golf Setup and Keypoint Client")
-        #self.attributes('-fullscreen', True)
         self.geometry('900x900')
-
+        # create initial frame that everything will be put inside of
         container = tk.Frame(self)  
         container.pack(side = "top", fill = "both", expand = True) 
         container.grid_rowconfigure(0, weight = 1)
         container.grid_columnconfigure(0, weight = 1)
-        
+        # create initial page frame and display
         initial_page = login.InitialPage(container, self, user_client=user_client, golfkeypoints_client=golfkeypoints_client)
         self.show_frame(initial_page)
     
+    # this function will display that frame provided
+    # frames inside the initial container will be passed a reference to the initial container (controller)
+    # frames will then call controller.show_frame(frame_name) to switch what is displayed
     def show_frame(self, frame):
         frame.grid(row = 0, column = 0, sticky ="nsew")
         frame.tkraise()         
