@@ -1,6 +1,5 @@
 # Internal
-import golfkeypoints_pb2
-import golfkeypoints_pb2_grpc
+from gen import golfkeypoints_pb2, golfkeypoints_pb2_grpc
 
 # client stub functions for golfkeypoints grpc service
 class GolfKeypointsClient():

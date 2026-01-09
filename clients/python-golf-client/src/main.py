@@ -5,11 +5,14 @@
 # Tkinter
 import tkinter as tk
 import logging
+import sys
+import os
 
 # GRPC
 import grpc
 
 # Internal
+sys.path.append(os.path.join(os.getcwd(), 'gen'))
 import user_client as uc
 import golf_keypoints_client as gc
 import login_pages as login

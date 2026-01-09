@@ -1,3 +1,4 @@
+# Python
 import cv2 as cv
 import os
 import traceback
@@ -6,6 +7,7 @@ import numpy as np
 from pathlib import Path
 import platform
 
+# 3rd Party
 # Import pyopenpose, make sure sys can find paths necessary dlls and binaries
 curr_dir = Path(__file__).parent.resolve()
 isWindows = False

@@ -1,6 +1,5 @@
 # Internal
-import user_pb2
-import user_pb2_grpc
+from gen import user_pb2, user_pb2_grpc
 
 #client stub functions for user grpc service
 class UserClient():
