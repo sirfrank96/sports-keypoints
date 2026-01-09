@@ -7,12 +7,14 @@ import tkinter as tk
 import logging
 import sys
 import os
+from pathlib import Path
 
 # GRPC
 import grpc
 
 # Internal
-sys.path.append(os.path.join(os.getcwd(), 'gen'))
+curr_dir = Path(__file__).parent.resolve()
+sys.path.append(os.path.join(curr_dir, 'gen'))
 import user_client as uc
 import golf_keypoints_client as gc
 import login_pages as login

@@ -4,12 +4,14 @@ import logging
 import grpc
 import sys
 import os
+from pathlib import Path
 
 # 3rd Party
 import openpose
 
 # Internal
-sys.path.append(os.path.join(os.getcwd(), 'gen'))
+curr_dir = Path(__file__).parent.resolve()
+sys.path.append(os.path.join(curr_dir, 'gen'))
 from gen import computervision_pb2, computervision_pb2_grpc, common_pb2
 
 # TODO: Implement all rpcs
