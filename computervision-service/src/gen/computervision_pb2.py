@@ -15,7 +15,7 @@ _sym_db = _symbol_database.Default()
 import common_pb2 as common__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x14\x63omputervision.proto\x12\x16sports_keypoints_proto\x1a\x0c\x63ommon.proto\"$\n\x13GetPoseImageRequest\x12\r\n\x05image\x18\x01 \x01(\x0c\"6\n\x14GetPoseImageResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\r\n\x05image\x18\x02 \x01(\x0c\"#\n\x12GetPoseDataRequest\x12\r\n\x05image\x18\x01 \x01(\x0c\"f\n\x13GetPoseDataResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12>\n\tkeypoints\x18\x02 \x01(\x0b\x32+.sports_keypoints_proto.Body25PoseKeypoints\"(\n\x17GetPoseHandImageRequest\x12\r\n\x05image\x18\x01 \x01(\x0c\":\n\x18GetPoseHandImageResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\r\n\x05image\x18\x02 \x01(\x0c\"\'\n\x16GetPoseHandDataRequest\x12\r\n\x05image\x18\x01 \x01(\x0c\"j\n\x17GetPoseHandDataResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12>\n\tkeypoints\x18\x02 \x01(\x0b\x32+.sports_keypoints_proto.Body25HandKeypoints\"\"\n\x11GetPoseAllRequest\x12\r\n\x05image\x18\x01 \x01(\x0c\"\xbe\x01\n\x12GetPoseAllResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\r\n\x05image\x18\x02 \x01(\x0c\x12\x43\n\x0epose_keypoints\x18\x03 \x01(\x0b\x32+.sports_keypoints_proto.Body25PoseKeypoints\x12\x43\n\x0ehand_keypoints\x18\x04 \x01(\x0b\x32+.sports_keypoints_proto.Body25HandKeypoints2\xb6\t\n\x15\x43omputerVisionService\x12k\n\x0cGetPoseImage\x12+.sports_keypoints_proto.GetPoseImageRequest\x1a,.sports_keypoints_proto.GetPoseImageResponse\"\x00\x12h\n\x0bGetPoseData\x12*.sports_keypoints_proto.GetPoseDataRequest\x1a+.sports_keypoints_proto.GetPoseDataResponse\"\x00\x12w\n\x10GetPoseHandImage\x12/.sports_keypoints_proto.GetPoseHandImageRequest\x1a\x30.sports_keypoints_proto.GetPoseHandImageResponse\"\x00\x12t\n\x0fGetPoseHandData\x12..sports_keypoints_proto.GetPoseHandDataRequest\x1a/.sports_keypoints_proto.GetPoseHandDataResponse\"\x00\x12\x65\n\nGetPoseAll\x12).sports_keypoints_proto.GetPoseAllRequest\x1a*.sports_keypoints_proto.GetPoseAllResponse\"\x00\x12y\n\x16GetPoseImagesFromVideo\x12+.sports_keypoints_proto.GetPoseImageRequest\x1a,.sports_keypoints_proto.GetPoseImageResponse\"\x00(\x01\x30\x01\x12u\n\x14GetPoseDataFromVideo\x12*.sports_keypoints_proto.GetPoseDataRequest\x1a+.sports_keypoints_proto.GetPoseDataResponse\"\x00(\x01\x30\x01\x12\x85\x01\n\x1aGetPoseHandImagesFromVideo\x12/.sports_keypoints_proto.GetPoseHandImageRequest\x1a\x30.sports_keypoints_proto.GetPoseHandImageResponse\"\x00(\x01\x30\x01\x12\x81\x01\n\x18GetPoseHandDataFromVideo\x12..sports_keypoints_proto.GetPoseHandDataRequest\x1a/.sports_keypoints_proto.GetPoseHandDataResponse\"\x00(\x01\x30\x01\x12r\n\x13GetPoseAllFromVideo\x12).sports_keypoints_proto.GetPoseAllRequest\x1a*.sports_keypoints_proto.GetPoseAllResponse\"\x00(\x01\x30\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x14\x63omputervision.proto\x12\x16sports_keypoints_proto\x1a\x0c\x63ommon.proto\"$\n\x13GetPoseImageRequest\x12\r\n\x05image\x18\x01 \x01(\x0c\"6\n\x14GetPoseImageResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\r\n\x05image\x18\x02 \x01(\x0c\"#\n\x12GetPoseDataRequest\x12\r\n\x05image\x18\x01 \x01(\x0c\"h\n\x13GetPoseDataResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12@\n\ndatapoints\x18\x02 \x01(\x0b\x32,.sports_keypoints_proto.Body25PoseDatapoints\"(\n\x17GetPoseHandImageRequest\x12\r\n\x05image\x18\x01 \x01(\x0c\":\n\x18GetPoseHandImageResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\r\n\x05image\x18\x02 \x01(\x0c\"\'\n\x16GetPoseHandDataRequest\x12\r\n\x05image\x18\x01 \x01(\x0c\"l\n\x17GetPoseHandDataResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12@\n\ndatapoints\x18\x02 \x01(\x0b\x32,.sports_keypoints_proto.Body25HandDatapoints\"\"\n\x11GetPoseAllRequest\x12\r\n\x05image\x18\x01 \x01(\x0c\"\xc2\x01\n\x12GetPoseAllResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\r\n\x05image\x18\x02 \x01(\x0c\x12\x45\n\x0fpose_datapoints\x18\x03 \x01(\x0b\x32,.sports_keypoints_proto.Body25PoseDatapoints\x12\x45\n\x0fhand_datapoints\x18\x04 \x01(\x0b\x32,.sports_keypoints_proto.Body25HandDatapoints2\xb6\t\n\x15\x43omputerVisionService\x12k\n\x0cGetPoseImage\x12+.sports_keypoints_proto.GetPoseImageRequest\x1a,.sports_keypoints_proto.GetPoseImageResponse\"\x00\x12h\n\x0bGetPoseData\x12*.sports_keypoints_proto.GetPoseDataRequest\x1a+.sports_keypoints_proto.GetPoseDataResponse\"\x00\x12w\n\x10GetPoseHandImage\x12/.sports_keypoints_proto.GetPoseHandImageRequest\x1a\x30.sports_keypoints_proto.GetPoseHandImageResponse\"\x00\x12t\n\x0fGetPoseHandData\x12..sports_keypoints_proto.GetPoseHandDataRequest\x1a/.sports_keypoints_proto.GetPoseHandDataResponse\"\x00\x12\x65\n\nGetPoseAll\x12).sports_keypoints_proto.GetPoseAllRequest\x1a*.sports_keypoints_proto.GetPoseAllResponse\"\x00\x12y\n\x16GetPoseImagesFromVideo\x12+.sports_keypoints_proto.GetPoseImageRequest\x1a,.sports_keypoints_proto.GetPoseImageResponse\"\x00(\x01\x30\x01\x12u\n\x14GetPoseDataFromVideo\x12*.sports_keypoints_proto.GetPoseDataRequest\x1a+.sports_keypoints_proto.GetPoseDataResponse\"\x00(\x01\x30\x01\x12\x85\x01\n\x1aGetPoseHandImagesFromVideo\x12/.sports_keypoints_proto.GetPoseHandImageRequest\x1a\x30.sports_keypoints_proto.GetPoseHandImageResponse\"\x00(\x01\x30\x01\x12\x81\x01\n\x18GetPoseHandDataFromVideo\x12..sports_keypoints_proto.GetPoseHandDataRequest\x1a/.sports_keypoints_proto.GetPoseHandDataResponse\"\x00(\x01\x30\x01\x12r\n\x13GetPoseAllFromVideo\x12).sports_keypoints_proto.GetPoseAllRequest\x1a*.sports_keypoints_proto.GetPoseAllResponse\"\x00(\x01\x30\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -29,19 +29,19 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['_GETPOSEDATAREQUEST']._serialized_start=156
   _globals['_GETPOSEDATAREQUEST']._serialized_end=191
   _globals['_GETPOSEDATARESPONSE']._serialized_start=193
-  _globals['_GETPOSEDATARESPONSE']._serialized_end=295
-  _globals['_GETPOSEHANDIMAGEREQUEST']._serialized_start=297
-  _globals['_GETPOSEHANDIMAGEREQUEST']._serialized_end=337
-  _globals['_GETPOSEHANDIMAGERESPONSE']._serialized_start=339
-  _globals['_GETPOSEHANDIMAGERESPONSE']._serialized_end=397
-  _globals['_GETPOSEHANDDATAREQUEST']._serialized_start=399
-  _globals['_GETPOSEHANDDATAREQUEST']._serialized_end=438
-  _globals['_GETPOSEHANDDATARESPONSE']._serialized_start=440
-  _globals['_GETPOSEHANDDATARESPONSE']._serialized_end=546
-  _globals['_GETPOSEALLREQUEST']._serialized_start=548
-  _globals['_GETPOSEALLREQUEST']._serialized_end=582
-  _globals['_GETPOSEALLRESPONSE']._serialized_start=585
-  _globals['_GETPOSEALLRESPONSE']._serialized_end=775
-  _globals['_COMPUTERVISIONSERVICE']._serialized_start=778
-  _globals['_COMPUTERVISIONSERVICE']._serialized_end=1984
+  _globals['_GETPOSEDATARESPONSE']._serialized_end=297
+  _globals['_GETPOSEHANDIMAGEREQUEST']._serialized_start=299
+  _globals['_GETPOSEHANDIMAGEREQUEST']._serialized_end=339
+  _globals['_GETPOSEHANDIMAGERESPONSE']._serialized_start=341
+  _globals['_GETPOSEHANDIMAGERESPONSE']._serialized_end=399
+  _globals['_GETPOSEHANDDATAREQUEST']._serialized_start=401
+  _globals['_GETPOSEHANDDATAREQUEST']._serialized_end=440
+  _globals['_GETPOSEHANDDATARESPONSE']._serialized_start=442
+  _globals['_GETPOSEHANDDATARESPONSE']._serialized_end=550
+  _globals['_GETPOSEALLREQUEST']._serialized_start=552
+  _globals['_GETPOSEALLREQUEST']._serialized_end=586
+  _globals['_GETPOSEALLRESPONSE']._serialized_start=589
+  _globals['_GETPOSEALLRESPONSE']._serialized_end=783
+  _globals['_COMPUTERVISIONSERVICE']._serialized_start=786
+  _globals['_COMPUTERVISIONSERVICE']._serialized_end=1992
 # @@protoc_insertion_point(module_scope)

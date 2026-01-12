@@ -26,12 +26,12 @@ class GetPoseDataRequest(_message.Message):
     def __init__(self, image: _Optional[bytes] = ...) -> None: ...
 
 class GetPoseDataResponse(_message.Message):
-    __slots__ = ("success", "keypoints")
+    __slots__ = ("success", "datapoints")
     SUCCESS_FIELD_NUMBER: _ClassVar[int]
-    KEYPOINTS_FIELD_NUMBER: _ClassVar[int]
+    DATAPOINTS_FIELD_NUMBER: _ClassVar[int]
     success: bool
-    keypoints: _common_pb2.Body25PoseKeypoints
-    def __init__(self, success: bool = ..., keypoints: _Optional[_Union[_common_pb2.Body25PoseKeypoints, _Mapping]] = ...) -> None: ...
+    datapoints: _common_pb2.Body25PoseDatapoints
+    def __init__(self, success: bool = ..., datapoints: _Optional[_Union[_common_pb2.Body25PoseDatapoints, _Mapping]] = ...) -> None: ...
 
 class GetPoseHandImageRequest(_message.Message):
     __slots__ = ("image",)
@@ -54,12 +54,12 @@ class GetPoseHandDataRequest(_message.Message):
     def __init__(self, image: _Optional[bytes] = ...) -> None: ...
 
 class GetPoseHandDataResponse(_message.Message):
-    __slots__ = ("success", "keypoints")
+    __slots__ = ("success", "datapoints")
     SUCCESS_FIELD_NUMBER: _ClassVar[int]
-    KEYPOINTS_FIELD_NUMBER: _ClassVar[int]
+    DATAPOINTS_FIELD_NUMBER: _ClassVar[int]
     success: bool
-    keypoints: _common_pb2.Body25HandKeypoints
-    def __init__(self, success: bool = ..., keypoints: _Optional[_Union[_common_pb2.Body25HandKeypoints, _Mapping]] = ...) -> None: ...
+    datapoints: _common_pb2.Body25HandDatapoints
+    def __init__(self, success: bool = ..., datapoints: _Optional[_Union[_common_pb2.Body25HandDatapoints, _Mapping]] = ...) -> None: ...
 
 class GetPoseAllRequest(_message.Message):
     __slots__ = ("image",)
@@ -68,13 +68,13 @@ class GetPoseAllRequest(_message.Message):
     def __init__(self, image: _Optional[bytes] = ...) -> None: ...
 
 class GetPoseAllResponse(_message.Message):
-    __slots__ = ("success", "image", "pose_keypoints", "hand_keypoints")
+    __slots__ = ("success", "image", "pose_datapoints", "hand_datapoints")
     SUCCESS_FIELD_NUMBER: _ClassVar[int]
     IMAGE_FIELD_NUMBER: _ClassVar[int]
-    POSE_KEYPOINTS_FIELD_NUMBER: _ClassVar[int]
-    HAND_KEYPOINTS_FIELD_NUMBER: _ClassVar[int]
+    POSE_DATAPOINTS_FIELD_NUMBER: _ClassVar[int]
+    HAND_DATAPOINTS_FIELD_NUMBER: _ClassVar[int]
     success: bool
     image: bytes
-    pose_keypoints: _common_pb2.Body25PoseKeypoints
-    hand_keypoints: _common_pb2.Body25HandKeypoints
-    def __init__(self, success: bool = ..., image: _Optional[bytes] = ..., pose_keypoints: _Optional[_Union[_common_pb2.Body25PoseKeypoints, _Mapping]] = ..., hand_keypoints: _Optional[_Union[_common_pb2.Body25HandKeypoints, _Mapping]] = ...) -> None: ...
+    pose_datapoints: _common_pb2.Body25PoseDatapoints
+    hand_datapoints: _common_pb2.Body25HandDatapoints
+    def __init__(self, success: bool = ..., image: _Optional[bytes] = ..., pose_datapoints: _Optional[_Union[_common_pb2.Body25PoseDatapoints, _Mapping]] = ..., hand_datapoints: _Optional[_Union[_common_pb2.Body25HandDatapoints, _Mapping]] = ...) -> None: ...
