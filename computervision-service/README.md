@@ -13,7 +13,7 @@ This wrapper allows the user to run with GPU or with CPU only, depending on the 
 
 The gRPC ComputerVisionService provides APIs for submitting images and then receiving BODY25 model data about the image. This comes in 2 forms:
 1. The actual image wih all of the BODY25 pose estimation points marked and lines drawn between to show the "skeleton"
-2. A full gRPC message (Body25PoseKeypoints) where each field corresponds to a single BODY25 keypoint (eg. nose, left shoulder, etc.)
+2. A full gRPC message (Body25PoseDatapoints) where each field corresponds to a single BODY25 datapoint (eg. nose, left shoulder, etc.)
 
 ## Getting Started
 
@@ -68,7 +68,7 @@ After installing prerequisites, follow the instructions below:
 
 ## Future Todos
 
-* Implement APIs for hand estimation in order to be able to points for grip keypoints
+* Implement APIs for hand estimation in order to be able to points for grip datapoints
 * Add OpenCV wrapper APIs for object detection (golf ball, golf club, etc.)
 * 3D reconstruction from multiple 2 images (ie. face on and dtl to form a 3D rendering)
 * Use a more modern pose estimation library, so don't have to rely on legacy dependencies (eg. Caffe)
