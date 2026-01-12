@@ -17,9 +17,10 @@ service GolfKeypointsService {
 
     rpc CalculateGolfKeypoints(CalculateGolfKeypointsRequest) returns (CalculateGolfKeypointsResponse) {}
     rpc ReadGolfKeypoints(ReadGolfKeypointsRequest) returns (ReadGolfKeypointsResponse) {}
-    // if estimated body keypoints are off or have low confidence, client can manually input where body parts are
-    rpc UpdateBodyKeypoints(UpdateBodyKeypointsRequest) returns (UpdateBodyKeypointsResponse) {}
     rpc DeleteGolfKeypoints(DeleteGolfKeypointsRequest) returns (DeleteGolfKeypointsResponse) {}
+
+    // if estimated body datapoints are off or have low confidence, client can manually input where body parts are
+    rpc UpdateBodyDatapoints(UpdateBodyDatapointsRequest) returns (UpdateBodyDatapointsResponse) {}
 
     // TODO: Stream for videos
 }
@@ -56,11 +57,10 @@ message ReadInputImageResponse {
     bool success = 1;
     ImageType image_type = 2;
     bytes image = 3;
-    CalibrationType calibration_type = 4;
-    FeetLineMethod feet_line_method = 5;
-    string description = 6;
+    string description = 4;
+    bool calibrated = 5;
     // timestamp for when this input image was uploaded
-    google.protobuf.Timestamp timestamp = 7;
+    google.protobuf.Timestamp timestamp = 6;
 }
 
 message DeleteInputImageRequest {
@@ -81,14 +81,6 @@ message CalibrateInputImageRequest {
     bytes calibration_image_axes = 5;
     // only required if want certain data for DTL
     bytes calibration_image_vanishing_point = 6;
-    // only required if want certain data such as distance from ball and ball position
-    Keypoint golf_ball = 7;
-    // only required if want certain data such as ulnar deviation and shaft lean (club_head is also required)
-    Keypoint club_butt = 8;
-    // only required if want certain data such as ulnar deviation and shaft lean (club_butt is also required)
-    Keypoint club_head = 9;
-    // only required if want DTL shoulder alignment
-    Double shoulder_tilt = 10;
 }
 
 message CalibrateInputImageManualRequest {
@@ -104,14 +96,6 @@ message CalibrateInputImageManualRequest {
     Line first_line_at_target = 7;
     // only required if want certain data for DTL. Set both first_line_at_target and second_line_at_target for vanishing point calculations.
     Line second_line_at_target = 8;
-    // only required if want certain data such as distance from ball and ball position
-    Keypoint golf_ball = 9;
-    // only required if want certain data such as ulnar deviation and shaft lean (club_head is also required)
-    Keypoint club_butt = 10;
-    // only required if want certain data such as ulnar deviation and shaft lean (club_butt is also required)
-    Keypoint club_head = 11;
-    // only required if want DTL shoulder alignment
-    Double shoulder_tilt = 12;
 }
 
 message CalibrateInputImageResponse {
@@ -121,6 +105,8 @@ message CalibrateInputImageResponse {
 message CalculateGolfKeypointsRequest {
     string session_token = 1;
     string input_image_id = 2;
+    // only required if want certain data that involve golf specific input data
+    GolfSpecificDatapoints golf_specific_datapoints = 3;
 }
 
 message CalculateGolfKeypointsResponse {
@@ -140,18 +126,6 @@ message ReadGolfKeypointsResponse {
     GolfKeypoints golf_keypoints = 3;
 }
 
-message UpdateBodyKeypointsRequest {
-    string session_token = 1;
-    string input_image_id = 2;
-    Body25PoseKeypoints updated_body_keypoints = 3;
-}
-
-message UpdateBodyKeypointsResponse {
-    bool success = 1;
-    GolfKeypoints updated_golf_keypoints = 2;
-    // TODO: updated_output_image
-}
-
 message DeleteGolfKeypointsRequest {
     string session_token = 1;
     string input_image_id = 2;
@@ -159,6 +133,18 @@ message DeleteGolfKeypointsRequest {
 
 message DeleteGolfKeypointsResponse {
     bool success = 1;
+}
+
+message UpdateBodyDatapointsRequest {
+    string session_token = 1;
+    string input_image_id = 2;
+    Body25PoseDatapoints updated_body_datapoints = 3;
+}
+
+message UpdateBodyDatapointsResponse {
+    bool success = 1;
+    GolfKeypoints updated_golf_keypoints = 2;
+    // TODO: updated_output_image
 }
 
 enum ImageType {
@@ -186,7 +172,19 @@ enum FeetLineMethod {
 message GolfKeypoints {
     DTLGolfSetupPoints dtl_golf_setup_points = 1;
     FaceOnGolfSetupPoints faceon_golf_setup_points = 2;
-    Body25PoseKeypoints body_keypoints = 3;
+    Body25PoseDatapoints body_datapoints = 3;
+    GolfSpecificDatapoints golf_specific_datapoints = 4;
+}
+
+message GolfSpecificDatapoints {
+    // only required if want certain data such as distance from ball and ball position
+    Datapoint golf_ball = 1;
+    // only required if want certain data such as ulnar deviation and shaft lean (club_head is also required)
+    Datapoint club_butt = 2;
+    // only required if want certain data such as ulnar deviation and shaft lean (club_butt is also required)
+    Datapoint club_head = 3;
+    // only required if want DTL shoulder alignment
+    Double shoulder_tilt = 4;
 }
 
 message DTLGolfSetupPoints {

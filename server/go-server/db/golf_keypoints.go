@@ -15,26 +15,28 @@ import (
 )
 
 type GolfKeypoints struct {
-	Id                    primitive.ObjectID        `bson:"_id,omitempty"`
-	UserId                string                    `bson:"user_id,omitempty"`
-	InputImageId          string                    `bson:"input_image_id,omitempty"`
-	OutputImg             []byte                    `bson:"output_img,omitempty"`
-	OutputKeypoints       skp.Body25PoseKeypoints   `bson:"output_keypoints,omitempty"`
-	DtlGolfSetupPoints    skp.DTLGolfSetupPoints    `bson:"dtl_golf_setup_points,omitempty"`
-	FaceonGolfSetupPoints skp.FaceOnGolfSetupPoints `bson:"faceon_golf_setup_points,omitempty"`
+	Id                     primitive.ObjectID         `bson:"_id,omitempty"`
+	UserId                 string                     `bson:"user_id,omitempty"`
+	InputImageId           string                     `bson:"input_image_id,omitempty"`
+	OutputImg              []byte                     `bson:"output_img,omitempty"`
+	BodyDatapoints         skp.Body25PoseDatapoints   `bson:"body_datapoints,omitempty"`
+	GolfSpecificDatapoints skp.GolfSpecificDatapoints `bson:"golf_specific_datapoints,omitempty`
+	DtlGolfSetupPoints     skp.DTLGolfSetupPoints     `bson:"dtl_golf_setup_points,omitempty"`
+	FaceonGolfSetupPoints  skp.FaceOnGolfSetupPoints  `bson:"faceon_golf_setup_points,omitempty"`
 }
 
-func ConvertGolfKeypointsToCVGolfKeypoints(golfKeypoints *GolfKeypoints) *skp.GolfKeypoints {
+func ConvertGolfKeypointsToSkpGolfKeypoints(golfKeypoints *GolfKeypoints) *skp.GolfKeypoints {
 	return &skp.GolfKeypoints{
-		DtlGolfSetupPoints:    &golfKeypoints.DtlGolfSetupPoints,
-		FaceonGolfSetupPoints: &golfKeypoints.FaceonGolfSetupPoints,
-		BodyKeypoints:         &golfKeypoints.OutputKeypoints,
+		DtlGolfSetupPoints:     &golfKeypoints.DtlGolfSetupPoints,
+		FaceonGolfSetupPoints:  &golfKeypoints.FaceonGolfSetupPoints,
+		BodyDatapoints:         &golfKeypoints.BodyDatapoints,
+		GolfSpecificDatapoints: &golfKeypoints.GolfSpecificDatapoints,
 	}
 }
 
-func UpdateOutputKeypointsFields(oldKeypoints *skp.Body25PoseKeypoints, newKeypoints *skp.Body25PoseKeypoints) *skp.Body25PoseKeypoints {
-	oldReflectVal := reflect.ValueOf(oldKeypoints).Elem()
-	newReflectVal := reflect.ValueOf(newKeypoints).Elem()
+func UpdateBodyDatapointsFields(oldDatapoints *skp.Body25PoseDatapoints, newDatapoints *skp.Body25PoseDatapoints) *skp.Body25PoseDatapoints {
+	oldReflectVal := reflect.ValueOf(oldDatapoints).Elem()
+	newReflectVal := reflect.ValueOf(newDatapoints).Elem()
 	numFields := newReflectVal.NumField()
 	for i := 0; i < numFields; i++ {
 		newField := newReflectVal.Field(i)
@@ -43,7 +45,7 @@ func UpdateOutputKeypointsFields(oldKeypoints *skp.Body25PoseKeypoints, newKeypo
 			oldField.Set(newField)
 		}
 	}
-	return oldKeypoints
+	return oldDatapoints
 }
 
 func (d *DbManager) CreateGolfKeypoints(ctx context.Context, golfKeypoints *GolfKeypoints) (*GolfKeypoints, error) {
@@ -89,7 +91,8 @@ func (d *DbManager) UpdateGolfKeypointsForInputImage(ctx context.Context, inputI
 			"user_id":                  newGolfKeypoints.UserId,
 			"input_img_id":             newGolfKeypoints.InputImageId,
 			"output_img":               newGolfKeypoints.OutputImg,
-			"output_keypoints":         newGolfKeypoints.OutputKeypoints,
+			"body_datapoints":          newGolfKeypoints.BodyDatapoints,
+			"golf_specific_datapoints": newGolfKeypoints.GolfSpecificDatapoints,
 			"dtl_golf_setup_points":    newGolfKeypoints.DtlGolfSetupPoints,
 			"faceon_golf_setup_points": newGolfKeypoints.FaceonGolfSetupPoints,
 		},
@@ -122,7 +125,7 @@ func (d *DbManager) deleteGolfKeypointsForInputImageHelper(ctx context.Context, 
 	if err != nil {
 		return util.WarningImpl{
 			Severity: util.SEVERE,
-			Message:  fmt.Sprintf("could not delete imageinfo %w", err),
+			Message:  fmt.Sprintf("could not delete imageinfo %v", err),
 		}
 	}
 	if res.DeletedCount == 0 {

@@ -11,69 +11,69 @@ import (
 
 // TODO: Common utility funcs for similar funcs
 
-func CalculateFaceOnSetupPoints(ctx context.Context, keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) *skp.FaceOnGolfSetupPoints {
-	fmt.Printf("Calculating Face on setup points. Keypoints: %#v\n CalibrationInfo: %#v\n", keypoints, calibrationInfo)
-	sideBend, warning := GetSideBend(keypoints, calibrationInfo)
+func CalculateFaceOnSetupPoints(ctx context.Context, bodyDatapoints *skp.Body25PoseDatapoints, golfSpecificDatapoints *skp.GolfSpecificDatapoints, calibrationInfo *util.CalibrationInfo) *skp.FaceOnGolfSetupPoints {
+	fmt.Printf("Calculating Face on setup points. BodyDatapoints: %#v\n GolfSpecificDatapoints: %#v\n CalibrationInfo: %#v\n", bodyDatapoints, golfSpecificDatapoints, calibrationInfo)
+	sideBend, warning := GetSideBend(bodyDatapoints, calibrationInfo)
 	var sideBendWarning string
 	if warning != nil {
 		sideBendWarning = warning.Error()
 	}
 	fmt.Printf("Side bend is %f\n", sideBend)
-	lFootFlare, warning := GetLeftFootFlare(keypoints, calibrationInfo)
+	lFootFlare, warning := GetLeftFootFlare(bodyDatapoints, calibrationInfo)
 	var lFootFlareWarning string
 	if warning != nil {
 		lFootFlareWarning = warning.Error()
 	}
 	fmt.Printf("Left foot flare is %f\n", lFootFlare)
-	rFootFlare, warning := GetRightFootFlare(keypoints, calibrationInfo)
+	rFootFlare, warning := GetRightFootFlare(bodyDatapoints, calibrationInfo)
 	var rFootFlareWarning string
 	if warning != nil {
 		rFootFlareWarning = warning.Error()
 	}
 	fmt.Printf("Right foot flare is %f\n", rFootFlare)
-	stanceWidth, warning := GetStanceWidth(keypoints)
+	stanceWidth, warning := GetStanceWidth(bodyDatapoints)
 	var stanceWidthWarning string
 	if warning != nil {
 		stanceWidthWarning = warning.Error()
 	}
 	fmt.Printf("Stance width is %f\n", stanceWidth)
-	shoulderTilt, warning := GetShoulderTilt(keypoints, calibrationInfo)
+	shoulderTilt, warning := GetShoulderTilt(bodyDatapoints, calibrationInfo)
 	var shoulderTiltWarning string
 	if warning != nil {
 		shoulderTiltWarning = warning.Error()
 	}
 	fmt.Printf("Shoulder tilt is %f\n", shoulderTilt)
-	waistTilt, warning := GetWaistTilt(keypoints, calibrationInfo)
+	waistTilt, warning := GetWaistTilt(bodyDatapoints, calibrationInfo)
 	var waistTiltWarning string
 	if warning != nil {
 		waistTiltWarning = warning.Error()
 	}
 	fmt.Printf("Waist tilt is %f\n", waistTilt)
-	shaftLean, warning := GetShaftLean(calibrationInfo)
+	shaftLean, warning := GetShaftLean(golfSpecificDatapoints, calibrationInfo)
 	var shaftLeanWarning string
 	if warning != nil {
 		shaftLeanWarning = warning.Error()
 	}
 	fmt.Printf("Shaft lean is %f\n", shaftLean)
-	ballPosition, warning := GetBallPosition(keypoints, calibrationInfo)
+	ballPosition, warning := GetBallPosition(bodyDatapoints, golfSpecificDatapoints, calibrationInfo)
 	var ballPositionWarning string
 	if warning != nil {
 		ballPositionWarning = warning.Error()
 	}
 	fmt.Printf("Ball position is %f\n", ballPosition)
-	headPosition, warning := GetHeadPosition(keypoints, calibrationInfo)
+	headPosition, warning := GetHeadPosition(bodyDatapoints, calibrationInfo)
 	var headPositionWarning string
 	if warning != nil {
 		headPositionWarning = warning.Error()
 	}
 	fmt.Printf("Head position is %f\n", headPosition)
-	chestPosition, warning := GetChestPosition(keypoints, calibrationInfo)
+	chestPosition, warning := GetChestPosition(bodyDatapoints, calibrationInfo)
 	var chestPositionWarning string
 	if warning != nil {
 		chestPositionWarning = warning.Error()
 	}
 	fmt.Printf("Chest position is %f\n", chestPosition)
-	midHipPosition, warning := GetMidhipPosition(keypoints, calibrationInfo)
+	midHipPosition, warning := GetMidhipPosition(bodyDatapoints, calibrationInfo)
 	var midHipPositionWarning string
 	if warning != nil {
 		midHipPositionWarning = warning.Error()
@@ -132,7 +132,7 @@ func CalculateFaceOnSetupPoints(ctx context.Context, keypoints *skp.Body25PoseKe
 // side bend
 // line from midhip to neck
 // angle of intersect between that and vertical axis through midhip
-func GetSideBend(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
+func GetSideBend(bodyDatapoints *skp.Body25PoseDatapoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	if calibrationInfo.CalibrationType == skp.CalibrationType_NO_CALIBRATION {
 		return 0, util.WarningImpl{
 			Severity: util.MINOR,
@@ -140,21 +140,21 @@ func GetSideBend(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.Calib
 		}
 	}
 	var warning util.Warning
-	if w := util.VerifyKeypoint(keypoints.Midhip, "midhip", 0.5); w != nil {
+	if w := util.VerifyDatapoint(bodyDatapoints.Midhip, "midhip", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	if w := util.VerifyKeypoint(keypoints.Neck, "neck", 0.5); w != nil {
+	if w := util.VerifyDatapoint(bodyDatapoints.Neck, "neck", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	// convert keypoints to point
-	midhip := util.ConvertKeypointToPoint(keypoints.Midhip)
-	neck := util.ConvertKeypointToPoint(keypoints.Neck)
+	// convert datapoints to point
+	midhip := util.ConvertDatapointToPoint(bodyDatapoints.Midhip)
+	neck := util.ConvertDatapointToPoint(bodyDatapoints.Neck)
 	// calculate side bend
 	lineFromMidhipWithVertAxisSlope := util.GetLineWithSlope(midhip, calibrationInfo.VertAxisLine.Slope)
 	pointOnLine := util.GetPointOnLineWithY(neck.YPos, lineFromMidhipWithVertAxisSlope)
@@ -185,7 +185,7 @@ func getFootFlare(heel *util.Point, toe *util.Point, calibrationInfo *util.Calib
 	}
 }
 
-func GetLeftFootFlare(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
+func GetLeftFootFlare(bodyDatapoints *skp.Body25PoseDatapoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	if calibrationInfo.CalibrationType == skp.CalibrationType_NO_CALIBRATION {
 		return 0, util.WarningImpl{
 			Severity: util.MINOR,
@@ -193,22 +193,22 @@ func GetLeftFootFlare(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.
 		}
 	}
 	var warning util.Warning
-	if w := util.VerifyKeypoint(keypoints.LHeel, "left heel", 0.5); w != nil {
+	if w := util.VerifyDatapoint(bodyDatapoints.LHeel, "left heel", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	if w := util.VerifyKeypoint(keypoints.LBigToe, "left big toe", 0.5); w != nil {
+	if w := util.VerifyDatapoint(bodyDatapoints.LBigToe, "left big toe", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	return getFootFlare(util.ConvertKeypointToPoint(keypoints.LHeel), util.ConvertKeypointToPoint(keypoints.LBigToe), calibrationInfo, Left), warning
+	return getFootFlare(util.ConvertDatapointToPoint(bodyDatapoints.LHeel), util.ConvertDatapointToPoint(bodyDatapoints.LBigToe), calibrationInfo, Left), warning
 }
 
-func GetRightFootFlare(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
+func GetRightFootFlare(bodyDatapoints *skp.Body25PoseDatapoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	if calibrationInfo.CalibrationType == skp.CalibrationType_NO_CALIBRATION {
 		return 0, util.WarningImpl{
 			Severity: util.MINOR,
@@ -216,19 +216,19 @@ func GetRightFootFlare(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util
 		}
 	}
 	var warning util.Warning
-	if w := util.VerifyKeypoint(keypoints.RHeel, "right heel", 0.5); w != nil {
+	if w := util.VerifyDatapoint(bodyDatapoints.RHeel, "right heel", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	if w := util.VerifyKeypoint(keypoints.RBigToe, "right big toe", 0.5); w != nil {
+	if w := util.VerifyDatapoint(bodyDatapoints.RBigToe, "right big toe", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	return getFootFlare(util.ConvertKeypointToPoint(keypoints.RHeel), util.ConvertKeypointToPoint(keypoints.RBigToe), calibrationInfo, Right), warning
+	return getFootFlare(util.ConvertDatapointToPoint(bodyDatapoints.RHeel), util.ConvertDatapointToPoint(bodyDatapoints.RBigToe), calibrationInfo, Right), warning
 }
 
 // stance width
@@ -236,37 +236,37 @@ func GetRightFootFlare(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util
 // line from midhip to neck
 // ratio between 2 lengths
 // the larger the number the wider the stance
-func GetStanceWidth(keypoints *skp.Body25PoseKeypoints) (float64, util.Warning) {
+func GetStanceWidth(bodyDatapoints *skp.Body25PoseDatapoints) (float64, util.Warning) {
 	var warning util.Warning
-	if w := util.VerifyKeypoint(keypoints.LHeel, "left heel", 0.5); w != nil {
+	if w := util.VerifyDatapoint(bodyDatapoints.LHeel, "left heel", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	if w := util.VerifyKeypoint(keypoints.RHeel, "right heel", 0.5); w != nil {
+	if w := util.VerifyDatapoint(bodyDatapoints.RHeel, "right heel", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	if w := util.VerifyKeypoint(keypoints.Midhip, "midhip", 0.5); w != nil {
+	if w := util.VerifyDatapoint(bodyDatapoints.Midhip, "midhip", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	if w := util.VerifyKeypoint(keypoints.Neck, "neck", 0.5); w != nil {
+	if w := util.VerifyDatapoint(bodyDatapoints.Neck, "neck", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	// convert keypoints to point
-	midhip := util.ConvertKeypointToPoint(keypoints.Midhip)
-	neck := util.ConvertKeypointToPoint(keypoints.Neck)
-	lheel := util.ConvertKeypointToPoint(keypoints.LHeel)
-	rheel := util.ConvertKeypointToPoint(keypoints.RHeel)
+	// convert datapoints to point
+	midhip := util.ConvertDatapointToPoint(bodyDatapoints.Midhip)
+	neck := util.ConvertDatapointToPoint(bodyDatapoints.Neck)
+	lheel := util.ConvertDatapointToPoint(bodyDatapoints.LHeel)
+	rheel := util.ConvertDatapointToPoint(bodyDatapoints.RHeel)
 	// calculate stance width
 	lengthOfSpine := util.GetLengthBetweenTwoPoints(midhip, neck)
 	stanceWidth := util.GetLengthBetweenTwoPoints(lheel, rheel)
@@ -276,7 +276,7 @@ func GetStanceWidth(keypoints *skp.Body25PoseKeypoints) (float64, util.Warning) 
 // shoulder tilt
 // relative to horizontal axis slope
 // positive angle for right shoulder lower than left, negative angle if right shoulder is higher than left
-func GetShoulderTilt(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
+func GetShoulderTilt(bodyDatapoints *skp.Body25PoseDatapoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	if calibrationInfo.CalibrationType == skp.CalibrationType_NO_CALIBRATION {
 		return 0, util.WarningImpl{
 			Severity: util.MINOR,
@@ -284,21 +284,21 @@ func GetShoulderTilt(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.C
 		}
 	}
 	var warning util.Warning
-	if w := util.VerifyKeypoint(keypoints.LShoulder, "left shoulder", 0.5); w != nil {
+	if w := util.VerifyDatapoint(bodyDatapoints.LShoulder, "left shoulder", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	if w := util.VerifyKeypoint(keypoints.RShoulder, "right shoulder", 0.5); w != nil {
+	if w := util.VerifyDatapoint(bodyDatapoints.RShoulder, "right shoulder", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	// convert keypoints to point
-	lshoulder := util.ConvertKeypointToPoint(keypoints.LShoulder)
-	rshoulder := util.ConvertKeypointToPoint(keypoints.RShoulder)
+	// convert datapoints to point
+	lshoulder := util.ConvertDatapointToPoint(bodyDatapoints.LShoulder)
+	rshoulder := util.ConvertDatapointToPoint(bodyDatapoints.RShoulder)
 	// calculate shoulder tilt
 	lineFromRShoulderWithHorAxisSlope := util.GetLineWithSlope(rshoulder, calibrationInfo.HorAxisLine.Slope)
 	pointOnLine := util.GetPointOnLineWithX(lshoulder.XPos, lineFromRShoulderWithHorAxisSlope)
@@ -310,7 +310,7 @@ func GetShoulderTilt(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.C
 // waist tilt
 // relative to horizontal axis slope
 // positive angle for right hip lower than left, negative angle if right hip is higher than left
-func GetWaistTilt(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
+func GetWaistTilt(bodyDatapoints *skp.Body25PoseDatapoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	if calibrationInfo.CalibrationType == skp.CalibrationType_NO_CALIBRATION {
 		return 0, util.WarningImpl{
 			Severity: util.MINOR,
@@ -318,21 +318,21 @@ func GetWaistTilt(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.Cali
 		}
 	}
 	var warning util.Warning
-	if w := util.VerifyKeypoint(keypoints.LHip, "left hip", 0.5); w != nil {
+	if w := util.VerifyDatapoint(bodyDatapoints.LHip, "left hip", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	if w := util.VerifyKeypoint(keypoints.RHip, "right hip", 0.5); w != nil {
+	if w := util.VerifyDatapoint(bodyDatapoints.RHip, "right hip", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	// convert keypoints to point
-	lhip := util.ConvertKeypointToPoint(keypoints.LHip)
-	rhip := util.ConvertKeypointToPoint(keypoints.RHip)
+	// convert datapoints to point
+	lhip := util.ConvertDatapointToPoint(bodyDatapoints.LHip)
+	rhip := util.ConvertDatapointToPoint(bodyDatapoints.RHip)
 	// calculate waist tilt
 	lineFromRHipWithHorAxisSlope := util.GetLineWithSlope(rhip, calibrationInfo.HorAxisLine.Slope)
 	pointOnLine := util.GetPointOnLineWithX(lhip.XPos, lineFromRHipWithHorAxisSlope)
@@ -345,7 +345,7 @@ func GetWaistTilt(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.Cali
 // line from club head to club butt
 // relative to vertical axis slope
 // positive angle is forward shaft lean, negative angle is backwards shaft lean
-func GetShaftLean(calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
+func GetShaftLean(golfSpecificDatapoints *skp.GolfSpecificDatapoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	if calibrationInfo.CalibrationType == skp.CalibrationType_NO_CALIBRATION {
 		return 0, util.WarningImpl{
 			Severity: util.MINOR,
@@ -353,21 +353,21 @@ func GetShaftLean(calibrationInfo *util.CalibrationInfo) (float64, util.Warning)
 		}
 	}
 	var warning util.Warning
-	if w := util.VerifyKeypoint(&calibrationInfo.ClubButtPoint, "club butt", 0.5); w != nil {
+	if w := util.VerifyDatapoint(golfSpecificDatapoints.ClubButt, "club butt", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	if w := util.VerifyKeypoint(&calibrationInfo.ClubHeadPoint, "club head", 0.5); w != nil {
+	if w := util.VerifyDatapoint(golfSpecificDatapoints.ClubHead, "club head", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	// convert keypoints to point
-	clubbutt := util.ConvertKeypointToPoint(&calibrationInfo.ClubButtPoint)
-	clubhead := util.ConvertKeypointToPoint(&calibrationInfo.ClubHeadPoint)
+	// convert datapoints to point
+	clubbutt := util.ConvertDatapointToPoint(golfSpecificDatapoints.ClubButt)
+	clubhead := util.ConvertDatapointToPoint(golfSpecificDatapoints.ClubHead)
 	// calculate shaft lean
 	lineFromClubheadWithVertAxisSlope := util.GetLineWithSlope(clubhead, calibrationInfo.VertAxisLine.Slope)
 	pointOnLine := util.GetPointOnLineWithY(clubbutt.YPos, lineFromClubheadWithVertAxisSlope)
@@ -381,20 +381,20 @@ func GetShaftLean(calibrationInfo *util.CalibrationInfo) (float64, util.Warning)
 // line from midpoint of feet to ball
 // angle between these lines
 // positive angle means ball closer to lead side, negative angle means ball closer to trail side
-func GetBallPosition(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
+func GetBallPosition(bodyDatapoints *skp.Body25PoseDatapoints, golfSpecificDatapoints *skp.GolfSpecificDatapoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	var warning util.Warning
-	if w := util.VerifyKeypoint(&calibrationInfo.GolfBallPoint, "golf ball", 0.5); w != nil {
+	if w := util.VerifyDatapoint(golfSpecificDatapoints.GolfBall, "golf ball", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	// convert keypoints to point
-	lFootPoint, _ := util.GetLeftFootPoint(keypoints, calibrationInfo.FeetLineMethod)
-	rFootPoint, _ := util.GetRightFootPoint(keypoints, calibrationInfo.FeetLineMethod)
-	lfoot := util.ConvertKeypointToPoint(lFootPoint)
-	rfoot := util.ConvertKeypointToPoint(rFootPoint)
-	golfball := util.ConvertKeypointToPoint(&calibrationInfo.GolfBallPoint)
+	// convert datapoints to point
+	lFootPoint, _ := util.GetLeftFootPoint(bodyDatapoints, calibrationInfo.FeetLineMethod)
+	rFootPoint, _ := util.GetRightFootPoint(bodyDatapoints, calibrationInfo.FeetLineMethod)
+	lfoot := util.ConvertDatapointToPoint(lFootPoint)
+	rfoot := util.ConvertDatapointToPoint(rFootPoint)
+	golfball := util.ConvertDatapointToPoint(golfSpecificDatapoints.GolfBall)
 	// calculate ball position
 	feetLineMidpoint := util.GetMidpoint(lfoot, rfoot)
 	feetLineSlopeRecipricol := util.GetSlopeRecipricol(lfoot, rfoot)
@@ -416,20 +416,20 @@ func GetBallPosition(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.C
 // line from midpoint of feet to nose
 // angle between these lines
 // positive angle means head is closer to lead side, negative angle means head is closer to trail side
-func GetHeadPosition(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
+func GetHeadPosition(bodyDatapoints *skp.Body25PoseDatapoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	var warning util.Warning
-	if w := util.VerifyKeypoint(keypoints.Nose, "nose", 0.5); w != nil {
+	if w := util.VerifyDatapoint(bodyDatapoints.Nose, "nose", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	// convert keypoints to point
-	lFootPoint, _ := util.GetLeftFootPoint(keypoints, calibrationInfo.FeetLineMethod)
-	rFootPoint, _ := util.GetRightFootPoint(keypoints, calibrationInfo.FeetLineMethod)
-	lfoot := util.ConvertKeypointToPoint(lFootPoint)
-	rfoot := util.ConvertKeypointToPoint(rFootPoint)
-	nose := util.ConvertKeypointToPoint(keypoints.Nose)
+	// convert datapoints to point
+	lFootPoint, _ := util.GetLeftFootPoint(bodyDatapoints, calibrationInfo.FeetLineMethod)
+	rFootPoint, _ := util.GetRightFootPoint(bodyDatapoints, calibrationInfo.FeetLineMethod)
+	lfoot := util.ConvertDatapointToPoint(lFootPoint)
+	rfoot := util.ConvertDatapointToPoint(rFootPoint)
+	nose := util.ConvertDatapointToPoint(bodyDatapoints.Nose)
 	// calculate head position
 	feetLineMidpoint := util.GetMidpoint(lfoot, rfoot)
 	feetLineSlopeRecipricol := util.GetSlopeRecipricol(lfoot, rfoot)
@@ -451,20 +451,20 @@ func GetHeadPosition(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.C
 // line from midpoint of feet to neck
 // angle between these lines
 // positive angle means head is closer to lead side, negative angle means head is closer to trail side
-func GetChestPosition(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
+func GetChestPosition(bodyDatapoints *skp.Body25PoseDatapoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	var warning util.Warning
-	if w := util.VerifyKeypoint(keypoints.Neck, "neck", 0.5); w != nil {
+	if w := util.VerifyDatapoint(bodyDatapoints.Neck, "neck", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	// convert keypoints to point
-	lFootPoint, _ := util.GetLeftFootPoint(keypoints, calibrationInfo.FeetLineMethod)
-	rFootPoint, _ := util.GetRightFootPoint(keypoints, calibrationInfo.FeetLineMethod)
-	lfoot := util.ConvertKeypointToPoint(lFootPoint)
-	rfoot := util.ConvertKeypointToPoint(rFootPoint)
-	neck := util.ConvertKeypointToPoint(keypoints.Neck)
+	// convert datapoints to point
+	lFootPoint, _ := util.GetLeftFootPoint(bodyDatapoints, calibrationInfo.FeetLineMethod)
+	rFootPoint, _ := util.GetRightFootPoint(bodyDatapoints, calibrationInfo.FeetLineMethod)
+	lfoot := util.ConvertDatapointToPoint(lFootPoint)
+	rfoot := util.ConvertDatapointToPoint(rFootPoint)
+	neck := util.ConvertDatapointToPoint(bodyDatapoints.Neck)
 	// calculate chest position
 	feetLineMidpoint := util.GetMidpoint(lfoot, rfoot)
 	feetLineSlopeRecipricol := util.GetSlopeRecipricol(lfoot, rfoot)
@@ -486,20 +486,20 @@ func GetChestPosition(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.
 // line from midpoint of feet to neck
 // angle between these lines
 // positive angle means head is closer to lead side, negative angle means head is closer to trail side
-func GetMidhipPosition(keypoints *skp.Body25PoseKeypoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
+func GetMidhipPosition(bodyDatapoints *skp.Body25PoseDatapoints, calibrationInfo *util.CalibrationInfo) (float64, util.Warning) {
 	var warning util.Warning
-	if w := util.VerifyKeypoint(keypoints.Midhip, "mid hip", 0.5); w != nil {
+	if w := util.VerifyDatapoint(bodyDatapoints.Midhip, "mid hip", 0.5); w != nil {
 		if w.GetSeverity() == util.SEVERE {
 			return 0, w
 		}
 		warning = util.AppendMinorWarnings(warning, w)
 	}
-	// convert keypoints to point
-	lFootPoint, _ := util.GetLeftFootPoint(keypoints, calibrationInfo.FeetLineMethod)
-	rFootPoint, _ := util.GetRightFootPoint(keypoints, calibrationInfo.FeetLineMethod)
-	lfoot := util.ConvertKeypointToPoint(lFootPoint)
-	rfoot := util.ConvertKeypointToPoint(rFootPoint)
-	midhip := util.ConvertKeypointToPoint(keypoints.Midhip)
+	// convert datapoints to point
+	lFootPoint, _ := util.GetLeftFootPoint(bodyDatapoints, calibrationInfo.FeetLineMethod)
+	rFootPoint, _ := util.GetRightFootPoint(bodyDatapoints, calibrationInfo.FeetLineMethod)
+	lfoot := util.ConvertDatapointToPoint(lFootPoint)
+	rfoot := util.ConvertDatapointToPoint(rFootPoint)
+	midhip := util.ConvertDatapointToPoint(bodyDatapoints.Midhip)
 	// calculate midhip position
 	feetLineMidpoint := util.GetMidpoint(lfoot, rfoot)
 	feetLineSlopeRecipricol := util.GetSlopeRecipricol(lfoot, rfoot)

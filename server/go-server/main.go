@@ -14,16 +14,16 @@ import (
 func startServices(ctx context.Context, controller *controller.Controller) error {
 	go func() {
 		if err := controller.StartKeypointsServer(); err != nil {
-			log.Fatalf("Could not start keypoints server %w", err)
+			log.Fatalf("Could not start keypoints server %v", err)
 		}
 	}()
 	log.Printf("Started Golf Keypoints Server")
 	if err := controller.StartDatabaseClient(ctx); err != nil {
-		return fmt.Errorf("could not start database: %w", err)
+		return fmt.Errorf("could not start database: %v", err)
 	}
 	log.Printf("Started Database Client")
 	if err := controller.StartCvClient(); err != nil {
-		return fmt.Errorf("could not start cvclient %w", err)
+		return fmt.Errorf("could not start cvclient %v", err)
 	}
 	log.Printf("Started CV client")
 	return nil
@@ -31,15 +31,15 @@ func startServices(ctx context.Context, controller *controller.Controller) error
 
 func stopServices(ctx context.Context, controller *controller.Controller) error {
 	if err := controller.StopKeypointsServer(); err != nil {
-		return fmt.Errorf("could not stop keypoints server %w", err)
+		return fmt.Errorf("could not stop keypoints server %v", err)
 	}
 	log.Printf("Stopped Golf Keypoints Server")
 	if err := controller.CloseDatabaseClient(ctx); err != nil {
-		return fmt.Errorf("could not stop database client %w", err)
+		return fmt.Errorf("could not stop database client %v", err)
 	}
 	log.Printf("Stopped Database Client")
 	if err := controller.CloseCvClient(); err != nil {
-		return fmt.Errorf("could not close cvclient %w", err)
+		return fmt.Errorf("could not close cvclient %v", err)
 	}
 	log.Printf("Closed Cv client")
 	return nil
@@ -51,7 +51,7 @@ func main() {
 	log.Printf("Starting services")
 	err := startServices(ctx, controller)
 	if err != nil {
-		log.Fatalf("Could not start services: %w", err)
+		log.Fatalf("Could not start services: %v", err)
 	}
 	// Set up a channel to listen for OS signals
 	stopChan := make(chan os.Signal, 1)
@@ -62,6 +62,6 @@ func main() {
 	log.Printf("Stopping services")
 	err = stopServices(ctx, controller)
 	if err != nil {
-		log.Fatalf("Could not stop services: %w", err)
+		log.Fatalf("Could not stop services: %v", err)
 	}
 }

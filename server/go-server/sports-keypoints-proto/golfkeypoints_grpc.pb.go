@@ -28,9 +28,9 @@ type GolfKeypointsServiceClient interface {
 	CalibrateInputImageManual(ctx context.Context, in *CalibrateInputImageManualRequest, opts ...grpc.CallOption) (*CalibrateInputImageResponse, error)
 	CalculateGolfKeypoints(ctx context.Context, in *CalculateGolfKeypointsRequest, opts ...grpc.CallOption) (*CalculateGolfKeypointsResponse, error)
 	ReadGolfKeypoints(ctx context.Context, in *ReadGolfKeypointsRequest, opts ...grpc.CallOption) (*ReadGolfKeypointsResponse, error)
-	// if estimated body keypoints are off or have low confidence, client can manually input where body parts are
-	UpdateBodyKeypoints(ctx context.Context, in *UpdateBodyKeypointsRequest, opts ...grpc.CallOption) (*UpdateBodyKeypointsResponse, error)
 	DeleteGolfKeypoints(ctx context.Context, in *DeleteGolfKeypointsRequest, opts ...grpc.CallOption) (*DeleteGolfKeypointsResponse, error)
+	// if estimated body datapoints are off or have low confidence, client can manually input where body parts are
+	UpdateBodyDatapoints(ctx context.Context, in *UpdateBodyDatapointsRequest, opts ...grpc.CallOption) (*UpdateBodyDatapointsResponse, error)
 }
 
 type golfKeypointsServiceClient struct {
@@ -113,18 +113,18 @@ func (c *golfKeypointsServiceClient) ReadGolfKeypoints(ctx context.Context, in *
 	return out, nil
 }
 
-func (c *golfKeypointsServiceClient) UpdateBodyKeypoints(ctx context.Context, in *UpdateBodyKeypointsRequest, opts ...grpc.CallOption) (*UpdateBodyKeypointsResponse, error) {
-	out := new(UpdateBodyKeypointsResponse)
-	err := c.cc.Invoke(ctx, "/sports_keypoints_proto.GolfKeypointsService/UpdateBodyKeypoints", in, out, opts...)
+func (c *golfKeypointsServiceClient) DeleteGolfKeypoints(ctx context.Context, in *DeleteGolfKeypointsRequest, opts ...grpc.CallOption) (*DeleteGolfKeypointsResponse, error) {
+	out := new(DeleteGolfKeypointsResponse)
+	err := c.cc.Invoke(ctx, "/sports_keypoints_proto.GolfKeypointsService/DeleteGolfKeypoints", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *golfKeypointsServiceClient) DeleteGolfKeypoints(ctx context.Context, in *DeleteGolfKeypointsRequest, opts ...grpc.CallOption) (*DeleteGolfKeypointsResponse, error) {
-	out := new(DeleteGolfKeypointsResponse)
-	err := c.cc.Invoke(ctx, "/sports_keypoints_proto.GolfKeypointsService/DeleteGolfKeypoints", in, out, opts...)
+func (c *golfKeypointsServiceClient) UpdateBodyDatapoints(ctx context.Context, in *UpdateBodyDatapointsRequest, opts ...grpc.CallOption) (*UpdateBodyDatapointsResponse, error) {
+	out := new(UpdateBodyDatapointsResponse)
+	err := c.cc.Invoke(ctx, "/sports_keypoints_proto.GolfKeypointsService/UpdateBodyDatapoints", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -145,9 +145,9 @@ type GolfKeypointsServiceServer interface {
 	CalibrateInputImageManual(context.Context, *CalibrateInputImageManualRequest) (*CalibrateInputImageResponse, error)
 	CalculateGolfKeypoints(context.Context, *CalculateGolfKeypointsRequest) (*CalculateGolfKeypointsResponse, error)
 	ReadGolfKeypoints(context.Context, *ReadGolfKeypointsRequest) (*ReadGolfKeypointsResponse, error)
-	// if estimated body keypoints are off or have low confidence, client can manually input where body parts are
-	UpdateBodyKeypoints(context.Context, *UpdateBodyKeypointsRequest) (*UpdateBodyKeypointsResponse, error)
 	DeleteGolfKeypoints(context.Context, *DeleteGolfKeypointsRequest) (*DeleteGolfKeypointsResponse, error)
+	// if estimated body datapoints are off or have low confidence, client can manually input where body parts are
+	UpdateBodyDatapoints(context.Context, *UpdateBodyDatapointsRequest) (*UpdateBodyDatapointsResponse, error)
 	mustEmbedUnimplementedGolfKeypointsServiceServer()
 }
 
@@ -179,11 +179,11 @@ func (UnimplementedGolfKeypointsServiceServer) CalculateGolfKeypoints(context.Co
 func (UnimplementedGolfKeypointsServiceServer) ReadGolfKeypoints(context.Context, *ReadGolfKeypointsRequest) (*ReadGolfKeypointsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadGolfKeypoints not implemented")
 }
-func (UnimplementedGolfKeypointsServiceServer) UpdateBodyKeypoints(context.Context, *UpdateBodyKeypointsRequest) (*UpdateBodyKeypointsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateBodyKeypoints not implemented")
-}
 func (UnimplementedGolfKeypointsServiceServer) DeleteGolfKeypoints(context.Context, *DeleteGolfKeypointsRequest) (*DeleteGolfKeypointsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteGolfKeypoints not implemented")
+}
+func (UnimplementedGolfKeypointsServiceServer) UpdateBodyDatapoints(context.Context, *UpdateBodyDatapointsRequest) (*UpdateBodyDatapointsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateBodyDatapoints not implemented")
 }
 func (UnimplementedGolfKeypointsServiceServer) mustEmbedUnimplementedGolfKeypointsServiceServer() {}
 
@@ -342,24 +342,6 @@ func _GolfKeypointsService_ReadGolfKeypoints_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _GolfKeypointsService_UpdateBodyKeypoints_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateBodyKeypointsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(GolfKeypointsServiceServer).UpdateBodyKeypoints(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/sports_keypoints_proto.GolfKeypointsService/UpdateBodyKeypoints",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GolfKeypointsServiceServer).UpdateBodyKeypoints(ctx, req.(*UpdateBodyKeypointsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _GolfKeypointsService_DeleteGolfKeypoints_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteGolfKeypointsRequest)
 	if err := dec(in); err != nil {
@@ -374,6 +356,24 @@ func _GolfKeypointsService_DeleteGolfKeypoints_Handler(srv interface{}, ctx cont
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(GolfKeypointsServiceServer).DeleteGolfKeypoints(ctx, req.(*DeleteGolfKeypointsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GolfKeypointsService_UpdateBodyDatapoints_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateBodyDatapointsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GolfKeypointsServiceServer).UpdateBodyDatapoints(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sports_keypoints_proto.GolfKeypointsService/UpdateBodyDatapoints",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GolfKeypointsServiceServer).UpdateBodyDatapoints(ctx, req.(*UpdateBodyDatapointsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -418,12 +418,12 @@ var GolfKeypointsService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _GolfKeypointsService_ReadGolfKeypoints_Handler,
 		},
 		{
-			MethodName: "UpdateBodyKeypoints",
-			Handler:    _GolfKeypointsService_UpdateBodyKeypoints_Handler,
-		},
-		{
 			MethodName: "DeleteGolfKeypoints",
 			Handler:    _GolfKeypointsService_DeleteGolfKeypoints_Handler,
+		},
+		{
+			MethodName: "UpdateBodyDatapoints",
+			Handler:    _GolfKeypointsService_UpdateBodyDatapoints_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

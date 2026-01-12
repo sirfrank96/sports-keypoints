@@ -313,38 +313,6 @@ func TestVerifyReadGolfKeypointsRequest(t *testing.T) {
 	}
 }
 
-func TestVerifyUpdateBodyKeypointsRequest(t *testing.T) {
-	// nil request
-	err := verifyUpdateBodyKeypointsRequest(nil)
-	if err == nil {
-		t.Errorf("(verifyUpdateBodyKeypointsRequest(nil) is supposed to have an error")
-	}
-	// empty request
-	updateBodyKeypointsRequest := &skp.UpdateBodyKeypointsRequest{}
-	err = verifyUpdateBodyKeypointsRequest(updateBodyKeypointsRequest)
-	if err == nil {
-		t.Errorf("(verifyUpdateBodyKeypointsRequest(%+v) is supposed to have an error", updateBodyKeypointsRequest)
-	}
-	// only input image set
-	updateBodyKeypointsRequest.InputImageId = "image1"
-	err = verifyUpdateBodyKeypointsRequest(updateBodyKeypointsRequest)
-	if err == nil {
-		t.Errorf("(verifyUpdateBodyKeypointsRequest(%+v) is supposed to have an error", updateBodyKeypointsRequest)
-	}
-	// good request
-	updateBodyKeypointsRequest.UpdatedBodyKeypoints = &skp.Body25PoseKeypoints{
-		Nose: &skp.Keypoint{
-			X:          1.23,
-			Y:          4.56,
-			Confidence: 1.0,
-		},
-	}
-	err = verifyUpdateBodyKeypointsRequest(updateBodyKeypointsRequest)
-	if err != nil {
-		t.Errorf("verifyUpdateBodyKeypoints(%+v) had an unexpected error: %s", updateBodyKeypointsRequest, err.Error())
-	}
-}
-
 func TestVerifyDeleteGolfKeypointsRequest(t *testing.T) {
 	// nil request
 	err := verifyDeleteGolfKeypointsRequest(nil)
@@ -362,5 +330,37 @@ func TestVerifyDeleteGolfKeypointsRequest(t *testing.T) {
 	err = verifyDeleteGolfKeypointsRequest(deleteGolfKeypointsRequest)
 	if err != nil {
 		t.Errorf("verifyDeleteGolfKeypoints(%+v) had an unexpected error: %s", deleteGolfKeypointsRequest, err.Error())
+	}
+}
+
+func TestVerifyUpdateBodyDatapointsRequest(t *testing.T) {
+	// nil request
+	err := verifyUpdateBodyDatapointsRequest(nil)
+	if err == nil {
+		t.Errorf("(verifyUpdateBodyDatapointsRequest(nil) is supposed to have an error")
+	}
+	// empty request
+	updateBodyDatapointsRequest := &skp.UpdateBodyDatapointsRequest{}
+	err = verifyUpdateBodyDatapointsRequest(updateBodyDatapointsRequest)
+	if err == nil {
+		t.Errorf("(verifyUpdateBodyDatapointsRequest(%+v) is supposed to have an error", updateBodyDatapointsRequest)
+	}
+	// only input image set
+	updateBodyDatapointsRequest.InputImageId = "image1"
+	err = verifyUpdateBodyDatapointsRequest(updateBodyDatapointsRequest)
+	if err == nil {
+		t.Errorf("(verifyUpdateBodyDatapointsRequest(%+v) is supposed to have an error", updateBodyDatapointsRequest)
+	}
+	// good request
+	updateBodyDatapointsRequest.UpdatedBodyDatapoints = &skp.Body25PoseDatapoints{
+		Nose: &skp.Datapoint{
+			X:          1.23,
+			Y:          4.56,
+			Confidence: 1.0,
+		},
+	}
+	err = verifyUpdateBodyDatapointsRequest(updateBodyDatapointsRequest)
+	if err != nil {
+		t.Errorf("verifyUpdateBodyDatapoints(%+v) had an unexpected error: %s", updateBodyDatapointsRequest, err.Error())
 	}
 }

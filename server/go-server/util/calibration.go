@@ -12,10 +12,6 @@ type CalibrationInfo struct {
 	HorAxisLine                  Line                `bson:"hor_axis_line,omitempty"`
 	VertAxisLine                 Line                `bson:"vert_axis_line,omitempty"`
 	VanishingPoint               Point               `bson:"vanishing_point,omitempty"`
-	GolfBallPoint                skp.Keypoint        `bson:"golf_ball_point,omitempty"`
-	ClubButtPoint                skp.Keypoint        `bson:"club_butt_point,omitempty"`
-	ClubHeadPoint                skp.Keypoint        `bson:"club_head_point,omitempty"`
-	ShoulderTilt                 skp.Double          `bson:"shoulder_tilt,omitempty"`
 	ManualGenerated              bool                `bson:"manual_generated,omitempty"`
 	CalibrationImgAxes           []byte              `bson:"calibration_img_axes,omitempty"`
 	CalibrationImgVanishingPoint []byte              `bson:"calibration_img_vanishing_point,omitempty"`
@@ -43,24 +39,24 @@ func VerifyDouble(double *skp.Double) Warning {
 	return nil
 }
 
-func CheckIfKeypointExists(keypoint *skp.Keypoint) bool {
-	if keypoint == nil {
+func CheckIfDatapointExists(datapoint *skp.Datapoint) bool {
+	if datapoint == nil {
 		return false
 	}
-	return keypoint.X != 0 || keypoint.Y != 0
+	return datapoint.X != 0 || datapoint.Y != 0
 }
 
-func VerifyKeypoint(keypoint *skp.Keypoint, keypointName string, threshold float64) Warning {
-	if !CheckIfKeypointExists(keypoint) {
+func VerifyDatapoint(datapoint *skp.Datapoint, datapointName string, threshold float64) Warning {
+	if !CheckIfDatapointExists(datapoint) {
 		return WarningImpl{
 			Severity: SEVERE,
-			Message:  fmt.Sprintf("could not find keypoint %s", keypointName),
+			Message:  fmt.Sprintf("could not find datapoint %s", datapointName),
 		}
 	}
-	if keypoint.Confidence < threshold {
+	if datapoint.Confidence < threshold {
 		return WarningImpl{
 			Severity: MINOR,
-			Message:  fmt.Sprintf("uncertain where %s is, confidence is %f. please make sure %s is visible in image", keypointName, keypoint.Confidence, keypointName),
+			Message:  fmt.Sprintf("uncertain where %s is, confidence is %f. please make sure %s is visible in image", datapointName, datapoint.Confidence, datapointName),
 		}
 	}
 	return nil

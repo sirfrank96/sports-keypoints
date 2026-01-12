@@ -25,18 +25,18 @@ func GetMidpoint(point1 *Point, point2 *Point) *Point {
 	return &Point{XPos: xMid, YPos: yMid}
 }
 
-// Converts *skp.Keypoint to *Point
-func ConvertKeypointToPoint(cvKeypoint *skp.Keypoint) *Point {
-	if cvKeypoint == nil {
+// Converts *skp.Datapoint to *Point
+func ConvertDatapointToPoint(cvDatapoint *skp.Datapoint) *Point {
+	if cvDatapoint == nil {
 		return nil
 	}
-	return &Point{XPos: cvKeypoint.X, YPos: cvKeypoint.Y}
+	return &Point{XPos: cvDatapoint.X, YPos: cvDatapoint.Y}
 }
 
-// Converts *Point to *skp.Keypoint
-func ConvertPointToKeypoint(point *Point) *skp.Keypoint {
+// Converts *Point to *skp.Datapoint
+func ConvertPointToDatapoint(point *Point) *skp.Datapoint {
 	if point == nil {
 		return nil
 	}
-	return &skp.Keypoint{X: point.XPos, Y: point.YPos}
+	return &skp.Datapoint{X: point.XPos, Y: point.YPos}
 }

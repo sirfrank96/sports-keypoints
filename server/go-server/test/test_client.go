@@ -56,18 +56,18 @@ func testMainCodeFlowDtl(ctx context.Context, uClient skp.UserServiceClient, gCl
 		log.Fatalf("Failed to calculate golf keypoints: %s", err.Error())
 	}
 	log.Printf("Calculate golf keypoints dtl: %+v", calculateGolfKeypointsResponse.GolfKeypoints.DtlGolfSetupPoints)
-	newBodyKeypoints := &skp.Body25PoseKeypoints{
-		LShoulder: &skp.Keypoint{
+	newBodyDatapoints := &skp.Body25PoseDatapoints{
+		LShoulder: &skp.Datapoint{
 			X:          408,
 			Y:          1176,
 			Confidence: 0.99,
 		},
 	}
-	updateBodyKeypointsResponse, err := gclient.UpdateBodyKeypoints(ctx, gClient, registerUserResponse.SessionToken, uploadInputImageResponse.InputImageId, newBodyKeypoints)
+	updateBodyDatapointsResponse, err := gclient.UpdateBodyDatapoints(ctx, gClient, registerUserResponse.SessionToken, uploadInputImageResponse.InputImageId, newBodyDatapoints)
 	if err != nil {
-		log.Fatalf("Failed to update body keypoints: %s", err.Error())
+		log.Fatalf("Failed to update body datapoints: %s", err.Error())
 	}
-	log.Printf("Update body keypoints dtl: %+v", updateBodyKeypointsResponse.UpdatedGolfKeypoints.DtlGolfSetupPoints)
+	log.Printf("Update body datapoints dtl: %+v", updateBodyDatapointsResponse.UpdatedGolfKeypoints.DtlGolfSetupPoints)
 }
 
 func testMainCodeFlowFaceOn(ctx context.Context, uClient skp.UserServiceClient, gClient skp.GolfKeypointsServiceClient) {

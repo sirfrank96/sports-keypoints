@@ -56,12 +56,14 @@ func GetProjectionOntoLine(line *Line, point *Point) *Projection {
 	return &Projection{IntersectPoint: intersection.IntersectPoint, ProjectionLine: *projectionLine, OriginalPoint: *point, OriginalLine: *line}
 }
 
-// TODO: keep from -90 to 90 or keep from 0-180?
+// result will be from 0-180
 func ConvertSlopeToDegrees(slope float64) float64 {
 	rad := math.Atan(slope)
 	deg := ConvertRadToDegrees(rad)
 	if deg > 180.0 {
 		return deg - float64(180)
+	} else if deg < 0.0 {
+		return deg + float64(180)
 	} else {
 		return deg
 	}

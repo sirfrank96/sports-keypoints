@@ -9,25 +9,15 @@ import (
 	"github.com/sirfrank96/go-server/util"
 )
 
-func (g *GolfKeypointsListener) calibrateInputImageHelper(ctx context.Context, calibrationInfo *util.CalibrationInfo, inputImageId string, golfBall *skp.Keypoint, clubButt *skp.Keypoint, clubHead *skp.Keypoint, horAxisLine *skp.Line, vertAxisLine *skp.Line, shoulderTilt *skp.Double, firstLineAtTarget *skp.Line, secondLineAtTarget *skp.Line) (*skp.CalibrateInputImageResponse, error) {
+func (g *GolfKeypointsListener) calibrateInputImageHelper(ctx context.Context, calibrationInfo *util.CalibrationInfo, inputImageId string, horAxisLine *skp.Line, vertAxisLine *skp.Line, firstLineAtTarget *skp.Line, secondLineAtTarget *skp.Line) (*skp.CalibrateInputImageResponse, error) {
 	// get inputimg with inputimgid from db
 	inputImage, err := g.dbmgr.ReadInputImage(ctx, inputImageId)
 	if err != nil {
 		return nil, fmt.Errorf("could not read input image with id: %s: %w", inputImageId, err)
 	}
-	// put in golf ball/golf club points if available
-	if golfBall != nil {
-		calibrationInfo.GolfBallPoint = *golfBall
-	}
-	if clubButt != nil {
-		calibrationInfo.ClubButtPoint = *clubButt
-	}
-	if clubHead != nil {
-		calibrationInfo.ClubHeadPoint = *clubHead
-	}
 	// calibrate based on dtl or face on
 	if inputImage.ImageType == skp.ImageType_DTL {
-		calibrationInfo, err = g.calibrateDTLImage(calibrationInfo, horAxisLine, vertAxisLine, shoulderTilt, firstLineAtTarget, secondLineAtTarget)
+		calibrationInfo, err = g.calibrateDTLImage(calibrationInfo, horAxisLine, vertAxisLine, firstLineAtTarget, secondLineAtTarget)
 		if err != nil {
 			return nil, fmt.Errorf("could not calibrate dtl image: %w", err)
 		}
@@ -38,6 +28,7 @@ func (g *GolfKeypointsListener) calibrateInputImageHelper(ctx context.Context, c
 		}
 	}
 	inputImage.CalibrationInfo = *calibrationInfo
+	inputImage.Calibrated = true
 	// update inputimg with inputimgid in db
 	_, err = g.dbmgr.UpdateInputImage(ctx, inputImageId, inputImage)
 	if err != nil {
@@ -50,7 +41,7 @@ func (g *GolfKeypointsListener) calibrateInputImageHelper(ctx context.Context, c
 	return response, nil
 }
 
-func (g *GolfKeypointsListener) calibrateDTLImage(calibrationInfo *util.CalibrationInfo, horAxisLine *skp.Line, vertAxisLine *skp.Line, shoulderTilt *skp.Double, firstLineAtTarget *skp.Line, secondLineAtTarget *skp.Line) (*util.CalibrationInfo, error) {
+func (g *GolfKeypointsListener) calibrateDTLImage(calibrationInfo *util.CalibrationInfo, horAxisLine *skp.Line, vertAxisLine *skp.Line, firstLineAtTarget *skp.Line, secondLineAtTarget *skp.Line) (*util.CalibrationInfo, error) {
 	var err error
 	// axes calibration
 	if calibrationInfo.CalibrationType != skp.CalibrationType_NO_CALIBRATION {
@@ -67,12 +58,6 @@ func (g *GolfKeypointsListener) calibrateDTLImage(calibrationInfo *util.Calibrat
 		}
 		// vanishing point calibration
 		if calibrationInfo.CalibrationType != skp.CalibrationType_AXES_CALIBRATION_ONLY {
-			// add shoulder tilt for shoulder alignment calculation if provided
-			if shoulderTilt != nil {
-				calibrationInfo.ShoulderTilt = *shoulderTilt
-			} else {
-				calibrationInfo.ShoulderTilt = skp.Double{Data: 0, Warning: "Shoulder tilt not provided"}
-			}
 			if calibrationInfo.ManualGenerated {
 				calibrationInfo, err = g.generateVanishingPointFromLines(calibrationInfo, firstLineAtTarget, secondLineAtTarget)
 				if err != nil {
@@ -117,22 +102,22 @@ func (g *GolfKeypointsListener) generateAxesFromImage(calibrationInfo *util.Cali
 		return nil, fmt.Errorf("could not get pose data for calibration image axes %w", err)
 	}
 	fmt.Printf("Axes calibration image processed\n")
-	keypoints := getPoseDataResponse.Keypoints
+	datapoints := getPoseDataResponse.Datapoints
 	var warning util.Warning
 	// Get horizontal axis
-	feetLine, warning := util.GetFeetLine(keypoints, calibrationInfo.FeetLineMethod)
+	feetLine, warning := util.GetFeetLine(datapoints, calibrationInfo.FeetLineMethod)
 	if warning != nil {
 		return nil, warning
 	}
 	horAxisLine := feetLine.Line
 	// Get vertical axis
-	if warning := util.VerifyKeypoint(keypoints.Midhip, "midhip", 0.5); warning != nil {
+	if warning := util.VerifyDatapoint(datapoints.Midhip, "midhip", 0.5); warning != nil {
 		return nil, warning
 	}
-	if warning := util.VerifyKeypoint(keypoints.Neck, "neck", 0.5); warning != nil {
+	if warning := util.VerifyDatapoint(datapoints.Neck, "neck", 0.5); warning != nil {
 		return nil, warning
 	}
-	vertAxisLine := util.GetLine(util.ConvertKeypointToPoint(keypoints.Midhip), util.ConvertKeypointToPoint(keypoints.Neck))
+	vertAxisLine := util.GetLine(util.ConvertDatapointToPoint(datapoints.Midhip), util.ConvertDatapointToPoint(datapoints.Neck))
 	// validate axes angle
 	err = validateAxesAngle(&horAxisLine, vertAxisLine)
 	if err != nil {
@@ -166,10 +151,10 @@ func (g *GolfKeypointsListener) generateVanishingPointFromImage(calibrationInfo 
 		return nil, fmt.Errorf("could not get pose data for calibration image vanishingpoint %w", err)
 	}
 	fmt.Printf("Vanishing point calibration image processed\n")
-	keypoints := getPoseDataResponse.Keypoints
+	datapoints := getPoseDataResponse.Datapoints
 	var warning util.Warning
 	//use feet line as one parallel line at target and vert line as other parallel line at target
-	feetLine, warning := util.GetFeetLine(keypoints, calibrationInfo.FeetLineMethod)
+	feetLine, warning := util.GetFeetLine(datapoints, calibrationInfo.FeetLineMethod)
 	if warning != nil {
 		return nil, warning
 	}

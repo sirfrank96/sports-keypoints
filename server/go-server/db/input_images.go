@@ -21,6 +21,7 @@ type InputImage struct {
 	InputImg        []byte               `bson:"input_img,omitempty"`
 	Description     string               `bson:"description,omitempty"`
 	Timestamp       time.Time            `bson:"timestamp,omitempty"`
+	Calibrated      bool                 `bson:"calibrated,omitempty`
 	CalibrationInfo util.CalibrationInfo `bson:"calibration_info,omitempty"`
 }
 
@@ -105,6 +106,7 @@ func (d *DbManager) UpdateInputImage(ctx context.Context, inputImgId string, new
 			"input_img":        newInputImage.InputImg,
 			"description":      newInputImage.Description,
 			"timestamp":        newInputImage.Timestamp,
+			"calibrated":       newInputImage.Calibrated,
 			"calibration_info": newInputImage.CalibrationInfo,
 		},
 	}
@@ -132,7 +134,7 @@ func (d *DbManager) deleteInputImageHelper(ctx context.Context, inputImgId strin
 	warning := d.deleteGolfKeypointsForInputImageHelper(ctx, inputImgId)
 	if warning != nil {
 		if warning.GetSeverity() == util.SEVERE {
-			return fmt.Errorf("could not delete keypoints associated with input img %s: %w", inputImgId, warning.Error())
+			return fmt.Errorf("could not delete keypoints associated with input img %s: %s", inputImgId, warning.Error())
 		} else {
 			fmt.Printf("Minor warning: %s", warning.Error())
 		}

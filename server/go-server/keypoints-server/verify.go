@@ -157,25 +157,25 @@ func verifyReadGolfKeypointsRequest(request *skp.ReadGolfKeypointsRequest) error
 	return nil
 }
 
-func verifyUpdateBodyKeypointsRequest(request *skp.UpdateBodyKeypointsRequest) error {
-	if request == nil {
-		return fmt.Errorf("request is empty")
-	}
-	if request.InputImageId == "" {
-		return fmt.Errorf("please enter an input image id")
-	}
-	if request.UpdatedBodyKeypoints == nil {
-		return fmt.Errorf("please add at least one body keypoint to update")
-	}
-	return nil
-}
-
 func verifyDeleteGolfKeypointsRequest(request *skp.DeleteGolfKeypointsRequest) error {
 	if request == nil {
 		return fmt.Errorf("request is empty")
 	}
 	if request.InputImageId == "" {
 		return fmt.Errorf("please enter an input image id")
+	}
+	return nil
+}
+
+func verifyUpdateBodyDatapointsRequest(request *skp.UpdateBodyDatapointsRequest) error {
+	if request == nil {
+		return fmt.Errorf("request is empty")
+	}
+	if request.InputImageId == "" {
+		return fmt.Errorf("please enter an input image id")
+	}
+	if request.UpdatedBodyDatapoints == nil {
+		return fmt.Errorf("please add at least one body datapoint to update")
 	}
 	return nil
 }
