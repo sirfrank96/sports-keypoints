@@ -47,12 +47,11 @@ _(If you are uploading both a Face On and DTL image, it is recommended to upload
 11. Next input a description for the input image. Recommended to add what club is being used, faceon or dtl, and any other useful identifying descriptions. For example: <br>
 <img width="528" height="142" alt="input-img-description-screenshot" src="https://github.com/user-attachments/assets/be2aeb71-f02a-474a-9886-4e654879f4b3" />
 
-12. Once the image displays in the center, you must enter additional information to calibrate it. Go down the list of buttons on the right side and click and follow
-instructions for each. Once each is done, the button will be disabled and grayed out.
-13. Once necessary buttons are completed, press the `Calibrate Image` button. You will see a prompt asking how you want to calibrate the image. Press `Yes` if you have calibration images saved (see below on how to take those images). Press `No` if you want to draw axes and vanishing point lines yourself to calibrate (drawing is probably more accurate).<br>
+12. Once image displays in the center, press the `Calibrate Image` button. You will be prompted to update the feet line method. The default is to use the heel line. If your input image doesn't clearly show your heels, you should press `Yes` to change the feet line method to toe line.
+13. You will then see a prompt asking how you want to calibrate the image. Press `Yes` if you have calibration images saved (see below on how to take those images). Press `No` if you want to draw axes and vanishing point lines yourself to calibrate (drawing is probably more accurate).<br>
 <img width="511" height="197" alt="press-calibrate-button-screenshot" src="https://github.com/user-attachments/assets/d241208b-e1a6-40ef-86a4-e851246649a8" />
 
-14. Once a successful response comes back for image calibration, press the `Calculate Golf Keypoints` button.
+14. Once a successful response comes back for image calibration, press the `Calculate Golf Keypoints` button. You will be asked various prompts to identify golf specific datapoints: where the golf ball is, where the club butt is, where the club head is. For DTL, you will also be asked for shoulder tilt. Once done, the app will send a request to calculate the golf keypoints.
 15. Take a look at the data about setup keypoints and pose estimation points.
 16. Once you close the the window with that data, you will get a prompt that asks you if any of the pose estimation points are inaccurate. Click `Yes` if you would
 like to modify those and recalculate, press `No` otherwise.
@@ -60,7 +59,7 @@ like to modify those and recalculate, press `No` otherwise.
 
 18. If you pressed `Yes`, you will see another window that lists all of the pose estimation points and their coordinates in the image. Click all buttons for body points
 that you would like to modify. (The coordinate plane origin is the top left corner of the image. As you go right, the x value increases. As you go down, the y value increases).
-19. Once you have modified all pose estimation points, scroll to the bottom of that window, and press the `Done Updating Body Keypoints` button to recalculate.
+19. Once you have modified all pose estimation points, scroll to the bottom of that window, and press the `Done Updating Body Datapoints` button to recalculate.
 20. Take a look at the new data about setup keypoints
 
 #### Drawing Lines for Calibration
@@ -103,7 +102,7 @@ Save these images in your filesystem where they can be easily accessed.
 ## Future Todos
 
 1. Make the application look nicer (right now it is pretty bare bones)
-2. Add zoom functionality to more easily identify where pose keypoints are
+2. Add zoom functionality to more easily identify where pose datapoints are
 3. Allow user to click on points in the input image when updating pose estimation points, and update image to reflect new pose estimation points
 4. Add a back button to go back and forth between frames
 5. Clean up the code (pull out common functions, move code out of main_page.py and into separate modular files)
