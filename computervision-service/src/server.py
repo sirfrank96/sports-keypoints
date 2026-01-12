@@ -42,7 +42,7 @@ class ComputerVisionServiceServicer(computervision_pb2_grpc.ComputerVisionServic
         for field_descriptor in body_25_pose_datapoints_descriptor.fields:
             field_name = field_descriptor.name
             field_number = field_descriptor.number
-            keypoint = common_pb2.Keypoint(
+            keypoint = common_pb2.Datapoint(
                 x=data[field_number-1][0],
                 y=data[field_number-1][1],
                 confidence=data[field_number-1][2]
