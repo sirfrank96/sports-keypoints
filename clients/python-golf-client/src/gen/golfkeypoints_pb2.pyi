@@ -85,22 +85,20 @@ class ReadInputImageRequest(_message.Message):
     def __init__(self, session_token: _Optional[str] = ..., input_image_id: _Optional[str] = ...) -> None: ...
 
 class ReadInputImageResponse(_message.Message):
-    __slots__ = ("success", "image_type", "image", "calibration_type", "feet_line_method", "description", "timestamp")
+    __slots__ = ("success", "image_type", "image", "description", "calibrated", "timestamp")
     SUCCESS_FIELD_NUMBER: _ClassVar[int]
     IMAGE_TYPE_FIELD_NUMBER: _ClassVar[int]
     IMAGE_FIELD_NUMBER: _ClassVar[int]
-    CALIBRATION_TYPE_FIELD_NUMBER: _ClassVar[int]
-    FEET_LINE_METHOD_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
+    CALIBRATED_FIELD_NUMBER: _ClassVar[int]
     TIMESTAMP_FIELD_NUMBER: _ClassVar[int]
     success: bool
     image_type: ImageType
     image: bytes
-    calibration_type: CalibrationType
-    feet_line_method: FeetLineMethod
     description: str
+    calibrated: bool
     timestamp: _timestamp_pb2.Timestamp
-    def __init__(self, success: bool = ..., image_type: _Optional[_Union[ImageType, str]] = ..., image: _Optional[bytes] = ..., calibration_type: _Optional[_Union[CalibrationType, str]] = ..., feet_line_method: _Optional[_Union[FeetLineMethod, str]] = ..., description: _Optional[str] = ..., timestamp: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    def __init__(self, success: bool = ..., image_type: _Optional[_Union[ImageType, str]] = ..., image: _Optional[bytes] = ..., description: _Optional[str] = ..., calibrated: bool = ..., timestamp: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class DeleteInputImageRequest(_message.Message):
     __slots__ = ("session_token", "input_image_id")
@@ -117,31 +115,23 @@ class DeleteInputImageResponse(_message.Message):
     def __init__(self, success: bool = ...) -> None: ...
 
 class CalibrateInputImageRequest(_message.Message):
-    __slots__ = ("session_token", "input_image_id", "calibration_type", "feet_line_method", "calibration_image_axes", "calibration_image_vanishing_point", "golf_ball", "club_butt", "club_head", "shoulder_tilt")
+    __slots__ = ("session_token", "input_image_id", "calibration_type", "feet_line_method", "calibration_image_axes", "calibration_image_vanishing_point")
     SESSION_TOKEN_FIELD_NUMBER: _ClassVar[int]
     INPUT_IMAGE_ID_FIELD_NUMBER: _ClassVar[int]
     CALIBRATION_TYPE_FIELD_NUMBER: _ClassVar[int]
     FEET_LINE_METHOD_FIELD_NUMBER: _ClassVar[int]
     CALIBRATION_IMAGE_AXES_FIELD_NUMBER: _ClassVar[int]
     CALIBRATION_IMAGE_VANISHING_POINT_FIELD_NUMBER: _ClassVar[int]
-    GOLF_BALL_FIELD_NUMBER: _ClassVar[int]
-    CLUB_BUTT_FIELD_NUMBER: _ClassVar[int]
-    CLUB_HEAD_FIELD_NUMBER: _ClassVar[int]
-    SHOULDER_TILT_FIELD_NUMBER: _ClassVar[int]
     session_token: str
     input_image_id: str
     calibration_type: CalibrationType
     feet_line_method: FeetLineMethod
     calibration_image_axes: bytes
     calibration_image_vanishing_point: bytes
-    golf_ball: _common_pb2.Keypoint
-    club_butt: _common_pb2.Keypoint
-    club_head: _common_pb2.Keypoint
-    shoulder_tilt: _common_pb2.Double
-    def __init__(self, session_token: _Optional[str] = ..., input_image_id: _Optional[str] = ..., calibration_type: _Optional[_Union[CalibrationType, str]] = ..., feet_line_method: _Optional[_Union[FeetLineMethod, str]] = ..., calibration_image_axes: _Optional[bytes] = ..., calibration_image_vanishing_point: _Optional[bytes] = ..., golf_ball: _Optional[_Union[_common_pb2.Keypoint, _Mapping]] = ..., club_butt: _Optional[_Union[_common_pb2.Keypoint, _Mapping]] = ..., club_head: _Optional[_Union[_common_pb2.Keypoint, _Mapping]] = ..., shoulder_tilt: _Optional[_Union[_common_pb2.Double, _Mapping]] = ...) -> None: ...
+    def __init__(self, session_token: _Optional[str] = ..., input_image_id: _Optional[str] = ..., calibration_type: _Optional[_Union[CalibrationType, str]] = ..., feet_line_method: _Optional[_Union[FeetLineMethod, str]] = ..., calibration_image_axes: _Optional[bytes] = ..., calibration_image_vanishing_point: _Optional[bytes] = ...) -> None: ...
 
 class CalibrateInputImageManualRequest(_message.Message):
-    __slots__ = ("session_token", "input_image_id", "calibration_type", "feet_line_method", "horizontal_axis", "vertical_axis", "first_line_at_target", "second_line_at_target", "golf_ball", "club_butt", "club_head", "shoulder_tilt")
+    __slots__ = ("session_token", "input_image_id", "calibration_type", "feet_line_method", "horizontal_axis", "vertical_axis", "first_line_at_target", "second_line_at_target")
     SESSION_TOKEN_FIELD_NUMBER: _ClassVar[int]
     INPUT_IMAGE_ID_FIELD_NUMBER: _ClassVar[int]
     CALIBRATION_TYPE_FIELD_NUMBER: _ClassVar[int]
@@ -150,10 +140,6 @@ class CalibrateInputImageManualRequest(_message.Message):
     VERTICAL_AXIS_FIELD_NUMBER: _ClassVar[int]
     FIRST_LINE_AT_TARGET_FIELD_NUMBER: _ClassVar[int]
     SECOND_LINE_AT_TARGET_FIELD_NUMBER: _ClassVar[int]
-    GOLF_BALL_FIELD_NUMBER: _ClassVar[int]
-    CLUB_BUTT_FIELD_NUMBER: _ClassVar[int]
-    CLUB_HEAD_FIELD_NUMBER: _ClassVar[int]
-    SHOULDER_TILT_FIELD_NUMBER: _ClassVar[int]
     session_token: str
     input_image_id: str
     calibration_type: CalibrationType
@@ -162,11 +148,7 @@ class CalibrateInputImageManualRequest(_message.Message):
     vertical_axis: _common_pb2.Line
     first_line_at_target: _common_pb2.Line
     second_line_at_target: _common_pb2.Line
-    golf_ball: _common_pb2.Keypoint
-    club_butt: _common_pb2.Keypoint
-    club_head: _common_pb2.Keypoint
-    shoulder_tilt: _common_pb2.Double
-    def __init__(self, session_token: _Optional[str] = ..., input_image_id: _Optional[str] = ..., calibration_type: _Optional[_Union[CalibrationType, str]] = ..., feet_line_method: _Optional[_Union[FeetLineMethod, str]] = ..., horizontal_axis: _Optional[_Union[_common_pb2.Line, _Mapping]] = ..., vertical_axis: _Optional[_Union[_common_pb2.Line, _Mapping]] = ..., first_line_at_target: _Optional[_Union[_common_pb2.Line, _Mapping]] = ..., second_line_at_target: _Optional[_Union[_common_pb2.Line, _Mapping]] = ..., golf_ball: _Optional[_Union[_common_pb2.Keypoint, _Mapping]] = ..., club_butt: _Optional[_Union[_common_pb2.Keypoint, _Mapping]] = ..., club_head: _Optional[_Union[_common_pb2.Keypoint, _Mapping]] = ..., shoulder_tilt: _Optional[_Union[_common_pb2.Double, _Mapping]] = ...) -> None: ...
+    def __init__(self, session_token: _Optional[str] = ..., input_image_id: _Optional[str] = ..., calibration_type: _Optional[_Union[CalibrationType, str]] = ..., feet_line_method: _Optional[_Union[FeetLineMethod, str]] = ..., horizontal_axis: _Optional[_Union[_common_pb2.Line, _Mapping]] = ..., vertical_axis: _Optional[_Union[_common_pb2.Line, _Mapping]] = ..., first_line_at_target: _Optional[_Union[_common_pb2.Line, _Mapping]] = ..., second_line_at_target: _Optional[_Union[_common_pb2.Line, _Mapping]] = ...) -> None: ...
 
 class CalibrateInputImageResponse(_message.Message):
     __slots__ = ("success",)
@@ -175,12 +157,14 @@ class CalibrateInputImageResponse(_message.Message):
     def __init__(self, success: bool = ...) -> None: ...
 
 class CalculateGolfKeypointsRequest(_message.Message):
-    __slots__ = ("session_token", "input_image_id")
+    __slots__ = ("session_token", "input_image_id", "golf_specific_datapoints")
     SESSION_TOKEN_FIELD_NUMBER: _ClassVar[int]
     INPUT_IMAGE_ID_FIELD_NUMBER: _ClassVar[int]
+    GOLF_SPECIFIC_DATAPOINTS_FIELD_NUMBER: _ClassVar[int]
     session_token: str
     input_image_id: str
-    def __init__(self, session_token: _Optional[str] = ..., input_image_id: _Optional[str] = ...) -> None: ...
+    golf_specific_datapoints: GolfSpecificDatapoints
+    def __init__(self, session_token: _Optional[str] = ..., input_image_id: _Optional[str] = ..., golf_specific_datapoints: _Optional[_Union[GolfSpecificDatapoints, _Mapping]] = ...) -> None: ...
 
 class CalculateGolfKeypointsResponse(_message.Message):
     __slots__ = ("success", "output_image", "golf_keypoints")
@@ -210,24 +194,6 @@ class ReadGolfKeypointsResponse(_message.Message):
     golf_keypoints: GolfKeypoints
     def __init__(self, success: bool = ..., output_image: _Optional[bytes] = ..., golf_keypoints: _Optional[_Union[GolfKeypoints, _Mapping]] = ...) -> None: ...
 
-class UpdateBodyKeypointsRequest(_message.Message):
-    __slots__ = ("session_token", "input_image_id", "updated_body_keypoints")
-    SESSION_TOKEN_FIELD_NUMBER: _ClassVar[int]
-    INPUT_IMAGE_ID_FIELD_NUMBER: _ClassVar[int]
-    UPDATED_BODY_KEYPOINTS_FIELD_NUMBER: _ClassVar[int]
-    session_token: str
-    input_image_id: str
-    updated_body_keypoints: _common_pb2.Body25PoseKeypoints
-    def __init__(self, session_token: _Optional[str] = ..., input_image_id: _Optional[str] = ..., updated_body_keypoints: _Optional[_Union[_common_pb2.Body25PoseKeypoints, _Mapping]] = ...) -> None: ...
-
-class UpdateBodyKeypointsResponse(_message.Message):
-    __slots__ = ("success", "updated_golf_keypoints")
-    SUCCESS_FIELD_NUMBER: _ClassVar[int]
-    UPDATED_GOLF_KEYPOINTS_FIELD_NUMBER: _ClassVar[int]
-    success: bool
-    updated_golf_keypoints: GolfKeypoints
-    def __init__(self, success: bool = ..., updated_golf_keypoints: _Optional[_Union[GolfKeypoints, _Mapping]] = ...) -> None: ...
-
 class DeleteGolfKeypointsRequest(_message.Message):
     __slots__ = ("session_token", "input_image_id")
     SESSION_TOKEN_FIELD_NUMBER: _ClassVar[int]
@@ -242,15 +208,47 @@ class DeleteGolfKeypointsResponse(_message.Message):
     success: bool
     def __init__(self, success: bool = ...) -> None: ...
 
+class UpdateBodyDatapointsRequest(_message.Message):
+    __slots__ = ("session_token", "input_image_id", "updated_body_datapoints")
+    SESSION_TOKEN_FIELD_NUMBER: _ClassVar[int]
+    INPUT_IMAGE_ID_FIELD_NUMBER: _ClassVar[int]
+    UPDATED_BODY_DATAPOINTS_FIELD_NUMBER: _ClassVar[int]
+    session_token: str
+    input_image_id: str
+    updated_body_datapoints: _common_pb2.Body25PoseDatapoints
+    def __init__(self, session_token: _Optional[str] = ..., input_image_id: _Optional[str] = ..., updated_body_datapoints: _Optional[_Union[_common_pb2.Body25PoseDatapoints, _Mapping]] = ...) -> None: ...
+
+class UpdateBodyDatapointsResponse(_message.Message):
+    __slots__ = ("success", "updated_golf_keypoints")
+    SUCCESS_FIELD_NUMBER: _ClassVar[int]
+    UPDATED_GOLF_KEYPOINTS_FIELD_NUMBER: _ClassVar[int]
+    success: bool
+    updated_golf_keypoints: GolfKeypoints
+    def __init__(self, success: bool = ..., updated_golf_keypoints: _Optional[_Union[GolfKeypoints, _Mapping]] = ...) -> None: ...
+
 class GolfKeypoints(_message.Message):
-    __slots__ = ("dtl_golf_setup_points", "faceon_golf_setup_points", "body_keypoints")
+    __slots__ = ("dtl_golf_setup_points", "faceon_golf_setup_points", "body_datapoints", "golf_specific_datapoints")
     DTL_GOLF_SETUP_POINTS_FIELD_NUMBER: _ClassVar[int]
     FACEON_GOLF_SETUP_POINTS_FIELD_NUMBER: _ClassVar[int]
-    BODY_KEYPOINTS_FIELD_NUMBER: _ClassVar[int]
+    BODY_DATAPOINTS_FIELD_NUMBER: _ClassVar[int]
+    GOLF_SPECIFIC_DATAPOINTS_FIELD_NUMBER: _ClassVar[int]
     dtl_golf_setup_points: DTLGolfSetupPoints
     faceon_golf_setup_points: FaceOnGolfSetupPoints
-    body_keypoints: _common_pb2.Body25PoseKeypoints
-    def __init__(self, dtl_golf_setup_points: _Optional[_Union[DTLGolfSetupPoints, _Mapping]] = ..., faceon_golf_setup_points: _Optional[_Union[FaceOnGolfSetupPoints, _Mapping]] = ..., body_keypoints: _Optional[_Union[_common_pb2.Body25PoseKeypoints, _Mapping]] = ...) -> None: ...
+    body_datapoints: _common_pb2.Body25PoseDatapoints
+    golf_specific_datapoints: GolfSpecificDatapoints
+    def __init__(self, dtl_golf_setup_points: _Optional[_Union[DTLGolfSetupPoints, _Mapping]] = ..., faceon_golf_setup_points: _Optional[_Union[FaceOnGolfSetupPoints, _Mapping]] = ..., body_datapoints: _Optional[_Union[_common_pb2.Body25PoseDatapoints, _Mapping]] = ..., golf_specific_datapoints: _Optional[_Union[GolfSpecificDatapoints, _Mapping]] = ...) -> None: ...
+
+class GolfSpecificDatapoints(_message.Message):
+    __slots__ = ("golf_ball", "club_butt", "club_head", "shoulder_tilt")
+    GOLF_BALL_FIELD_NUMBER: _ClassVar[int]
+    CLUB_BUTT_FIELD_NUMBER: _ClassVar[int]
+    CLUB_HEAD_FIELD_NUMBER: _ClassVar[int]
+    SHOULDER_TILT_FIELD_NUMBER: _ClassVar[int]
+    golf_ball: _common_pb2.Datapoint
+    club_butt: _common_pb2.Datapoint
+    club_head: _common_pb2.Datapoint
+    shoulder_tilt: _common_pb2.Double
+    def __init__(self, golf_ball: _Optional[_Union[_common_pb2.Datapoint, _Mapping]] = ..., club_butt: _Optional[_Union[_common_pb2.Datapoint, _Mapping]] = ..., club_head: _Optional[_Union[_common_pb2.Datapoint, _Mapping]] = ..., shoulder_tilt: _Optional[_Union[_common_pb2.Double, _Mapping]] = ...) -> None: ...
 
 class DTLGolfSetupPoints(_message.Message):
     __slots__ = ("spine_angle", "feet_alignment", "heel_alignment", "toe_alignment", "shoulder_alignment", "waist_alignment", "knee_bend", "distance_from_ball", "ulnar_deviation")

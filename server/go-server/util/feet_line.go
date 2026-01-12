@@ -8,10 +8,10 @@ import (
 
 type FeetLineInfo struct {
 	FeetLineMethod skp.FeetLineMethod `bson:"feet_line_method,omitempty"`
-	LKeypoint      skp.Keypoint       `bson:"l_keypoint,omitempty"`
-	RKeypoint      skp.Keypoint       `bson:"r_keypoint,omitempty"`
-	LKeypointName  string             `bson:"l_keypoint_name,omitempty"`
-	RKeypointName  string             `bson:"r_keypoint_name,omitempty"`
+	LDatapoint     skp.Datapoint      `bson:"l_datapoint,omitempty"`
+	RDatapoint     skp.Datapoint      `bson:"r_datapoint,omitempty"`
+	LDatapointName string             `bson:"l_datapoint_name,omitempty"`
+	RDatapointName string             `bson:"r_datapoint_name,omitempty"`
 	Threshold      float64            `bson:"threshold,omitempty"`
 }
 
@@ -22,8 +22,8 @@ type FeetLine struct {
 	Line           Line               `bson:"line,omitempty"`
 }
 
-func GetFeetLine(keypoints *skp.Body25PoseKeypoints, feetLineMethod skp.FeetLineMethod) (*FeetLine, Warning) {
-	feetLineInfo := GetFeetLineInfo(keypoints, feetLineMethod)
+func GetFeetLine(datapoints *skp.Body25PoseDatapoints, feetLineMethod skp.FeetLineMethod) (*FeetLine, Warning) {
+	feetLineInfo := GetFeetLineInfo(datapoints, feetLineMethod)
 	warning := VerifyFeetLineInfo(feetLineInfo)
 	if warning != nil && warning.GetSeverity() == SEVERE {
 		return nil, warning
@@ -33,20 +33,20 @@ func GetFeetLine(keypoints *skp.Body25PoseKeypoints, feetLineMethod skp.FeetLine
 }
 
 // TODO: Configure threshold
-func GetFeetLineInfo(keypoints *skp.Body25PoseKeypoints, feetLineMethod skp.FeetLineMethod) *FeetLineInfo {
+func GetFeetLineInfo(datapoints *skp.Body25PoseDatapoints, feetLineMethod skp.FeetLineMethod) *FeetLineInfo {
 	feetLineInfo := &FeetLineInfo{FeetLineMethod: feetLineMethod, Threshold: 0.5}
-	lKeypoint, lKeypointName := GetLeftFootPoint(keypoints, feetLineMethod)
-	feetLineInfo.LKeypoint = *lKeypoint
-	feetLineInfo.LKeypointName = lKeypointName
-	rKeypoint, rKeypointName := GetRightFootPoint(keypoints, feetLineMethod)
-	feetLineInfo.RKeypoint = *rKeypoint
-	feetLineInfo.RKeypointName = rKeypointName
+	lDatapoint, lDatapointName := GetLeftFootPoint(datapoints, feetLineMethod)
+	feetLineInfo.LDatapoint = *lDatapoint
+	feetLineInfo.LDatapointName = lDatapointName
+	rDatapoint, rDatapointName := GetRightFootPoint(datapoints, feetLineMethod)
+	feetLineInfo.RDatapoint = *rDatapoint
+	feetLineInfo.RDatapointName = rDatapointName
 	return feetLineInfo
 }
 
 func VerifyFeetLineInfo(feetLineInfo *FeetLineInfo) Warning {
 	var warning Warning
-	if w := VerifyKeypoint(&feetLineInfo.LKeypoint, feetLineInfo.LKeypointName, feetLineInfo.Threshold); w != nil {
+	if w := VerifyDatapoint(&feetLineInfo.LDatapoint, feetLineInfo.LDatapointName, feetLineInfo.Threshold); w != nil {
 		if w.GetSeverity() == SEVERE {
 			return w
 		}
@@ -56,7 +56,7 @@ func VerifyFeetLineInfo(feetLineInfo *FeetLineInfo) Warning {
 		}
 		warning = AppendMinorWarnings(warning, wStruct)
 	}
-	if w := VerifyKeypoint(&feetLineInfo.RKeypoint, feetLineInfo.RKeypointName, feetLineInfo.Threshold); w != nil {
+	if w := VerifyDatapoint(&feetLineInfo.RDatapoint, feetLineInfo.RDatapointName, feetLineInfo.Threshold); w != nil {
 		if w.GetSeverity() == SEVERE {
 			return w
 		}
@@ -71,24 +71,24 @@ func VerifyFeetLineInfo(feetLineInfo *FeetLineInfo) Warning {
 
 func GetFeetLineFromInfo(feetLineInfo *FeetLineInfo) *FeetLine {
 	feetLine := &FeetLine{FeetLineMethod: feetLineInfo.FeetLineMethod}
-	feetLine.LPoint = *ConvertKeypointToPoint(&feetLineInfo.LKeypoint)
-	feetLine.RPoint = *ConvertKeypointToPoint(&feetLineInfo.RKeypoint)
+	feetLine.LPoint = *ConvertDatapointToPoint(&feetLineInfo.LDatapoint)
+	feetLine.RPoint = *ConvertDatapointToPoint(&feetLineInfo.RDatapoint)
 	feetLine.Line = *GetLine(&feetLine.RPoint, &feetLine.LPoint)
 	return feetLine
 }
 
-func GetLeftFootPoint(keypoints *skp.Body25PoseKeypoints, feetLineMethod skp.FeetLineMethod) (*skp.Keypoint, string) {
+func GetLeftFootPoint(datapoints *skp.Body25PoseDatapoints, feetLineMethod skp.FeetLineMethod) (*skp.Datapoint, string) {
 	if feetLineMethod == skp.FeetLineMethod_USE_TOE_LINE {
-		return keypoints.LBigToe, "left big toe"
+		return datapoints.LBigToe, "left big toe"
 	} else { // default is USE_HEEL_LINE
-		return keypoints.LHeel, "left heel"
+		return datapoints.LHeel, "left heel"
 	}
 }
 
-func GetRightFootPoint(keypoints *skp.Body25PoseKeypoints, feetLineMethod skp.FeetLineMethod) (*skp.Keypoint, string) {
+func GetRightFootPoint(datapoints *skp.Body25PoseDatapoints, feetLineMethod skp.FeetLineMethod) (*skp.Datapoint, string) {
 	if feetLineMethod == skp.FeetLineMethod_USE_TOE_LINE {
-		return keypoints.RBigToe, "right big toe"
+		return datapoints.RBigToe, "right big toe"
 	} else { // default is USE_HEEL_LINE
-		return keypoints.RHeel, "right heel"
+		return datapoints.RHeel, "right heel"
 	}
 }

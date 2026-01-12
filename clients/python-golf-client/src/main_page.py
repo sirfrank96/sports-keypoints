@@ -17,7 +17,7 @@ import frame_wrapper as fw
 
 class MainAppPage(fw.FrameWrapper):
     # class variables
-    body_pose_field_descriptors = common_pb2.Body25PoseKeypoints.DESCRIPTOR.fields
+    body_pose_field_descriptors = common_pb2.Body25PoseDatapoints.DESCRIPTOR.fields
 
     def __init__(self, parent, controller, user_client, golfkeypoints_client, session_token):
         super().__init__(parent)
@@ -49,9 +49,7 @@ class MainAppPage(fw.FrameWrapper):
         self.curr_input_image_id = ""
         self.curr_input_image = None
         # initialize vars that will be set during calibration process
-        self.golf_ball = None
-        self.club_butt = None
-        self.club_head = None
+        self.golf_specific_datapoints = golfkeypoints_pb2.GolfSpecificDatapoints(golf_ball=None, club_butt=None, club_head=None, shoulder_tilt=None)
         self.axes_calibration_image = None
         self.vanishing_point_calibration_image = None
         self.horizontal_axis = None
@@ -59,12 +57,11 @@ class MainAppPage(fw.FrameWrapper):
         self.first_line_at_target = None
         self.second_line_at_target = None
         self.feet_line_method = golfkeypoints_pb2.FeetLineMethod.USE_HEEL_LINE
-        self.shoulder_tilt = common_pb2.Double(data=0, warning="no shoulder tilt")
         # initialize identify modes to none (will change when calibrating image)
         self.identify_mode = self.IdentifyMode.NONE
         self.identify_line_mode = self.IdentifyLineMode.NONE
-        # initialize body keypoints vars so user can update it later
-        self.body_keypoints = None
+        # initialize body datapoints vars so user can update it later
+        self.body_datapoints = None
 
     # enum used to differentiate when user is clicking on image to identify golf ball, club butt, club head
     class IdentifyMode(Enum):
@@ -127,7 +124,7 @@ class MainAppPage(fw.FrameWrapper):
     def read_input_image(self, input_image_id):
         try:
             response = self.golfkeypoints_client.read_input_image(session_token=self.session_token, input_image_id=input_image_id)
-            messagebox.showinfo("Show Image", f"Response length of image: {len(response.image)}, ImageType: {response.image_type}, CalibrationType: {response.calibration_type}, FeetLineMethod: {response.feet_line_method}, Description: {response.description}, Timestamp: {response.timestamp.ToDatetime()}")
+            messagebox.showinfo("Show Image", f"Response length of image: {len(response.image)}, ImageType: {response.image_type}, Calibrated: {response.calibrated}, Description: {response.description}, Timestamp: {response.timestamp.ToDatetime()}")
             return response
         except grpc.RpcError as e:
             messagebox.showerror("Show Image Failed", f"Could not get image: {e.code()}: {e.details()}")
@@ -159,45 +156,20 @@ class MainAppPage(fw.FrameWrapper):
 
     def display_input_image(self, image):
         self.content_canvas.display_an_image(image)
-        # create buttons for calibration and calculation of keypoints
-        self.identify_golf_ball_button = self.content_frame.add_button(text="Identify Golf Ball", command=self.identify_golf_ball, row=0, col=2, padx=5, pady=5)
-        self.identify_club_butt_button = self.content_frame.add_button(text="Identify Club Butt", command=self.identify_club_butt, row=1, col=2, padx=5, pady=5)
-        self.identify_club_head_button = self.content_frame.add_button(text="Identify Club Head", command=self.identify_club_head, row=2, col=2, padx=5, pady=5)
-        self.modify_feet_line_button = self.content_frame.add_button(text="Modify Feet Line Method (Heel Line Default) (Optional)", command=self.modify_feet_line_method, row=3, col=2, padx=5, pady=5)
-        self.input_shoulder_tilt_button = self.content_frame.add_button(text="Input Shoulder Tilt (DTL Only)", command=self.input_shoulder_tilt, row=4, col=2, padx=5, pady=5)
-        self.calibrate_button = self.content_frame.add_button(text="Calibrate Image", command=self.calibrate_image, row=5, col=2, padx=5, pady=5)
-        self.calculate_button = self.content_frame.add_button(text="Calculate Golf Keypoints", command=self.calculate_golf_keypoints, row=6, col=2, padx=5, pady=5)
-        self.read_keypoints_button = self.content_frame.add_button(text="Show Golf Keypoints for Input Image", command=self.read_golf_keypoints, row=7, col=2, padx=5, pady=5)
-        self.delete_input_image_button = self.content_frame.add_button(text="Delete Input Image", command=self.delete_input_image, row=8, col=2, padx=5, pady=5)
-        self.delete_keypoints_button = self.content_frame.add_button(text="Delete Golf Keypoints for Input Image", command=self.delete_golf_keypoints, row=9, col=2, padx=5, pady=5)
-
-    def identify_golf_ball(self):
-        self.identify_mode = self.IdentifyMode.GOLFBALL
-        self.content_canvas.bind("<Button-1>", self.on_click_on_input_image)
-        messagebox.showinfo("Golf Ball Identify", "Please click on the input image where the golf ball is")
-
-    def identify_club_butt(self):
-        self.identify_mode = self.IdentifyMode.CLUBBUTT
-        self.content_canvas.bind("<Button-1>", self.on_click_on_input_image)
-        messagebox.showinfo("Club Butt Identify", "Please click on the input image where the club butt is")
-
-    def identify_club_head(self):
-        self.identify_mode = self.IdentifyMode.CLUBHEAD
-        self.content_canvas.bind("<Button-1>", self.on_click_on_input_image)
-        messagebox.showinfo("Club Head Identify", "Please click on the input image where the club head is")
+        # create buttons around calibration, calculation and other golf keypoints apis
+        self.calibrate_button = self.content_frame.add_button(text="Calibrate Image", command=self.calibrate_image, row=0, col=2, padx=5, pady=5)
+        self.calculate_button = self.content_frame.add_button(text="Calculate Golf Keypoints", command=self.start_calculate_process, row=1, col=2, padx=5, pady=5)
+        self.read_keypoints_button = self.content_frame.add_button(text="Show Golf Keypoints for Input Image", command=self.read_golf_keypoints, row=2, col=2, padx=5, pady=5)
+        self.delete_input_image_button = self.content_frame.add_button(text="Delete Input Image", command=self.delete_input_image, row=3, col=2, padx=5, pady=5)
+        self.delete_keypoints_button = self.content_frame.add_button(text="Delete Golf Keypoints for Input Image", command=self.delete_golf_keypoints, row=4, col=2, padx=5, pady=5)
 
     def modify_feet_line_method(self):
         response = messagebox.askquestion("Modify Feet Line Method", "Do you want to change the feet line method to toe line?")
         if response == "yes":
             self.feet_line_method = golfkeypoints_pb2.FeetLineMethod.USE_TOE_LINE
-        self.modify_feet_line_button.config(state=tk.DISABLED)
-
-    def input_shoulder_tilt(self):
-        self.shoulder_tilt.data = simpledialog.askfloat("Shoulder Tilt", prompt="What is the shoulder tilt?")
-        self.shoulder_tilt.warning = ""
-        self.input_shoulder_tilt_button.config(state=tk.DISABLED)
     
     def calibrate_image(self):
+        self.modify_feet_line_method()
         additional_imgs_needed_response = messagebox.askquestion("Calibrate With Additional Images", "Do you want to calibrate with additional images? (If so, you will select images from filesystem. If not, you will click points on the current input image)")
         if additional_imgs_needed_response == "yes":
             self.calibrate_input_image()
@@ -212,7 +184,7 @@ class MainAppPage(fw.FrameWrapper):
         if self.image_type == golfkeypoints_pb2.ImageType.DTL:
             self.get_vanishing_point_calibration_image()
         try:
-            response = self.golfkeypoints_client.calibrate_input_image(session_token=self.session_token, input_image_id=self.curr_input_image_id, calibration_type=golfkeypoints_pb2.CalibrationType.FULL_CALIBRATION, feet_line_method=self.feet_line_method, calibration_image_axes=self.axes_calibration_image, calibration_image_vanishing_point=self.vanishing_point_calibration_image, golf_ball=self.golf_ball, club_butt=self.club_butt, club_head=self.club_head, shoulder_tilt=self.shoulder_tilt)
+            response = self.golfkeypoints_client.calibrate_input_image(session_token=self.session_token, input_image_id=self.curr_input_image_id, calibration_type=golfkeypoints_pb2.CalibrationType.FULL_CALIBRATION, feet_line_method=self.feet_line_method, calibration_image_axes=self.axes_calibration_image, calibration_image_vanishing_point=self.vanishing_point_calibration_image)
             messagebox.showinfo("Calibrate Input Image", f"Calibrate input image successful: {response}, calculate golf keypoints next")
             self.calibrate_button.config(state=tk.DISABLED)
         except grpc.RpcError as e:
@@ -220,7 +192,7 @@ class MainAppPage(fw.FrameWrapper):
     
     def calibrate_input_image_manual(self):
         try:
-            response = self.golfkeypoints_client.calibrate_input_image_manual(session_token=self.session_token, input_image_id=self.curr_input_image_id, calibration_type=golfkeypoints_pb2.CalibrationType.FULL_CALIBRATION, feet_line_method=self.feet_line_method, horizontal_axis=self.horizontal_axis, vertical_axis=self.vertical_axis, first_line_at_target=self.first_line_at_target, second_line_at_target=self.second_line_at_target, golf_ball=self.golf_ball, club_butt=self.club_butt, club_head=self.club_head, shoulder_tilt=self.shoulder_tilt)
+            response = self.golfkeypoints_client.calibrate_input_image_manual(session_token=self.session_token, input_image_id=self.curr_input_image_id, calibration_type=golfkeypoints_pb2.CalibrationType.FULL_CALIBRATION, feet_line_method=self.feet_line_method, horizontal_axis=self.horizontal_axis, vertical_axis=self.vertical_axis, first_line_at_target=self.first_line_at_target, second_line_at_target=self.second_line_at_target)
             messagebox.showinfo("Calibrate Input Image Manual", f"Calibrate input image manual successful: {response}, calculate golf keypoints next")
             self.calibrate_button.config(state=tk.DISABLED)
         except grpc.RpcError as e:
@@ -244,11 +216,23 @@ class MainAppPage(fw.FrameWrapper):
             self.vanishing_point_calibration_image = bytes
             messagebox.showinfo("Vanishing Point Calibration Image", "Successfully set vanishing point calibration image")
         else:
-            messagebox.showerror("Vanishing Point Calibration Image", "Could not get vanishing point calibration image")   
+            messagebox.showerror("Vanishing Point Calibration Image", "Could not get vanishing point calibration image")
+
+    def start_calculate_process(self):
+        if self.image_type == golfkeypoints_pb2.ImageType.DTL:
+            self.input_shoulder_tilt()
+        # start process of user clicking where golf equipment datapoints are
+        self.identify_mode = self.IdentifyMode.GOLFBALL
+        self.content_canvas.bind("<Button-1>", self.on_click_on_input_image)
+        messagebox.showinfo("Golf Ball Identify", "Please click on the input image where the golf ball is")
+
+    def input_shoulder_tilt(self):
+        shoulder_tilt = simpledialog.askfloat("Shoulder Tilt", prompt="What is the shoulder tilt?")
+        self.golf_specific_datapoints.shoulder_tilt.CopyFrom(common_pb2.Double(data=shoulder_tilt, warning= ""))   
 
     def calculate_golf_keypoints(self):
         try:
-            response = self.golfkeypoints_client.calculate_golf_keypoints(session_token=self.session_token, input_image_id=self.curr_input_image_id)
+            response = self.golfkeypoints_client.calculate_golf_keypoints(session_token=self.session_token, input_image_id=self.curr_input_image_id, golf_specific_datapoints=self.golf_specific_datapoints)
             messagebox.showinfo("Calculate Golf Keypoints", f"Calculate Golf Keypoints successful")
             if response.output_image is not None:
                 self.process_golf_keypoints(response.output_image, response.golf_keypoints)
@@ -266,49 +250,70 @@ class MainAppPage(fw.FrameWrapper):
             messagebox.showerror("Read Golf Keypoints", f"Read golf keypoints failed: {e.code()}: {e.details()}")
 
     def process_golf_keypoints(self, output_image, golf_keypoints):
+        self.body_datapoints = golf_keypoints.body_datapoints
+        self.golf_specific_datapoints = golf_keypoints.golf_specific_datapoints
         buffer = BytesIO(output_image)
         img = Image.open(buffer)
         self.content_canvas.display_an_image(img)
-        messagebox.showinfo("Golf Keypoints", f"{golf_keypoints}")
-        self.body_keypoints = golf_keypoints.body_keypoints
-        incorrect = messagebox.askyesno("Body Keypoints Update", "Are there body keypoints that computervision identified incorrectly?")
-        if incorrect:
-            self.select_body_keypoints_to_update(self.body_keypoints)
+        self.display_golf_keypoints_text(golf_keypoints)
 
-    def select_body_keypoints_to_update(self, body_keypoints):
-        # create popup window to show body keypoints that can be updated
+    def close_popup(self, popup):
+        self.whole_canvas.make_scrollable()
+        popup.destroy()
+
+    def add_tk_top_level_close_handler(self, popup):
+        popup.protocol("WM_DELETE_WINDOW", partial(self.close_popup, popup))
+
+    def display_golf_keypoints_text(self, golf_keypoints):
+        # create popup window to show golf keypoints
         popup = tk.Toplevel(self)
-        popup.wm_title("Body Keypoints Window")
+        self.add_tk_top_level_close_handler(popup)
+        popup.wm_title("Golf Keypoints Window")
+        popup_canvas = cw.CanvasWrapper(popup, width=270, height=600)
+        popup_content_frame = popup_canvas.create_content_frame_in_canvas()
+        popup_content_frame.add_scrolled_text(text=f"{golf_keypoints}", row=0, col=0, padx=5, pady=5)
+        popup_content_frame.add_button(text="Done Looking at Golf Keypoints", command=partial(self.done_looking_at_golf_keypoints, popup), row=1, col=0, padx=5, pady=5)
+    
+    def done_looking_at_golf_keypoints(self, popup):
+        self.close_popup(popup)
+        incorrect = messagebox.askyesno("Body Datapoints Update", "Are there body datapoints that computervision identified incorrectly?")
+        if incorrect:
+            self.select_body_datapoints_to_update(self.body_datapoints)
+
+    def select_body_datapoints_to_update(self, body_datapoints):
+        # create popup window to show body datapoints that can be updated
+        popup = tk.Toplevel(self)
+        self.add_tk_top_level_close_handler(popup)
+        popup.wm_title("Body Datapoints Window")
         popup_canvas = cw.CanvasWrapper(popup, width=270, height=600)
         popup_canvas.make_scrollable()
         popup_content_frame = popup_canvas.create_content_frame_in_canvas()
-        # iterate over body keypoints and create a button for each
+        # iterate over body datapoints and create a button for each
         idx = 0
         for field in MainAppPage.body_pose_field_descriptors:
             name = field.name
-            body_keypoint_value = getattr(body_keypoints, name)
-            popup_content_frame.add_button(text=f"Modify {name}: {body_keypoint_value}", command=partial(self.update_body_keypoint, name), row=idx, col=0, padx=5, pady=5)
+            body_datapoint_value = getattr(body_datapoints, name)
+            popup_content_frame.add_button(text=f"Modify {name}: {body_datapoint_value}", command=partial(self.update_body_datapoint, name), row=idx, col=0, padx=5, pady=5)
             idx += 1
-        popup_content_frame.add_button(text="Done Updating Body Keypoints", command=partial(self.update_body_keypoints, popup), row=idx, col=0, padx=5, pady=5)
+        popup_content_frame.add_button(text="Done Updating Body Datapoints", command=partial(self.update_body_datapoints, popup), row=idx, col=0, padx=5, pady=5)
         return 
     
-    def update_body_keypoint(self, field_name):
+    def update_body_datapoint(self, field_name):
         x = simpledialog.askfloat("New Value ", prompt=f"What is the new x value for {field_name}")
         y = simpledialog.askfloat("New Value ", prompt=f"What is the new y value for {field_name}")
-        field = getattr(self.body_keypoints, field_name)
-        setattr(field, "x", x)
-        setattr(field, "y", y)
-        setattr(field, "confidence", 1.0)
+        if x != None and y != None:
+            field = getattr(self.body_datapoints, field_name)
+            setattr(field, "x", x)
+            setattr(field, "y", y)
+            setattr(field, "confidence", 1.0)
 
-    def update_body_keypoints(self, popup):
-        popup.destroy()
-        # bind mousewheel back to whole canvas
-        self.whole_canvas.make_scrollable()
+    def update_body_datapoints(self, popup):
+        self.close_popup(popup)
         try:
-            response = self.golfkeypoints_client.update_body_keypoints(self.session_token, self.curr_input_image_id, self.body_keypoints)
-            messagebox.showinfo("Update Body Keypoints", f"Update Body Keypoints successful: {response}")
+            response = self.golfkeypoints_client.update_body_datapoints(self.session_token, self.curr_input_image_id, self.body_datapoints)
+            self.display_golf_keypoints_text(response.updated_golf_keypoints)
         except grpc.RpcError as e:
-            messagebox.showerror("Update Body Keypoints", f"Update Body keypoints failed: {e.code()}: {e.details()}")
+            messagebox.showerror("Update Body Datapoints", f"Update Body Datapoints failed: {e.code()}: {e.details()}")
         
     def delete_input_image(self):
         try:
@@ -343,10 +348,10 @@ class MainAppPage(fw.FrameWrapper):
             case self.IdentifyLineMode.HORAXIS:
                 if event.type == tk.EventType.ButtonPress:
                     self.horizontal_axis = common_pb2.Line()
-                    self.horizontal_axis.first_point_on_line.CopyFrom(common_pb2.Keypoint(x=scaled_x, y=scaled_y, confidence=1.0))
+                    self.horizontal_axis.first_point_on_line.CopyFrom(common_pb2.Datapoint(x=scaled_x, y=scaled_y, confidence=1.0))
                     self.content_canvas.bind("<ButtonRelease-1>", self.on_draw_line_on_input_image)
                 elif event.type == tk.EventType.ButtonRelease:
-                    self.horizontal_axis.second_point_on_line.CopyFrom(common_pb2.Keypoint(x=scaled_x, y=scaled_y, confidence=1.0))
+                    self.horizontal_axis.second_point_on_line.CopyFrom(common_pb2.Datapoint(x=scaled_x, y=scaled_y, confidence=1.0))
                     first_x = self.horizontal_axis.first_point_on_line.x / 4
                     first_y = self.horizontal_axis.first_point_on_line.y / 4
                     line_id = self.content_canvas.draw_line(first_x, first_y, x, y, "red")
@@ -361,10 +366,10 @@ class MainAppPage(fw.FrameWrapper):
             case self.IdentifyLineMode.VERTAXIS:
                 if event.type == tk.EventType.ButtonPress:
                     self.vertical_axis = common_pb2.Line()
-                    self.vertical_axis.first_point_on_line.CopyFrom(common_pb2.Keypoint(x=scaled_x, y=scaled_y, confidence=1.0))
+                    self.vertical_axis.first_point_on_line.CopyFrom(common_pb2.Datapoint(x=scaled_x, y=scaled_y, confidence=1.0))
                     self.content_canvas.bind("<ButtonRelease-1>", self.on_draw_line_on_input_image)
                 elif event.type == tk.EventType.ButtonRelease:
-                    self.vertical_axis.second_point_on_line.CopyFrom(common_pb2.Keypoint(x=scaled_x, y=scaled_y, confidence=1.0))
+                    self.vertical_axis.second_point_on_line.CopyFrom(common_pb2.Datapoint(x=scaled_x, y=scaled_y, confidence=1.0))
                     first_x = self.vertical_axis.first_point_on_line.x / 4
                     first_y = self.vertical_axis.first_point_on_line.y / 4
                     line_id = self.content_canvas.draw_line(first_x, first_y, x, y, "blue")
@@ -384,10 +389,10 @@ class MainAppPage(fw.FrameWrapper):
             case self.IdentifyLineMode.LINEATTARGET1:
                 if event.type == tk.EventType.ButtonPress:
                     self.first_line_at_target = common_pb2.Line()
-                    self.first_line_at_target.first_point_on_line.CopyFrom(common_pb2.Keypoint(x=scaled_x, y=scaled_y, confidence=1.0))
+                    self.first_line_at_target.first_point_on_line.CopyFrom(common_pb2.Datapoint(x=scaled_x, y=scaled_y, confidence=1.0))
                     self.content_canvas.bind("<ButtonRelease-1>", self.on_draw_line_on_input_image)
                 elif event.type == tk.EventType.ButtonRelease:
-                    self.first_line_at_target.second_point_on_line.CopyFrom(common_pb2.Keypoint(x=scaled_x, y=scaled_y, confidence=1.0))
+                    self.first_line_at_target.second_point_on_line.CopyFrom(common_pb2.Datapoint(x=scaled_x, y=scaled_y, confidence=1.0))
                     first_x = self.first_line_at_target.first_point_on_line.x / 4
                     first_y = self.first_line_at_target.first_point_on_line.y / 4
                     line_id = self.content_canvas.draw_line(first_x, first_y, x, y, "green")
@@ -402,10 +407,10 @@ class MainAppPage(fw.FrameWrapper):
             case self.IdentifyLineMode.LINEATTARGET2:
                 if event.type == tk.EventType.ButtonPress:
                     self.second_line_at_target = common_pb2.Line()
-                    self.second_line_at_target.first_point_on_line.CopyFrom(common_pb2.Keypoint(x=scaled_x, y=scaled_y, confidence=1.0))
+                    self.second_line_at_target.first_point_on_line.CopyFrom(common_pb2.Datapoint(x=scaled_x, y=scaled_y, confidence=1.0))
                     self.content_canvas.bind("<ButtonRelease-1>", self.on_draw_line_on_input_image)
                 elif event.type == tk.EventType.ButtonRelease:
-                    self.second_line_at_target.second_point_on_line.CopyFrom(common_pb2.Keypoint(x=scaled_x, y=scaled_y, confidence=1.0))
+                    self.second_line_at_target.second_point_on_line.CopyFrom(common_pb2.Datapoint(x=scaled_x, y=scaled_y, confidence=1.0))
                     first_x = self.second_line_at_target.first_point_on_line.x / 4
                     first_y = self.second_line_at_target.first_point_on_line.y / 4
                     line_id = self.content_canvas.draw_line(first_x, first_y, x, y, "red")
@@ -419,8 +424,8 @@ class MainAppPage(fw.FrameWrapper):
                         self.content_canvas.bind("<ButtonPress-1>", self.on_draw_line_on_input_image)
         
     # this function is the logic for identifying golf ball and golf club points
-    # each time a user presses the corresponding button (Identify Golf Ball), the identify_mode is switched (IdentifyMode.GOLFBALL)
-    # when a user clicks on the input image, this function gets the coordinates and saves it to the correct object (self.golf_ball)
+    # each time a user presses the image for the corresponding prompt (eg. "Please click on the input image where the golf ball is"), 
+    # the coordinates are saved to the golf_specific_datapoints object, then the identify_mode is switched to the next (eg. IdentifyMode.CLUBBUTT)
     def on_click_on_input_image(self, event):
         x = event.x
         y = event.y
@@ -432,30 +437,28 @@ class MainAppPage(fw.FrameWrapper):
                 circle_id = self.content_canvas.draw_circle(x, y, "red")
                 ok = messagebox.askokcancel("Clicked", "Is this the correct spot for the golf ball?")
                 if ok:
-                    self.golf_ball = common_pb2.Keypoint(x=scaled_x, y=scaled_y, confidence=1.0)
-                    self.identify_mode = self.IdentifyMode.NONE
-                    self.identify_golf_ball_button.config(state=tk.DISABLED)
-                    self.content_canvas.unbind("<Button-1>")
+                    self.golf_specific_datapoints.golf_ball.CopyFrom(common_pb2.Datapoint(x=scaled_x, y=scaled_y, confidence=1.0))
+                    self.identify_mode = self.IdentifyMode.CLUBBUTT
+                    messagebox.showinfo("Club Butt Identify", "Please click on the input image where the club butt is")
                 else:
                     self.content_canvas.erase_circle(circle_id)
             case self.IdentifyMode.CLUBBUTT:
                 circle_id = self.content_canvas.draw_circle(x, y, "blue")
                 ok = messagebox.askokcancel("Clicked", "Is this the correct spot for the butt end of the club?")
                 if ok:
-                    self.club_butt = common_pb2.Keypoint(x=scaled_x, y=scaled_y, confidence=1.0)
-                    self.identify_mode = self.IdentifyMode.NONE
-                    self.identify_club_butt_button.config(state=tk.DISABLED)
-                    self.content_canvas.unbind("<Button-1>")
+                    self.golf_specific_datapoints.club_butt.CopyFrom(common_pb2.Datapoint(x=scaled_x, y=scaled_y, confidence=1.0))
+                    self.identify_mode = self.IdentifyMode.CLUBHEAD
+                    messagebox.showinfo("Club Head Identify", "Please click on the input image where the club head is")
                 else:
                     self.content_canvas.erase_circle(circle_id)
             case self.IdentifyMode.CLUBHEAD:
                 circle_id = self.content_canvas.draw_clubhead(x, y, "green")
                 ok = messagebox.askokcancel("Clicked", "Is this the correct spot for the clubhead")
                 if ok:
-                    self.club_head = common_pb2.Keypoint(x=scaled_x, y=scaled_y, confidence=1.0)
+                    self.golf_specific_datapoints.club_head.CopyFrom(common_pb2.Datapoint(x=scaled_x, y=scaled_y, confidence=1.0))
                     self.identify_mode = self.IdentifyMode.NONE
-                    self.identify_club_head_button.config(state=tk.DISABLED)
                     self.content_canvas.unbind("<Button-1>")
+                    self.calculate_golf_keypoints()
                 else:
                     self.content_canvas.erase_circle(circle_id)
             case self.IdentifyMode.NONE:

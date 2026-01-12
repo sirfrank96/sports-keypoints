@@ -101,11 +101,11 @@ func CalculateGolfKeypoints(ctx context.Context, gclient skp.GolfKeypointsServic
 	return response, nil
 }
 
-func UpdateBodyKeypoints(ctx context.Context, gclient skp.GolfKeypointsServiceClient, sessionToken string, inputImgId string, newBodyKeypoints *skp.Body25PoseKeypoints) (*skp.UpdateBodyKeypointsResponse, error) {
-	request := &skp.UpdateBodyKeypointsRequest{
-		SessionToken:         sessionToken,
-		InputImageId:         inputImgId,
-		UpdatedBodyKeypoints: newBodyKeypoints,
+func UpdateBodyDatapoints(ctx context.Context, gclient skp.GolfKeypointsServiceClient, sessionToken string, inputImgId string, newBodyDatapoints *skp.Body25PoseDatapoints) (*skp.UpdateBodyDatapointsResponse, error) {
+	request := &skp.UpdateBodyDatapointsRequest{
+		SessionToken:          sessionToken,
+		InputImageId:          inputImgId,
+		UpdatedBodyDatapoints: newBodyDatapoints,
 	}
-	return gclient.UpdateBodyKeypoints(ctx, request)
+	return gclient.UpdateBodyDatapoints(ctx, request)
 }

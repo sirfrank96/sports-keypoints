@@ -74,15 +74,15 @@ class GolfKeypointsServiceStub(object):
                 request_serializer=golfkeypoints__pb2.ReadGolfKeypointsRequest.SerializeToString,
                 response_deserializer=golfkeypoints__pb2.ReadGolfKeypointsResponse.FromString,
                 _registered_method=True)
-        self.UpdateBodyKeypoints = channel.unary_unary(
-                '/sports_keypoints_proto.GolfKeypointsService/UpdateBodyKeypoints',
-                request_serializer=golfkeypoints__pb2.UpdateBodyKeypointsRequest.SerializeToString,
-                response_deserializer=golfkeypoints__pb2.UpdateBodyKeypointsResponse.FromString,
-                _registered_method=True)
         self.DeleteGolfKeypoints = channel.unary_unary(
                 '/sports_keypoints_proto.GolfKeypointsService/DeleteGolfKeypoints',
                 request_serializer=golfkeypoints__pb2.DeleteGolfKeypointsRequest.SerializeToString,
                 response_deserializer=golfkeypoints__pb2.DeleteGolfKeypointsResponse.FromString,
+                _registered_method=True)
+        self.UpdateBodyDatapoints = channel.unary_unary(
+                '/sports_keypoints_proto.GolfKeypointsService/UpdateBodyDatapoints',
+                request_serializer=golfkeypoints__pb2.UpdateBodyDatapointsRequest.SerializeToString,
+                response_deserializer=golfkeypoints__pb2.UpdateBodyDatapointsResponse.FromString,
                 _registered_method=True)
 
 
@@ -139,15 +139,15 @@ class GolfKeypointsServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def UpdateBodyKeypoints(self, request, context):
-        """if estimated body keypoints are off or have low confidence, client can manually input where body parts are
-        """
+    def DeleteGolfKeypoints(self, request, context):
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def DeleteGolfKeypoints(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+    def UpdateBodyDatapoints(self, request, context):
+        """if estimated body datapoints are off or have low confidence, client can manually input where body parts are
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -195,15 +195,15 @@ def add_GolfKeypointsServiceServicer_to_server(servicer, server):
                     request_deserializer=golfkeypoints__pb2.ReadGolfKeypointsRequest.FromString,
                     response_serializer=golfkeypoints__pb2.ReadGolfKeypointsResponse.SerializeToString,
             ),
-            'UpdateBodyKeypoints': grpc.unary_unary_rpc_method_handler(
-                    servicer.UpdateBodyKeypoints,
-                    request_deserializer=golfkeypoints__pb2.UpdateBodyKeypointsRequest.FromString,
-                    response_serializer=golfkeypoints__pb2.UpdateBodyKeypointsResponse.SerializeToString,
-            ),
             'DeleteGolfKeypoints': grpc.unary_unary_rpc_method_handler(
                     servicer.DeleteGolfKeypoints,
                     request_deserializer=golfkeypoints__pb2.DeleteGolfKeypointsRequest.FromString,
                     response_serializer=golfkeypoints__pb2.DeleteGolfKeypointsResponse.SerializeToString,
+            ),
+            'UpdateBodyDatapoints': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateBodyDatapoints,
+                    request_deserializer=golfkeypoints__pb2.UpdateBodyDatapointsRequest.FromString,
+                    response_serializer=golfkeypoints__pb2.UpdateBodyDatapointsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -433,33 +433,6 @@ class GolfKeypointsService(object):
             _registered_method=True)
 
     @staticmethod
-    def UpdateBodyKeypoints(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/sports_keypoints_proto.GolfKeypointsService/UpdateBodyKeypoints',
-            golfkeypoints__pb2.UpdateBodyKeypointsRequest.SerializeToString,
-            golfkeypoints__pb2.UpdateBodyKeypointsResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
     def DeleteGolfKeypoints(request,
             target,
             options=(),
@@ -476,6 +449,33 @@ class GolfKeypointsService(object):
             '/sports_keypoints_proto.GolfKeypointsService/DeleteGolfKeypoints',
             golfkeypoints__pb2.DeleteGolfKeypointsRequest.SerializeToString,
             golfkeypoints__pb2.DeleteGolfKeypointsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UpdateBodyDatapoints(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/sports_keypoints_proto.GolfKeypointsService/UpdateBodyDatapoints',
+            golfkeypoints__pb2.UpdateBodyDatapointsRequest.SerializeToString,
+            golfkeypoints__pb2.UpdateBodyDatapointsResponse.FromString,
             options,
             channel_credentials,
             insecure,

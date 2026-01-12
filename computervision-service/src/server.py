@@ -17,7 +17,7 @@ from gen import computervision_pb2, computervision_pb2_grpc, common_pb2
 # TODO: Implement all rpcs
 class ComputerVisionServiceServicer(computervision_pb2_grpc.ComputerVisionServiceServicer):
 
-    body_pose_field_descriptors = common_pb2.Body25PoseKeypoints.DESCRIPTOR.fields
+    body_pose_field_descriptors = common_pb2.Body25PoseDatapoints.DESCRIPTOR.fields
 
     def __init__(self):
         super().__init__()
@@ -37,19 +37,19 @@ class ComputerVisionServiceServicer(computervision_pb2_grpc.ComputerVisionServic
         )
     
     def processOpenPoseData(self, data):
-        body_25_pose_keypoints = common_pb2.Body25PoseKeypoints()
-        body_25_pose_keypoints_descriptor = body_25_pose_keypoints.DESCRIPTOR
-        for field_descriptor in body_25_pose_keypoints_descriptor.fields:
+        body_25_pose_datapoints = common_pb2.Body25PoseDatapoints()
+        body_25_pose_datapoints_descriptor = body_25_pose_datapoints.DESCRIPTOR
+        for field_descriptor in body_25_pose_datapoints_descriptor.fields:
             field_name = field_descriptor.name
             field_number = field_descriptor.number
-            keypoint = common_pb2.Keypoint(
+            keypoint = common_pb2.Datapoint(
                 x=data[field_number-1][0],
                 y=data[field_number-1][1],
                 confidence=data[field_number-1][2]
             )
-            curr_field = getattr(body_25_pose_keypoints, field_name)
+            curr_field = getattr(body_25_pose_datapoints, field_name)
             curr_field.CopyFrom(keypoint)
-        return body_25_pose_keypoints
+        return body_25_pose_datapoints
     
     def GetPoseData(self, request, context):
         print("GetPoseData grpc request")
@@ -58,12 +58,12 @@ class ComputerVisionServiceServicer(computervision_pb2_grpc.ComputerVisionServic
         datum = self.open_pose_mgr.run_open_pose(image)
         data = self.open_pose_mgr.get_open_pose_data(datum)
         print(f"Processed image. Data is {data}. Length of data is {len(data)}")
-        body_25_pose_keypoints = self.processOpenPoseData(data)
-        print(f"Converted data array to Keypoints {body_25_pose_keypoints}")
+        body_25_pose_datapoints = self.processOpenPoseData(data)
+        print(f"Converted data array to Datapoints {body_25_pose_datapoints}")
         print("GetPoseData grpc request finished")
         return computervision_pb2.GetPoseDataResponse(
             success=True,
-            keypoints=body_25_pose_keypoints
+            datapoints=body_25_pose_datapoints
         )
     
     def GetPoseHandImage(self, request, context):
@@ -82,13 +82,13 @@ class ComputerVisionServiceServicer(computervision_pb2_grpc.ComputerVisionServic
         processed_img = self.open_pose_mgr.get_open_pose_image(datum, self.body_pose_field_descriptors)
         # get data
         data = self.open_pose_mgr.get_open_pose_data(datum)
-        body_25_pose_keypoints = self.processOpenPoseData(data)
-        print(f"GetPoseall converted data array to Keypoints {body_25_pose_keypoints}")
+        body_25_pose_datapoints = self.processOpenPoseData(data)
+        print(f"GetPoseall converted data array to Datapoints {body_25_pose_datapoints}")
         print("GetPoseAll grpc request finished")
         return computervision_pb2.GetPoseAllResponse(
             success=True,
             image=processed_img,
-            pose_keypoints=body_25_pose_keypoints
+            pose_datapoints=body_25_pose_datapoints
         )
     
     def GetPoseImagesFromVideo(self, request_iterator, context):

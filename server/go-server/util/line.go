@@ -15,8 +15,8 @@ func ConvertSkpLineToLine(line *skp.Line) *Line {
 	if line == nil {
 		return nil
 	}
-	point1 := ConvertKeypointToPoint(line.FirstPointOnLine)
-	point2 := ConvertKeypointToPoint(line.SecondPointOnLine)
+	point1 := ConvertDatapointToPoint(line.FirstPointOnLine)
+	point2 := ConvertDatapointToPoint(line.SecondPointOnLine)
 	return GetLine(point1, point2)
 }
 

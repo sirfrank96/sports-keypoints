@@ -32,7 +32,7 @@ message GetPoseDataRequest {
 
 message GetPoseDataResponse {
     bool success = 1;
-    Body25PoseKeypoints keypoints = 2;
+    Body25PoseDatapoints datapoints = 2;
 }
 
 message GetPoseHandImageRequest {
@@ -50,7 +50,7 @@ message GetPoseHandDataRequest {
 
 message GetPoseHandDataResponse {
     bool success = 1;
-    Body25HandKeypoints keypoints = 2;
+    Body25HandDatapoints datapoints = 2;
 }
 
 message GetPoseAllRequest {
@@ -60,6 +60,6 @@ message GetPoseAllRequest {
 message GetPoseAllResponse {
     bool success = 1;
     bytes image = 2;
-    Body25PoseKeypoints pose_keypoints = 3;
-    Body25HandKeypoints hand_keypoints = 4;
+    Body25PoseDatapoints pose_datapoints = 3;
+    Body25HandDatapoints hand_datapoints = 4;
 }
