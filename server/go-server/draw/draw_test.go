@@ -17,6 +17,11 @@ var bodyDatapoints = &skp.Body25PoseDatapoints{
 		Y:          100,
 		Confidence: 1.0,
 	},
+	Neck: &skp.Datapoint{
+		X:          150,
+		Y:          150,
+		Confidence: 1.0,
+	},
 	LShoulder: &skp.Datapoint{
 		X:          200,
 		Y:          200,

@@ -23,11 +23,3 @@ func DrawGolfSkeleton(ctx context.Context, inputImg []byte, bodyDatapoints *skp.
 	// TODO: draw golf equipment stuff
 	return outputImg, nil
 }
-
-func drawGolfBall() {
-
-}
-
-func drawGolfClub() {
-
-}
