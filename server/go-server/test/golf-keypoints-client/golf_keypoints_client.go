@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
-	testutil "github.com/sirfrank96/go-server/test/test-util"
-
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
+	"github.com/sirfrank96/go-server/util"
 )
 
 // Middle arg is a close function, should be called by calling function
@@ -24,12 +24,12 @@ func InitGolfKeypointsServiceGrpcClient(serveraddr string) (skp.GolfKeypointsSer
 }
 
 func UploadInputImage(ctx context.Context, gclient skp.GolfKeypointsServiceClient, sessionToken string, inputImgPath string, imageType skp.ImageType) (*skp.UploadInputImageResponse, error) {
-	file, closeFile, err := testutil.GetFileFromPath(inputImgPath)
+	file, closeFile, err := util.GetFileFromPath(inputImgPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to getFileFromPath: %w", err)
 	}
 	defer closeFile()
-	bytesEncodedAsJpg, err := testutil.DecodeAndEncodeFileAsJpg(file)
+	bytesEncodedAsJpg, err := util.DecodeAndEncodeFileAsJpg(file)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decodeAndEncodeFileAsJpg for original image: %w", err)
 	}
@@ -49,24 +49,24 @@ func CalibrateInputImage(ctx context.Context, gclient skp.GolfKeypointsServiceCl
 		FeetLineMethod:  feetLineMethod,
 	}
 	if calibrationType != skp.CalibrationType_NO_CALIBRATION {
-		calibrationFileAxes, closeFile, err := testutil.GetFileFromPath(calibrationImgAxesPath)
+		calibrationFileAxes, closeFile, err := util.GetFileFromPath(calibrationImgAxesPath)
 		if err != nil {
 			return nil, fmt.Errorf("failed to getFileFromPath calibration file axes %w", err)
 		}
 		defer closeFile()
-		calibrationAxesBytesEncodedAsJpg, err := testutil.DecodeAndEncodeFileAsJpg(calibrationFileAxes)
+		calibrationAxesBytesEncodedAsJpg, err := util.DecodeAndEncodeFileAsJpg(calibrationFileAxes)
 		if err != nil {
 			return nil, fmt.Errorf("failed to decodeAndEncodeFileAsJpg for calibration image axes: %w", err)
 		}
 		request.CalibrationImageAxes = calibrationAxesBytesEncodedAsJpg
 
 		if imageType == skp.ImageType_DTL && calibrationType != skp.CalibrationType_AXES_CALIBRATION_ONLY {
-			calibrationFileVanishingPoint, closeFile, err := testutil.GetFileFromPath(calibrationImgVanishingPointPath)
+			calibrationFileVanishingPoint, closeFile, err := util.GetFileFromPath(calibrationImgVanishingPointPath)
 			if err != nil {
 				return nil, fmt.Errorf("failed to getFileFromPath calibration file vanishing point %w", err)
 			}
 			defer closeFile()
-			calibrationVanishingBytesEncodedAsJpg, err := testutil.DecodeAndEncodeFileAsJpg(calibrationFileVanishingPoint)
+			calibrationVanishingBytesEncodedAsJpg, err := util.DecodeAndEncodeFileAsJpg(calibrationFileVanishingPoint)
 			if err != nil {
 				return nil, fmt.Errorf("failed to decodeAndEncodeFileAsJpg for calibration image vanishing point: %w", err)
 			}
@@ -88,11 +88,11 @@ func CalculateGolfKeypoints(ctx context.Context, gclient skp.GolfKeypointsServic
 	}
 
 	imgSliceBytes := response.OutputImage
-	jpegBytes, err := testutil.DecodeAndEncodeBytesAsJpg(imgSliceBytes)
+	jpegBytes, err := util.DecodeAndEncodeBytesAsJpg(imgSliceBytes)
 	if err != nil {
 		return response, fmt.Errorf("failed to decodeAndEncodeBytesAsJpg for return image: %w", err)
 	}
-	close, err := testutil.WriteBytesToJpgFile(jpegBytes, outputImgPath)
+	close, err := util.WriteBytesToJpgFile(jpegBytes, outputImgPath)
 	if err != nil {
 		return response, fmt.Errorf("failed to writeBytesToJpgFile: %w", err)
 	}

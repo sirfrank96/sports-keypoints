@@ -8,6 +8,7 @@ import (
 
 	cvclient "github.com/sirfrank96/go-server/cv-client"
 	db "github.com/sirfrank96/go-server/db"
+	"github.com/sirfrank96/go-server/draw"
 	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 	"github.com/sirfrank96/go-server/util"
 )
@@ -188,7 +189,6 @@ func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, requ
 	golfKeypoints := &db.GolfKeypoints{
 		UserId:         userId,
 		InputImageId:   request.InputImageId,
-		OutputImg:      getPoseAllResponse.Image,
 		BodyDatapoints: *getPoseAllResponse.PoseDatapoints,
 	}
 	// put in golf specific data points
@@ -201,16 +201,21 @@ func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, requ
 	} else { // face on setup points
 		golfKeypoints.FaceonGolfSetupPoints = *CalculateFaceOnSetupPoints(ctx, getPoseAllResponse.PoseDatapoints, request.GolfSpecificDatapoints, &inputImage.CalibrationInfo)
 	}
+	// draw datapoints with skeleton on image
+	outputImg, err := draw.DrawGolfSkeleton(ctx, inputImage.InputImg, getPoseAllResponse.PoseDatapoints, request.GolfSpecificDatapoints)
+	if err != nil {
+		return nil, fmt.Errorf("could not draw golf skeleton on image: %v", err)
+	}
+	golfKeypoints.OutputImg = outputImg
 	// store golfkeypoints in db
 	_, err = g.dbmgr.CreateGolfKeypoints(ctx, golfKeypoints)
 	if err != nil {
-		return nil, fmt.Errorf("could not store golfkeypoints in db %w", err)
+		return nil, fmt.Errorf("could not store golfkeypoints in db %v", err)
 	}
-
 	// return response
 	response := &skp.CalculateGolfKeypointsResponse{
 		Success:       true,
-		OutputImage:   getPoseAllResponse.Image,
+		OutputImage:   outputImg,
 		GolfKeypoints: db.ConvertGolfKeypointsToSkpGolfKeypoints(golfKeypoints),
 	}
 	return response, nil

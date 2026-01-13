@@ -17,7 +17,7 @@ import (
 // get vanishing point, intersection of vertaxis and heels axis
 
 func CalculateDTLSetupPoints(ctx context.Context, bodyDatapoints *skp.Body25PoseDatapoints, golfSpecificDatapoints *skp.GolfSpecificDatapoints, calibrationInfo *util.CalibrationInfo) *skp.DTLGolfSetupPoints {
-	fmt.Printf("Calculating Dtl setup points. BodyDatapoints: %+v\n GolfSpecificDatapoints: %+v\n CalibrationInfo: %+v\n", bodyDatapoints, golfSpecificDatapoints, calibrationInfo)
+	fmt.Printf("Calculating Dtl setup points. BodyDatapoints: %+v\n GolfSpecificDatapoints: %+v\n", bodyDatapoints, golfSpecificDatapoints)
 	spineAngle, warning := GetSpineAngle(bodyDatapoints, calibrationInfo)
 	var spineAngleWarning string
 	if warning != nil {
