@@ -29,11 +29,6 @@ func (fc GoFontCache) Store(fd draw2d.FontData, font *truetype.Font) {
 }
 
 func (fc GoFontCache) Load(fd draw2d.FontData) (*truetype.Font, error) {
-	/*font, stored := fc[fd.Name]
-	if !stored {
-		return nil, fmt.Errorf("font %s is not stored in font cache.", fd.Name)
-	}
-	return font, nil*/
 	return fc["goregular"], nil
 }
 
@@ -47,7 +42,7 @@ func createDraw2dImage(imgBytes []byte) (*Draw2dImage, error) {
 	dest := image.NewRGBA(img.Bounds())
 	gc := draw2dimg.NewGraphicContext(dest)
 	gc.DrawImage(img)
-	// initialize fontcache for text
+	// initialize custom gofontcache for text
 	fontCache := GoFontCache{}
 	font, err := truetype.Parse(goregular.TTF)
 	if err != nil {
