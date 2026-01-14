@@ -219,12 +219,14 @@ class UpdateBodyDatapointsRequest(_message.Message):
     def __init__(self, session_token: _Optional[str] = ..., input_image_id: _Optional[str] = ..., updated_body_datapoints: _Optional[_Union[_common_pb2.Body25PoseDatapoints, _Mapping]] = ...) -> None: ...
 
 class UpdateBodyDatapointsResponse(_message.Message):
-    __slots__ = ("success", "updated_golf_keypoints")
+    __slots__ = ("success", "updated_output_image", "updated_golf_keypoints")
     SUCCESS_FIELD_NUMBER: _ClassVar[int]
+    UPDATED_OUTPUT_IMAGE_FIELD_NUMBER: _ClassVar[int]
     UPDATED_GOLF_KEYPOINTS_FIELD_NUMBER: _ClassVar[int]
     success: bool
+    updated_output_image: bytes
     updated_golf_keypoints: GolfKeypoints
-    def __init__(self, success: bool = ..., updated_golf_keypoints: _Optional[_Union[GolfKeypoints, _Mapping]] = ...) -> None: ...
+    def __init__(self, success: bool = ..., updated_output_image: _Optional[bytes] = ..., updated_golf_keypoints: _Optional[_Union[GolfKeypoints, _Mapping]] = ...) -> None: ...
 
 class GolfKeypoints(_message.Message):
     __slots__ = ("dtl_golf_setup_points", "faceon_golf_setup_points", "body_datapoints", "golf_specific_datapoints")
