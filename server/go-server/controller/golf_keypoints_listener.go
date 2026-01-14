@@ -292,6 +292,12 @@ func (g *GolfKeypointsListener) UpdateBodyDatapoints(ctx context.Context, reques
 	} else { // face on setup points
 		golfKeypoints.FaceonGolfSetupPoints = *CalculateFaceOnSetupPoints(ctx, &golfKeypoints.BodyDatapoints, &golfKeypoints.GolfSpecificDatapoints, &inputImage.CalibrationInfo)
 	}
+	// redraw skeleton based on new datapoints
+	updatedOutputImg, err := draw.DrawGolfSkeleton(ctx, inputImage.InputImg, &golfKeypoints.BodyDatapoints, &golfKeypoints.GolfSpecificDatapoints)
+	if err != nil {
+		return nil, fmt.Errorf("could not redraw golf skeleton on image: %v", err)
+	}
+	golfKeypoints.OutputImg = updatedOutputImg
 	// update new golf keypoints in db
 	updatedGolfKeypoints, err := g.dbmgr.UpdateGolfKeypointsForInputImage(ctx, request.InputImageId, golfKeypoints)
 	if err != nil {
@@ -300,6 +306,7 @@ func (g *GolfKeypointsListener) UpdateBodyDatapoints(ctx context.Context, reques
 	// return response
 	response := &skp.UpdateBodyDatapointsResponse{
 		Success:              true,
+		UpdatedOutputImage:   updatedOutputImg,
 		UpdatedGolfKeypoints: db.ConvertGolfKeypointsToSkpGolfKeypoints(updatedGolfKeypoints),
 	}
 	return response, nil
