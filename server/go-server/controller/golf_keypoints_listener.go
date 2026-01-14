@@ -180,16 +180,16 @@ func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, requ
 	if err != nil {
 		return nil, fmt.Errorf("could not get input image with id: %s, error was %w", request.InputImageId, err)
 	}
-	// get pose image and data for input img
-	getPoseAllResponse, err := g.cvmgr.GetPoseAll(inputImage.InputImg)
+	// get pose data for input img
+	getPoseDataResponse, err := g.cvmgr.GetPoseData(inputImage.InputImg)
 	if err != nil {
-		return nil, fmt.Errorf("could not get pose all for image: %w", err)
+		return nil, fmt.Errorf("could not get pose data for image: %w", err)
 	}
 	// init GolfKeypoints obj to be stored in db
 	golfKeypoints := &db.GolfKeypoints{
 		UserId:         userId,
 		InputImageId:   request.InputImageId,
-		BodyDatapoints: *getPoseAllResponse.PoseDatapoints,
+		BodyDatapoints: *getPoseDataResponse.Datapoints,
 	}
 	// put in golf specific data points
 	if request.GolfSpecificDatapoints != nil {
@@ -197,12 +197,12 @@ func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, requ
 	}
 	// dtl setup points
 	if inputImage.ImageType == skp.ImageType_DTL {
-		golfKeypoints.DtlGolfSetupPoints = *CalculateDTLSetupPoints(ctx, getPoseAllResponse.PoseDatapoints, request.GolfSpecificDatapoints, &inputImage.CalibrationInfo)
+		golfKeypoints.DtlGolfSetupPoints = *CalculateDTLSetupPoints(ctx, getPoseDataResponse.Datapoints, request.GolfSpecificDatapoints, &inputImage.CalibrationInfo)
 	} else { // face on setup points
-		golfKeypoints.FaceonGolfSetupPoints = *CalculateFaceOnSetupPoints(ctx, getPoseAllResponse.PoseDatapoints, request.GolfSpecificDatapoints, &inputImage.CalibrationInfo)
+		golfKeypoints.FaceonGolfSetupPoints = *CalculateFaceOnSetupPoints(ctx, getPoseDataResponse.Datapoints, request.GolfSpecificDatapoints, &inputImage.CalibrationInfo)
 	}
 	// draw datapoints with skeleton on image
-	outputImg, err := draw.DrawGolfSkeleton(ctx, inputImage.InputImg, getPoseAllResponse.PoseDatapoints, request.GolfSpecificDatapoints)
+	outputImg, err := draw.DrawGolfSkeleton(ctx, inputImage.InputImg, getPoseDataResponse.Datapoints, request.GolfSpecificDatapoints)
 	if err != nil {
 		return nil, fmt.Errorf("could not draw golf skeleton on image: %v", err)
 	}

@@ -9,7 +9,7 @@ The standard control flow of a sports-keypoints API call is as follows:
 * The keypoints server (keypoints-server/golf_keypoints_server.go) verifies the information in the request (makes sure required fields are set, etc.), and then forwards the request to the controller
 * Controller receives the request (controller/golf_keypoints_listener)
   * Controller makes sure that the user exists in MongoDB
-  * Controller executes logic to read necessary information from MongoDB, make requests to the computervision server for pose estimation, and calculate sport keypoints give the pose estimation points
+  * Controller executes logic to read necessary information from MongoDB, make requests to the computervision server for pose estimation, calculate sport keypoints give the pose estimation points, and draw the datapoints over the original image
 * Controller sends the response back to keypoints server, which sends the response back to the user
 
 ## Directories
@@ -33,6 +33,9 @@ Contains GoLang gRPC generated files containing client and server code from .pro
 
 * util:<br>
 Provides utility functions for the go-server. This includes a custom warning interface and struct that allows APIs to continue even if there is some missing information for only a specific part of the request. It also includes structs and vector math to help easily calculate keypoints given coordinate pose keypoints. 
+
+* draw:<br>
+Provides easy functions to draw a "skeleton" over the body datapoints provided by the computervision service, as well as other drawing utility functions. Uses the github.com/llgcode/draw2d/draw2dimg library.
 
 ## Getting Started
 
