@@ -60,7 +60,7 @@ like to modify those and recalculate, press `No` otherwise.
 18. If you pressed `Yes`, you will see another window that lists all of the pose estimation points and their coordinates in the image. Click all buttons for body points
 that you would like to modify. (The coordinate plane origin is the top left corner of the image. As you go right, the x value increases. As you go down, the y value increases).
 19. Once you have modified all pose estimation points, scroll to the bottom of that window, and press the `Done Updating Body Datapoints` button to recalculate.
-20. Take a look at the new data about setup keypoints
+20. Take a look at the image and new data about setup keypoints
 
 #### Drawing Lines for Calibration
 

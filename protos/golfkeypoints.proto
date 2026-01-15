@@ -143,8 +143,8 @@ message UpdateBodyDatapointsRequest {
 
 message UpdateBodyDatapointsResponse {
     bool success = 1;
-    GolfKeypoints updated_golf_keypoints = 2;
-    // TODO: updated_output_image
+    bytes updated_output_image = 2;
+    GolfKeypoints updated_golf_keypoints = 3;
 }
 
 enum ImageType {

@@ -311,7 +311,7 @@ class MainAppPage(fw.FrameWrapper):
         self.close_popup(popup)
         try:
             response = self.golfkeypoints_client.update_body_datapoints(self.session_token, self.curr_input_image_id, self.body_datapoints)
-            self.display_golf_keypoints_text(response.updated_golf_keypoints)
+            self.process_golf_keypoints(response.updated_output_image, response.updated_golf_keypoints)
         except grpc.RpcError as e:
             messagebox.showerror("Update Body Datapoints", f"Update Body Datapoints failed: {e.code()}: {e.details()}")
         

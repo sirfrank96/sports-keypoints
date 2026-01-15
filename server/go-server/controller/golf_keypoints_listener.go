@@ -8,6 +8,7 @@ import (
 
 	cvclient "github.com/sirfrank96/go-server/cv-client"
 	db "github.com/sirfrank96/go-server/db"
+	"github.com/sirfrank96/go-server/draw"
 	skp "github.com/sirfrank96/go-server/sports-keypoints-proto"
 	"github.com/sirfrank96/go-server/util"
 )
@@ -179,17 +180,16 @@ func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, requ
 	if err != nil {
 		return nil, fmt.Errorf("could not get input image with id: %s, error was %w", request.InputImageId, err)
 	}
-	// get pose image and data for input img
-	getPoseAllResponse, err := g.cvmgr.GetPoseAll(inputImage.InputImg)
+	// get pose data for input img
+	getPoseDataResponse, err := g.cvmgr.GetPoseData(inputImage.InputImg)
 	if err != nil {
-		return nil, fmt.Errorf("could not get pose all for image: %w", err)
+		return nil, fmt.Errorf("could not get pose data for image: %w", err)
 	}
 	// init GolfKeypoints obj to be stored in db
 	golfKeypoints := &db.GolfKeypoints{
 		UserId:         userId,
 		InputImageId:   request.InputImageId,
-		OutputImg:      getPoseAllResponse.Image,
-		BodyDatapoints: *getPoseAllResponse.PoseDatapoints,
+		BodyDatapoints: *getPoseDataResponse.Datapoints,
 	}
 	// put in golf specific data points
 	if request.GolfSpecificDatapoints != nil {
@@ -197,20 +197,25 @@ func (g *GolfKeypointsListener) CalculateGolfKeypoints(ctx context.Context, requ
 	}
 	// dtl setup points
 	if inputImage.ImageType == skp.ImageType_DTL {
-		golfKeypoints.DtlGolfSetupPoints = *CalculateDTLSetupPoints(ctx, getPoseAllResponse.PoseDatapoints, request.GolfSpecificDatapoints, &inputImage.CalibrationInfo)
+		golfKeypoints.DtlGolfSetupPoints = *CalculateDTLSetupPoints(ctx, getPoseDataResponse.Datapoints, request.GolfSpecificDatapoints, &inputImage.CalibrationInfo)
 	} else { // face on setup points
-		golfKeypoints.FaceonGolfSetupPoints = *CalculateFaceOnSetupPoints(ctx, getPoseAllResponse.PoseDatapoints, request.GolfSpecificDatapoints, &inputImage.CalibrationInfo)
+		golfKeypoints.FaceonGolfSetupPoints = *CalculateFaceOnSetupPoints(ctx, getPoseDataResponse.Datapoints, request.GolfSpecificDatapoints, &inputImage.CalibrationInfo)
 	}
+	// draw datapoints with skeleton on image
+	outputImg, err := draw.DrawGolfSkeleton(ctx, inputImage.InputImg, getPoseDataResponse.Datapoints, request.GolfSpecificDatapoints)
+	if err != nil {
+		return nil, fmt.Errorf("could not draw golf skeleton on image: %v", err)
+	}
+	golfKeypoints.OutputImg = outputImg
 	// store golfkeypoints in db
 	_, err = g.dbmgr.CreateGolfKeypoints(ctx, golfKeypoints)
 	if err != nil {
-		return nil, fmt.Errorf("could not store golfkeypoints in db %w", err)
+		return nil, fmt.Errorf("could not store golfkeypoints in db %v", err)
 	}
-
 	// return response
 	response := &skp.CalculateGolfKeypointsResponse{
 		Success:       true,
-		OutputImage:   getPoseAllResponse.Image,
+		OutputImage:   outputImg,
 		GolfKeypoints: db.ConvertGolfKeypointsToSkpGolfKeypoints(golfKeypoints),
 	}
 	return response, nil
@@ -287,6 +292,12 @@ func (g *GolfKeypointsListener) UpdateBodyDatapoints(ctx context.Context, reques
 	} else { // face on setup points
 		golfKeypoints.FaceonGolfSetupPoints = *CalculateFaceOnSetupPoints(ctx, &golfKeypoints.BodyDatapoints, &golfKeypoints.GolfSpecificDatapoints, &inputImage.CalibrationInfo)
 	}
+	// redraw skeleton based on new datapoints
+	updatedOutputImg, err := draw.DrawGolfSkeleton(ctx, inputImage.InputImg, &golfKeypoints.BodyDatapoints, &golfKeypoints.GolfSpecificDatapoints)
+	if err != nil {
+		return nil, fmt.Errorf("could not redraw golf skeleton on image: %v", err)
+	}
+	golfKeypoints.OutputImg = updatedOutputImg
 	// update new golf keypoints in db
 	updatedGolfKeypoints, err := g.dbmgr.UpdateGolfKeypointsForInputImage(ctx, request.InputImageId, golfKeypoints)
 	if err != nil {
@@ -295,6 +306,7 @@ func (g *GolfKeypointsListener) UpdateBodyDatapoints(ctx context.Context, reques
 	// return response
 	response := &skp.UpdateBodyDatapointsResponse{
 		Success:              true,
+		UpdatedOutputImage:   updatedOutputImg,
 		UpdatedGolfKeypoints: db.ConvertGolfKeypointsToSkpGolfKeypoints(updatedGolfKeypoints),
 	}
 	return response, nil
