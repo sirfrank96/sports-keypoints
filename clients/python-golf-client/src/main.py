@@ -4,6 +4,8 @@
 
 # Tkinter
 import tkinter as tk
+
+# Python
 import logging
 import sys
 import os

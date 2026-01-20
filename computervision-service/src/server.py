@@ -98,7 +98,8 @@ class ComputerVisionServiceServicer(computervision_pb2_grpc.ComputerVisionServic
             img_idx += 1
             image_bytes = get_open_pose_image_request.image
             image = self.open_pose_mgr.get_image_from_bytes(image_bytes)
-            processed_img = self.open_pose_mgr.get_open_pose_image(image, self.body_pose_field_descriptors)
+            datum = self.open_pose_mgr.run_open_pose(image)
+            processed_img = self.open_pose_mgr.get_open_pose_image(datum, self.body_pose_field_descriptors)
             print(f"Processed image #{img_idx}. It's size is {len(processed_img)}")
             get_open_pose_image_response = computervision_pb2.GetPoseImageResponse(
                 image=processed_img
@@ -107,7 +108,20 @@ class ComputerVisionServiceServicer(computervision_pb2_grpc.ComputerVisionServic
         print("GetPoseImagesFromVideo grpc request finished")
     
     def GetPoseDataFromVideo(self, request_iterator, context):
-        return super().GetPoseDataFromVideo(request_iterator, context)
+        print("GetPoseDataFromVideo grpc request")
+        img_idx = 0
+        for get_open_pose_data_request in request_iterator:
+            img_idx += 1
+            image_bytes = get_open_pose_data_request.image
+            image = self.open_pose_mgr.get_image_from_bytes(image_bytes)
+            datum = self.open_pose_mgr.run_open_pose(image)
+            data = self.open_pose_mgr.get_open_pose_data(datum)
+            body_25_pose_datapoints = self.processOpenPoseData(data)
+            get_open_pose_data_response = computervision_pb2.GetPoseDataResponse(
+                datapoints=body_25_pose_datapoints
+            )
+            yield get_open_pose_data_response
+        print("GetPoseDataFromVideo grpc request finished")
     
     def GetPoseHandImagesFromVideo(self, request_iterator, context):
         return super().GetPoseHandImagesFromVideo(request_iterator, context)
