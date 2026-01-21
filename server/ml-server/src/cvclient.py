@@ -57,11 +57,9 @@ class ComputerVisionClient():
                             self.max_y = attr
         return np.array(dps_arr)
 
-    # crop frames to midhip to neck length*3 by midhip to neck length*3
-    # center around neck (all points are offset from that)???? Do i need to do this???
     # normalize lengths to between 0 and 1 (xval- minx / (maxx - minx)) same for y
+    # this makes it a self contained box around minx -> maxx and miny -> maxy
     def normalize_datapoints(self, np_arr_dp):
-        #print(f'neck: {self.neck_x}, {self.neck_y}, min: {self.min_x}, {self.min_y}, max: {self.max_x}, {self.max_y}')
         normalized_arr = np.zeros((25*3))
         for i in range(0, 25*3, 3):
             x = np_arr_dp[i]

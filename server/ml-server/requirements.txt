@@ -18,8 +18,8 @@ ml_dtypes==0.5.4
 mpmath==1.3.0
 namex==0.1.0
 networkx==3.6.1
-numpy==2.4.1
-opencv-python==4.12.0.88
+numpy
+opencv-python
 optree==0.18.0
 packaging==25.0
 pillow==12.1.0
