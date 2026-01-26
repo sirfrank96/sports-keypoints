@@ -75,55 +75,75 @@ def encode_and_classify_codeflow(num_downloaded_videos, faceon_indices):
     x_train, y_train, x_val, y_val = util.get_random_training_and_validation_sets(inputs, outputs)
     keras_models.encode_and_classify(x_train, y_train, x_val, y_val, "models/classify_faceon_model_batch16_epochs50_early_stop.keras")
 
-def output_new_model_from_existing_data():
+def output_new_faceon_model_from_existing_data():
     datapoints_file_path = os.path.join(curr_dir, "data", "bodydatapoints", 'body_datapoints.npy')
     all_datapoints = np.load(datapoints_file_path)
     print(f"size if all_datapoints is {all_datapoints.shape}")
-    faceon_indices_file_path = os.path.join(curr_dir, "data", "bodydatapoints", 'faceon_indices.npy')
+    faceon_indices_file_path = os.path.join(curr_dir, "data", "faceon_classifier", 'faceon_indices.npy')
     faceon_indices = np.load(faceon_indices_file_path)
     print(f"size if faceon indices is {faceon_indices.shape}")
     inputs, outputs = util.standardize_inputs_and_outputs(all_datapoints, faceon_indices)
     x_train, x_val, y_train, y_val = util.get_random_training_and_validation_sets(inputs, outputs)
     keras_models.encode_and_classify(x_train, y_train, x_val, y_val, "models/classify_faceon_model_batch16_epochs50_early_stop.keras")
 
+def output_new__isswing_model_from_existing_data():
+    datapoints_file_path = os.path.join(curr_dir, "data", "bodydatapoints", 'body_datapoints.npy')
+    all_datapoints = np.load(datapoints_file_path)
+    print(f"size if all_datapoints is {all_datapoints.shape}")
+    isswing_indices_file_path = os.path.join(curr_dir, "data", "isswing_classifier", 'is_swing_indices.npy')
+    isswing_indices = np.load(isswing_indices_file_path)
+    print(f"size if faceon indices is {isswing_indices.shape}, isswing_indices for 15th swing {isswing_indices[14]}")
+    x_train, x_val, y_train, y_val = util.get_random_training_and_validation_sets(all_datapoints, isswing_indices)
+    keras_models.encode_and_classify(x_train, y_train, x_val, y_val, "models/classify_swing_model_openposedata_batch16_epochs50_early_stop.keras")
+
 def train_classify_swing_model():
     # build x and y datasets
-    map_file = os.path.join(curr_dir, "data", "frames", "video_start_end_frames_map.json")
+    #datapoints_file_path = os.path.join(curr_dir, "data", "bodydatapoints", 'body_datapoints.npy')
+    #all_datapoints = np.load(datapoints_file_path)
+    #print(f"size if all_datapoints is {all_datapoints.shape}")
+    map_file = os.path.join(curr_dir, "data", "isswing_classifier", "video_start_end_frames_map.json")
     video_start_end_frames_map = preprocess.load_start_end_frames_map(map_file)
-    videos = []
+    all_datapoints = []
     vals = []
     for vid_id, start_end in video_start_end_frames_map.items():
         vid = cv2.VideoCapture(os.path.join(curr_dir, "data", "videos", f'{vid_id}.mp4'))
-        frames = []
+        # parse video into frames
+        frame_idx = 0
         is_swing_arr = []
-        frame_num = 0
+        frames = []
         while True:
-            ok, frame = vid.read()
+            ok, image = vid.read()
             if ok:
-                # append frame data
-                #frame = cv2.resize(frame, (1080//8, 1920//8)) -> 135 width, 240 height
-                frame = cv2.resize(frame, (160, 256))
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                #frame = frame.astype(np.float32) / 255.0
-                frames.append(frame)
-                # append whether or not frame is part of the "swing"
-                if frame_num >= start_end["s"] and frame_num <= start_end["e"]:
+                frames.append(util.frame_to_bytes(image))
+                if frame_idx >= start_end["s"] and frame_idx <= start_end["e"]:
                     is_swing_arr.append(1)
                 else:
                     is_swing_arr.append(0)
             else:
                 break
-            frame_num += 1
-        frames, is_swing_arr = util.downsample_frames(frames, util.frames_dim_for_swing_classification, is_swing_arr)
-        videos.append(frames)
-        vals.append(is_swing_arr)
-        print(f'video {vid_id} has number of frames {len(frames)}')
+            frame_idx += 1
+        print(f'video id {vid_id} number of frames {frame_idx}')
         vid.release()
-    print(f"size of videos arr is {len(videos)}x{len(videos[1])}x{len(videos[1][0])}, size of vals arr is {len(vals)}x{len(vals[1])}")
-    inputs, outputs = util.standardize_inputs_and_outputs(videos, vals)
+        frames, is_swing_arr = util.downsample_frames(frames, util.frames_dim_for_pose_estimation, is_swing_arr)
+        print(f'number of frames after downsample {len(frames)}, length of is_swing_arr is {len(is_swing_arr)}')
+        # query computervision-service for body datapoints
+        datapoints_swing_i = None
+        try:
+            datapoints_swing_i = cv_client.get_pose_data_from_video(frames)
+        except grpc.RpcError as e:
+            print(f'grpc error {e}')
+        # put bodydatapoints into tensors (num swings x num frames x num datapoints x datapoint x,y,conf) (add extra dimension for more num people)
+        all_datapoints.append(datapoints_swing_i)
+        vals.append(is_swing_arr)
+    inputs, outputs = util.standardize_inputs_and_outputs(all_datapoints, vals)
     print(f"after pad size of videos arr is {len(inputs)}x{len(inputs[1])}x{len(inputs[1][0])}, size of vals arr is {len(outputs)}x{len(outputs[1])}")
+    # save datapoints to data/bodydatapoints folder
+    datapoints_file_path = os.path.join(curr_dir, "data", "bodydatapoints", 'body_datapoints.npy')
+    np.save(datapoints_file_path, inputs)
+    is_swing_file_path = os.path.join(curr_dir, "data", "isswing_classifier", "is_swing_indices.npy")
+    np.save(is_swing_file_path, outputs)
     x_train, x_val, y_train, y_val = util.get_random_training_and_validation_sets(inputs, outputs)
-    keras_models.encode_cnn_and_classify(x_train, y_train, x_val, y_val)
+    keras_models.encode_and_classify(x_train, y_train, x_val, y_val, "models/classify_swing_model_openposedata_batch16_epochs50_early_stop.keras")
 
 if __name__ == "__main__":
     logging.basicConfig()
@@ -131,11 +151,12 @@ if __name__ == "__main__":
 
     #num_downloaded_videos, faceon_indices = scraper.download_faceon_and_dtl_videos()
     #auto_encode_codeflow(num_downloaded_videos)
-    #faceon_indices_file_path = os.path.join(curr_dir, "data", "bodydatapoints", 'faceon_indices.npy')
+    #faceon_indices_file_path = os.path.join(curr_dir, "data", "faceon_classifier", 'faceon_indices.npy')
     #np.save(faceon_indices_file_path, faceon_indices)
     #encode_and_classify_codeflow(num_downloaded_videos, faceon_indices)
-    #output_new_model_from_existing_data()
+    #output_new_isswing_model_from_existing_data()
 
     #preprocess.label_data_to_classify_swing()
-    train_classify_swing_model()
+    #train_classify_swing_model()
+    output_new__isswing_model_from_existing_data()
     

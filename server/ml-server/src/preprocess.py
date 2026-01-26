@@ -41,7 +41,7 @@ def load_start_end_frames_map(map_file):
 # TODO: Skip 35th video (rory at night hitting a bunch of shots), and 36th (normal and slomo video in 1)
 def label_data_to_classify_swing():
     # load map if saved previously
-    map_file = os.path.join(curr_dir, "data", "frames", "video_start_end_frames_map.json")
+    map_file = os.path.join(curr_dir, "data", "isswing_classifier", "video_start_end_frames_map.json")
     video_start_end_frames_map = load_start_end_frames_map(map_file)
     # manually label start frame and end frames for 40 videos
     while True:

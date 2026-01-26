@@ -59,7 +59,7 @@ def encode_and_classify(x_train, y_train, x_val, y_val, model_pathname):
     # Binary classification (e.g., 0 or 1)
     model.add(Dense(1, activation='sigmoid'))
 
-    early_stopping = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+    early_stopping = EarlyStopping(monitor='loss', patience=5, restore_best_weights=True)
     loss_function = 'binary_crossentropy'
     metrics_list = ['accuracy']
     model.compile(optimizer='adam', loss=loss_function, metrics=metrics_list)
@@ -72,7 +72,7 @@ def encode_and_classify(x_train, y_train, x_val, y_val, model_pathname):
 
     print(f"result for predicting the 3rd video: {x_val_np[3]} is {res[3]}, actual is {y_val_np[3]}")
 
-    print(f"result for predicting the 8th video: {x_val_np[8]} is {res[8]}, actual is {y_val_np[8]}")
+    print(f"result for predicting the 8th video: {x_val_np[7]} is {res[7]}, actual is {y_val_np[7]}")
 
     model.save(model_pathname)
 
@@ -99,7 +99,7 @@ def encode_cnn_and_classify(x_train_np, y_train_np, x_val_np, y_val_np):
     # Binary classification (e.g., 0 or 1)
     model.add(Dense(1, activation='sigmoid'))
 
-    early_stopping = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+    early_stopping = EarlyStopping(monitor='loss', patience=5, restore_best_weights=True)
     loss_function = 'binary_crossentropy'
     metrics_list = ['accuracy']
     model.compile(optimizer='adam', loss=loss_function, metrics=metrics_list)
