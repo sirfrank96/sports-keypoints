@@ -2,8 +2,9 @@
 import matplotlib.pyplot as plt
 
 # Internal
-from gen import common_pb2, common_pb2_grpc
+from ..gen import common_pb2, common_pb2_grpc
 
+#TODO: Rename to visualize.py: add functions to visualize training results, layers, etc.
 # converts flattened 75 index array to grpc object 
 def convert_data_to_body25_datapoints(data):
     body_25_datapoints = common_pb2.Body25PoseDatapoints()

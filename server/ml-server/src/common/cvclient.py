@@ -1,11 +1,18 @@
 # Python
 import numpy as np
 import sys
+import grpc
 
 # Internal
-from gen import computervision_pb2, computervision_pb2_grpc
+from src.gen import computervision_pb2, computervision_pb2_grpc
+from src.common import constants
 
-import plot
+def create_computer_vision_client():
+    # initialize cv client for body datapoints requests
+    setting_timeout_ms = 1000 * 60 * 3
+    options = [('grpc.http2.settings_timeout', setting_timeout_ms)]
+    channel = grpc.insecure_channel('localhost:50051', options=options)
+    return ComputerVisionClient(channel)
 
 # client stub functions for computervision grpc service
 class ComputerVisionClient():
@@ -21,19 +28,16 @@ class ComputerVisionClient():
             request = computervision_pb2.GetPoseDataRequest(image=frame)
             yield request
 
-    def get_pose_data_from_video(self, frames):
+    def get_pose_data_from_video(self, frames, num_frames):
         response_iterator = self.stub.GetPoseDataFromVideo(self.generate_requests_from_frames(frames))
-        datapoints_for_swing = np.zeros((150, 25*3))
+        datapoints_for_swing = np.zeros((num_frames, constants.BODY_DATAPOINTS_DIMENSIONS))
         frame_idx = 0
         for response in response_iterator:
             np_arr_dp = self.convert_body_25_datapoints_to_np_arr(response.datapoints)
             np_arr_normalized = self.normalize_datapoints(np_arr_dp)
-            plot.convert_data_to_body25_datapoints(np_arr_normalized)
+            #plot.convert_data_to_body25_datapoints(np_arr_normalized)
             datapoints_for_swing[frame_idx] = np_arr_normalized
             frame_idx += 1
-        if frame_idx < 150:
-            for i in range(frame_idx, 150):
-                datapoints_for_swing[i] = datapoints_for_swing[frame_idx-1]
         return datapoints_for_swing
     
 
@@ -75,4 +79,11 @@ class ComputerVisionClient():
             normalized_arr[i] = normalized_x
             normalized_arr[i+1] = normalized_y
             normalized_arr[i+2] = np_arr_dp[i+2]
+        self.reset_min_max()
         return normalized_arr
+    
+    def reset_min_max(self):
+        self.min_x = sys.float_info.max
+        self.max_x = sys.float_info.min
+        self.min_y = sys.float_info.max
+        self.max_y = sys.float_info.min

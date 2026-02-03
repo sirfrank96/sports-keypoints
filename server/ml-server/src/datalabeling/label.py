@@ -1,48 +1,15 @@
 # Python
-from pathlib import Path
-import os
-import sys
-import json
 import cv2
-import numpy as np
+import json
+import os
 
 # Internal
-import keras_models
-import util
+from src.common import util
+from src.common import constants
 
-# TODO: Split into Training and Inference modules with shared util functions
-
-def preprocess_data():
-    # pull start of swing classifier
-    # run through and pull out frames that are needed
-    # normalize number of frames
-
-    # send each frame to get body_keypoints analyzed
-
-    # pull faceon vs not face on classifier
-    # divide dataset into face on and not face on
-
-    # pull dtl vs not classifier
-    # remove non dtls
-    return
-
-curr_dir = Path(__file__).parent.resolve()
-
-def load_start_end_frames_map(map_file):
-    # load map if saved previously
-    video_start_end_frames_map = {}
-    try:
-        with open(map_file, 'r') as f:
-            video_start_end_frames_map = json.load(f)
-    except FileNotFoundError:
-        print("No map, will create one")
-    return video_start_end_frames_map
-
-# TODO: Skip 35th video (rory at night hitting a bunch of shots), and 36th (normal and slomo video in 1)
 def label_data_to_classify_swing():
     # load map if saved previously
-    map_file = os.path.join(curr_dir, "data", "isswing_classifier", "video_start_end_frames_map.json")
-    video_start_end_frames_map = load_start_end_frames_map(map_file)
+    video_start_end_frames_map = util.load_start_end_frames_map(constants.START_END_FRAMES_MAP_PATH)
     # manually label start frame and end frames for 40 videos
     while True:
         # pull in video
@@ -52,14 +19,14 @@ def label_data_to_classify_swing():
         video_num = 0
         try:
             video_num = int(video_input)
-            if video_num < 1 or video_num > 40: # TODO: pass in num videos available?
+            if video_num < 1 or video_num > constants.NUM_VIDEOS:
                 print("please enter a valid video number")
                 video_num = 0
                 continue
         except ValueError:
             print("please enter a valid number")
             continue
-        vid = cv2.VideoCapture(os.path.join(curr_dir, "data", "videos", f'{video_num}.mp4'))
+        vid = cv2.VideoCapture(os.path.join(constants.VIDEOS_DIR_PATH, f'{video_num}.mp4'))
         frames = []
         while True:
             ok, image = vid.read()
@@ -105,8 +72,7 @@ def label_data_to_classify_swing():
                 except ValueError:
                     print("please enter a valid number")
                     continue
-
     # store data back in json file
-    with open(map_file, 'w') as f:
+    with open(constants.START_END_FRAMES_MAP_PATH, 'w') as f:
         json.dump(video_start_end_frames_map, f)
     return
