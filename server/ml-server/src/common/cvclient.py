@@ -35,7 +35,6 @@ class ComputerVisionClient():
         for response in response_iterator:
             np_arr_dp = self.convert_body_25_datapoints_to_np_arr(response.datapoints)
             np_arr_normalized = self.normalize_datapoints(np_arr_dp)
-            #plot.convert_data_to_body25_datapoints(np_arr_normalized)
             datapoints_for_swing[frame_idx] = np_arr_normalized
             frame_idx += 1
         return datapoints_for_swing

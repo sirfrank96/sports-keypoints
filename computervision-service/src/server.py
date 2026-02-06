@@ -38,6 +38,8 @@ class ComputerVisionServiceServicer(computervision_pb2_grpc.ComputerVisionServic
     
     def processOpenPoseData(self, data):
         body_25_pose_datapoints = common_pb2.Body25PoseDatapoints()
+        if data is None:
+            return body_25_pose_datapoints
         body_25_pose_datapoints_descriptor = body_25_pose_datapoints.DESCRIPTOR
         for field_descriptor in body_25_pose_datapoints_descriptor.fields:
             field_name = field_descriptor.name

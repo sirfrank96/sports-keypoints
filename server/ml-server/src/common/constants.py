@@ -21,7 +21,7 @@ CLASSIFY_ISSWING_CNN_MODEL_PATH = os.path.join(ROOT_DIR, "models", "classify_swi
 
 # Data paths
 VIDEOS_DIR_PATH = os.path.join(ROOT_DIR, "data", "videos")
-BODY_DATAPOINTS_PATH = os.path.join(ROOT_DIR, "data", "bodydatapoints", 'body_datapoints.npy')
-FACEON_TRUE_VALUES_PATH = os.path.join(ROOT_DIR, "data", "faceon_classifier", 'faceon_indices.npy')
-ISSWING_TRUE_VALUES_PATH = os.path.join(ROOT_DIR, "data", "isswing_classifier", "isswing_indices.npy")
-START_END_FRAMES_MAP_PATH = os.path.join(ROOT_DIR, "data", "isswing_classifier", "video_start_end_frames_map.json")
+BODY_DATAPOINTS_PATH = os.path.join(ROOT_DIR, "data", "body_datapoints.npy")
+FACEON_TRUE_VALUES_PATH = os.path.join(ROOT_DIR, "data", "faceon_indices.npy")
+ISSWING_TRUE_VALUES_PATH = os.path.join(ROOT_DIR, "data", "isswing_indices.npy")
+UNLABELED_VIDEOS_DICT_PATH = os.path.join(ROOT_DIR, "data", "unlabeled_videos_dict.json")

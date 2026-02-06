@@ -1,6 +1,7 @@
 # Training Data
 *.mp4
 *.npy
+*.json
 
 # Pycache
 __pycache__
