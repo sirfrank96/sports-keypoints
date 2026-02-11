@@ -115,13 +115,17 @@ class ComputerVisionServiceServicer(computervision_pb2_grpc.ComputerVisionServic
         for get_open_pose_data_request in request_iterator:
             img_idx += 1
             image_bytes = get_open_pose_data_request.image
+            if img_idx == 1:
+                print(f"{image_bytes[10:15]}")
             image = self.open_pose_mgr.get_image_from_bytes(image_bytes)
             datum = self.open_pose_mgr.run_open_pose(image)
             data = self.open_pose_mgr.get_open_pose_data(datum)
+            print(f"data is {data}")
             body_25_pose_datapoints = self.processOpenPoseData(data)
             get_open_pose_data_response = computervision_pb2.GetPoseDataResponse(
                 datapoints=body_25_pose_datapoints
             )
+            print(f"datapoints is {body_25_pose_datapoints}")
             yield get_open_pose_data_response
         print("GetPoseDataFromVideo grpc request finished")
     

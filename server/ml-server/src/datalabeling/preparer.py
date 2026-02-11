@@ -72,6 +72,11 @@ if __name__ == "__main__":
         action="store_true",
         required=False,
     )
+    group.add_argument(
+        "--all_videos",
+        action="store_true",
+        required=False,
+    )
     args = parser.parse_args()
     # initialize cv client for body datapoints requests
     cv_client = cvclient.create_computer_vision_client()
@@ -79,3 +84,5 @@ if __name__ == "__main__":
     # pull in data structures
     if args.new_videos:
         preparer.prepare_new_videos_for_labelling()
+    elif args.all_videos:
+        preparer.prepare_all_videos_for_labelling()

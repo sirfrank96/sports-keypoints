@@ -29,7 +29,7 @@ class Scraper():
             # Print debug info to stderr (optional, useful for troubleshooting)
             #'verbose': True,
             # Select items from the playlist starting at start_idx
-            'playlist_items': f'{start_idx}:',
+            'playlist_items': f'{start_idx}:{start_idx + 1}',
             # Add progress hook
             'progress_hooks': [self.finished_hook],
         }

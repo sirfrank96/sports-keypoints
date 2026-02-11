@@ -10,6 +10,7 @@ from sklearn.model_selection import train_test_split
 
 # Internal
 from . import constants
+from . import labeldata
 
 def frame_to_bytes(frame: np.ndarray) -> bytes:
     ok, buf = cv2.imencode('.jpg', frame)
@@ -58,32 +59,8 @@ def load_all_body_datapoints_from_file():
 def create_new_all_body_datapoints():
     return np.empty((0, constants.FRAME_DIMENSION, constants.BODY_DATAPOINTS_DIMENSIONS))
     
-def load_faceon_indices_from_file():
-    if os.path.exists(constants.FACEON_TRUE_VALUES_PATH):
-        return np.load(constants.FACEON_TRUE_VALUES_PATH)
-    else:
-        return create_new_faceon_indices()
-    
-def create_new_faceon_indices():
-    return np.empty((0, constants.FRAME_DIMENSION))
-
-def load_isswing_indices_from_file():
-    if os.path.exists(constants.ISSWING_TRUE_VALUES_PATH):
-        return np.load(constants.ISSWING_TRUE_VALUES_PATH)
-    else:
-        return create_new_isswing_indices()
-    
-def create_new_isswing_indices():
-    return np.empty((0, constants.FRAME_DIMENSION))
-    
 def save_all_body_datapoints(datapoints):
     np.save(constants.BODY_DATAPOINTS_PATH, datapoints)
-
-def save_faceon_indices(faceon_indices):
-    np.save(constants.FACEON_TRUE_VALUES_PATH, faceon_indices)
-
-def save_isswing_indices(isswing_indices):
-    np.save(constants.ISSWING_TRUE_VALUES_PATH, isswing_indices)
 
 def add_unlabeled_video(video_name, idx, unlabeled_dict):
     unlabeled_dict[video_name] = idx
@@ -104,6 +81,20 @@ def create_new_unlabeled_dict():
 def save_unlabeled_dict(unlabeled_dict):
     with open(constants.UNLABELED_VIDEOS_DICT_PATH, 'w') as f:
         json.dump(unlabeled_dict, f)
+
+def load_labeled_golf_swing_dataset():
+    if os.path.exists(constants.LABELED_GOLF_SWING_DATASET_PATH):
+        with open(constants.LABELED_GOLF_SWING_DATASET_PATH, 'r') as f:
+            return json.load(f)
+    else:
+        return create_new_labeled_golf_swing_dataset()
+    
+def create_new_labeled_golf_swing_dataset():
+    return labeldata.LabeledGolfSwingDataset(players={}, videos={})
+
+def save_labeled_golf_swing_dataset(labeled_golf_swing_dataset):
+    with open(constants.LABELED_GOLF_SWING_DATASET_PATH, 'w') as f:
+        json.dump(labeled_golf_swing_dataset, f)
 
 def get_saved_video_path(video_name):
     return os.path.join(constants.VIDEOS_DIR_PATH, video_name)
