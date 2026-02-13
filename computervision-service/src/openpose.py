@@ -93,6 +93,6 @@ class OpenPoseManager():
         return byte_encode
 
     def get_open_pose_data(self, datum):
-        if datum.poseKeypoints is None or len(datum.poseKeypoints == 0):
+        if datum.poseKeypoints is None or len(datum.poseKeypoints) == 0:
             return None
         return datum.poseKeypoints[0]        

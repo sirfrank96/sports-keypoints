@@ -85,7 +85,7 @@ def save_unlabeled_dict(unlabeled_dict):
 def load_labeled_golf_swing_dataset():
     if os.path.exists(constants.LABELED_GOLF_SWING_DATASET_PATH):
         with open(constants.LABELED_GOLF_SWING_DATASET_PATH, 'r') as f:
-            return json.load(f)
+            return labeldata.LabeledGolfSwingDataset.model_validate_json(f.read())
     else:
         return create_new_labeled_golf_swing_dataset()
     
@@ -94,7 +94,7 @@ def create_new_labeled_golf_swing_dataset():
 
 def save_labeled_golf_swing_dataset(labeled_golf_swing_dataset):
     with open(constants.LABELED_GOLF_SWING_DATASET_PATH, 'w') as f:
-        json.dump(labeled_golf_swing_dataset, f)
+        f.write(labeled_golf_swing_dataset.model_dump_json(indent=2))
 
 def get_saved_video_path(video_name):
     return os.path.join(constants.VIDEOS_DIR_PATH, video_name)

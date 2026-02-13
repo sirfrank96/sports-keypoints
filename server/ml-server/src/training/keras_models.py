@@ -8,6 +8,7 @@ from keras.models import Sequential, Model
 from keras.layers import LSTM, RepeatVector, TimeDistributed, Dense, Masking, Input, GlobalAveragePooling2D
 from keras.applications import MobileNetV3Small
 
+# TODO: Additional layers different projection dimensions
 # TODO: Add masking layer? and dropouts?
 def create_sequential_autoencoder(x_train, y_train, x_val, y_val, num_frames, num_features):
     encoding_dim = 32 # dimension of compressed projected space

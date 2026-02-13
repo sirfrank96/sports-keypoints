@@ -17,6 +17,7 @@ class Scraper():
             if d['status'] == "finished":
                 print(f"Finished downloading video {d["filename"]}")
 
+    # TODO: Make video names unique (add timestamp?)
     def download_shorts_from_creator(self, channel_url, start_idx):
         shorts_url = f"{channel_url}/shorts"
         ydl_opts = {
@@ -29,7 +30,7 @@ class Scraper():
             # Print debug info to stderr (optional, useful for troubleshooting)
             #'verbose': True,
             # Select items from the playlist starting at start_idx
-            'playlist_items': f'{start_idx}:{start_idx + 1}',
+            'playlist_items': f'{start_idx}',
             # Add progress hook
             'progress_hooks': [self.finished_hook],
         }
